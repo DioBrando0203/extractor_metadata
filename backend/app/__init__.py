@@ -1,0 +1,1 @@
+"""Extractor local de metadatos."""
