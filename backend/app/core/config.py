@@ -1,6 +1,12 @@
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import gettempdir
+
+
+def _env_list(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    raw = os.getenv(name, "")
+    return tuple(item.strip() for item in raw.split(",") if item.strip()) or default
 
 
 @dataclass(frozen=True)
@@ -16,11 +22,18 @@ class Settings:
     max_worker_memory_bytes: int = 1024 * 1024 * 1024
     max_concurrent_extractions: int = 2
     temp_root: Path = Path(gettempdir()) / "msg-metadata-extractor"
-    allowed_origins: tuple[str, ...] = (
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
+    allowed_origins: tuple[str, ...] = _env_list(
+        "APP_ALLOWED_ORIGINS",
+        (
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ),
+    )
+    allowed_hosts: tuple[str, ...] = _env_list(
+        "APP_ALLOWED_HOSTS",
+        ("localhost", "127.0.0.1", "[::1]"),
     )
 
 

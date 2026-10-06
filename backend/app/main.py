@@ -28,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(LocalUploadMiddleware)
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]"])
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))
 app.include_router(api_router, prefix="/api")
 
 frontend_dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"

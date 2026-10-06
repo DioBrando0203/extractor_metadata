@@ -34,6 +34,11 @@ npm run dev
 
 La interfaz de desarrollo usa `http://127.0.0.1:5173`; OpenAPI local esta en `http://127.0.0.1:8000/docs`.
 
+Para acceso desde otras PCs de la misma red, configure `frontend/.env.local` con la IP LAN del
+servidor (`VITE_API_URL=http://IP_DEL_SERVIDOR:8000/api`) y `backend/.env` con esa IP en
+`APP_ALLOWED_HOSTS` y `APP_ALLOWED_ORIGINS`. Levante Vite con `npm run dev -- --host 0.0.0.0`
+y Uvicorn con `--env-file .env --host 0.0.0.0`. Abra `http://IP_DEL_SERVIDOR:5173` desde la otra PC.
+
 ## Cobertura y limites
 
 - Adjuntos legibles se pueden descargar, incluidos imagenes, PDF, Word, Excel y otros formatos cuyos bytes sigan disponibles.

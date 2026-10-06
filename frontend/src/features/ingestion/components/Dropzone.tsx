@@ -35,7 +35,7 @@ export function Dropzone({ active, onBrowse }: Props) {
         <ShieldCheckmark16Regular aria-hidden="true" /> Privado · sin cuenta · sin base de datos
       </p>
       <h1 id="landing-title" className="landing__title">
-        Lee lo que Outlook no pudo
+        Cargar MSG
       </h1>
       <p className="landing__lead">
         Abre un archivo <b>.msg</b>, aunque esté dañado, para leer el correo y descargar sus adjuntos sin

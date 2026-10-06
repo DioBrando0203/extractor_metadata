@@ -3,7 +3,10 @@ import { extractMessage } from '../../../lib/api'
 import type { QueueItem } from '../../../lib/types'
 import { fileValidationError } from '../lib/validation'
 
-const makeId = () => crypto.randomUUID()
+const makeId = () =>
+  typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
 
 export function useExtractionQueue() {
   const [items, setItems] = useState<QueueItem[]>([])
