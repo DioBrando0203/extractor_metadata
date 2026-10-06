@@ -106,3 +106,17 @@ Fecha: 2026-10-06. Estado: vigente.
 Contexto: si el MSG pierde el asunto, el nombre del archivo es una pista pero con caracteres sustituidos (`:` y `|` pasan a `_`).
 Decisión: se toma el asunto del primer mensaje citado y sus variantes con RE/RV/FW; sólo se acepta si, saneado como lo hace Outlook, reproduce exactamente el nombre del archivo. Se avisa "Asunto deducido…".
 Consecuencias: nunca se inventa un asunto; si no coincide, se muestra el nombre del archivo con su aviso.
+
+## ADR-16 Búsqueda con resaltado como en Outlook
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: el buscador ya filtraba entre todos los correos, pero no mostraba dónde coincidía, y las coincidencias del historial plegado no se veían.
+Decisión: `findRanges` normaliza carácter a carácter guardando la posición original, así el resaltado sin tildes cae en su sitio. La bandeja muestra el fragmento de la coincidencia; el lector resalta con `<mark>`, cuenta coincidencias y despliega el historial si hace falta. Los términos llegan al lector por contexto (`HighlightContext`) para no atravesar cinco niveles de props. Atajo `/`.
+Consecuencias: sin índices ni almacenamiento; costo lineal por correo, suficiente para una sesión local.
+
+## ADR-17 Imágenes reconstruidas y no recuperadas
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: en MSG dañados el backend puede reconstruir la posición de algunas imágenes por sus medidas (ADR-B11) y otras no.
+Decisión: una imagen con `content_id_inferred` se muestra en su lugar con la nota "Ubicación reconstruida" (explicación en el tooltip). Un `cid` sin adjunto se muestra como un aviso compacto "Imagen no recuperada · nombre" en lugar de un hueco grande.
+Consecuencias: el usuario ve el orden del correo sin confundir inferencias con datos leídos.

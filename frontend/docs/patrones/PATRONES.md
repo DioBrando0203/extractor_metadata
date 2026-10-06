@@ -43,6 +43,12 @@ Regla: la UI nunca recibe JSON crudo (P-02).
 Dónde: `lib/mail.ts`, `lib/formatters.ts`, `lib/thread.ts` (parser del hilo y de `[cid:…]`), `features/*/lib`.
 Qué: sin React ni efectos; se prueban sin DOM.
 
+## Contexto para datos transversales de presentación
+
+Dónde: `features/message-viewer/highlight.ts` (`HighlightContext`, `useHighlightTerms`).
+Qué: los términos de búsqueda llegan a título, remitente, párrafos e historial sin pasar por cada componente intermedio.
+Cuándo: un dato de sólo lectura que necesitan muchas hojas del árbol. No usar contexto para estado que cambia en cada tecla de un hijo.
+
 ## Estado elevado al dueño común
 
 Dónde: `MessageViewer` posee `useAttachmentFiles` y el adjunto abierto; la lista y las imágenes del cuerpo sólo llaman `onOpen(index)`.

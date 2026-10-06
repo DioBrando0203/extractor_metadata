@@ -216,3 +216,29 @@
     background-position: 0 0;
   }
 }
+
+.search-box__shortcut {
+  position: absolute;
+  right: var(--space-s);
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-xs);
+  border: 1px solid var(--stroke-1);
+  border-radius: var(--radius-md);
+  color: var(--fg-3);
+  background: var(--bg-1);
+  font-family: var(--font-base);
+  font-size: var(--fs-100);
+  pointer-events: none;
+}
+.search-box:focus-within .search-box__shortcut {
+  display: none;
+}
+/* Sin teclado físico el atajo no aplica. */
+@media (pointer: coarse) {
+  .search-box__shortcut {
+    display: none;
+  }
+}

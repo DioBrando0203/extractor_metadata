@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { ChevronDown16Regular, ChevronUp16Regular } from '@fluentui/react-icons'
 import { Avatar } from '../../../components/ui/Avatar'
 import { Button } from '../../../components/ui/Button'
+import { Highlight } from '../../../components/ui/Highlight'
 import { splitAddresses } from '../../../lib/mail'
 import type { QuotedField, QuotedMessage } from '../../../lib/thread'
 import type { Attachment } from '../../../lib/types'
+import { useHighlightTerms } from '../highlight'
 import { InlineContent } from './InlineContent'
 
 type Props = {
@@ -50,6 +52,7 @@ function QuotedMessageView({
   attachments,
   onOpenAttachment,
 }: Omit<Props, 'messages' | 'defaultOpen'> & { message: QuotedMessage }) {
+  const terms = useHighlightTerms()
   const value = (label: QuotedField['label']) => message.fields.find((field) => field.label === label)?.value
   const sender = splitAddresses(value('De') ?? '')[0]
   const sent = value('Enviado')
@@ -60,7 +63,7 @@ function QuotedMessageView({
         <div className="quoted__who">
           <p className="quoted__from">
             <strong className={sender ? undefined : 'is-missing'}>
-              {sender?.name ?? 'Remitente desconocido'}
+              <Highlight text={sender?.name ?? 'Remitente desconocido'} terms={terms} />
             </strong>
             {sender?.email && sender.email !== sender.name && (
               <span className="quoted__email">&lt;{sender.email}&gt;</span>
@@ -78,7 +81,7 @@ function QuotedMessageView({
               : text
             return (
               <p key={label} className="quoted__field" title={people ? text : undefined}>
-                <span>{label}:</span> {shown}
+                <span>{label}:</span> <Highlight text={shown} terms={terms} />
               </p>
             )
           })}

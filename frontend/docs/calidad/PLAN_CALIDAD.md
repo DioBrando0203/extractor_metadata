@@ -8,6 +8,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
   - `src/lib/mail.test.ts`: direcciones, separación de destinatarios, agrupación Para/CC/CCO, título y vista previa.
   - `src/lib/formatters.test.ts`: bytes, fechas de encabezado y bandeja, limpieza de texto.
   - `src/lib/api.test.ts`: normalización del contrato y error de red.
+  - `src/lib/textSearch.test.ts`: normalización, rangos sobre el texto original, solapes y fragmentos.
   - `src/lib/thread.test.ts`: hilo citado en español e inglés, marcadores `[cid:…]`, emparejamiento de adjuntos y asunto deducido.
   - `src/features/attachments/lib/fileKind.test.ts`: clasificación por extensión y MIME.
   - `src/features/attachments/lib/viewerMode.test.ts`: modos del visor y decodificación de texto.

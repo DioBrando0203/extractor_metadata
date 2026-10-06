@@ -14,6 +14,7 @@ import { QueueList } from '../features/ingestion/components/QueueList'
 import { useExtractionQueue } from '../features/ingestion/hooks/useExtractionQueue'
 import { useWindowFileDrop } from '../features/ingestion/hooks/useWindowFileDrop'
 import { filterQueue } from '../features/ingestion/lib/search'
+import { searchTerms } from '../lib/textSearch'
 import { fileValidationError } from '../features/ingestion/lib/validation'
 import { MessageLoading } from '../features/message-viewer/components/MessageLoading'
 import { MessageViewer } from '../features/message-viewer/components/MessageViewer'
@@ -29,6 +30,7 @@ export function App() {
   const input = useRef<HTMLInputElement>(null)
   const selected = items.find((item) => item.id === selectedId)
   const visibleItems = useMemo(() => filterQueue(items, query), [items, query])
+  const terms = useMemo(() => searchTerms(query), [query])
   const hasItems = items.length > 0
 
   const browse = () => input.current?.click()
@@ -91,8 +93,9 @@ export function App() {
                 setQuery(value)
                 if (value) changeView('analysis')
               }}
-              placeholder="Buscar en la bandeja"
-              label="Buscar por asunto, remitente, texto o adjunto"
+              placeholder="Buscar en todos los correos"
+              label="Buscar en todos los correos por palabra, persona, correo electrónico o adjunto"
+              shortcut="/"
             />
           ) : undefined
         }
@@ -124,6 +127,7 @@ export function App() {
           dragging={dragging}
           onBrowse={browse}
           onRetry={retry}
+          terms={terms}
         />
       </AppLayout>
     </>
@@ -137,14 +141,23 @@ type ReaderProps = {
   dragging: boolean
   onBrowse: () => void
   onRetry: (id: string) => void
+  terms: string[]
 }
 
 /** Decide qué muestra el lector según la vista y el estado del correo seleccionado (SPEC-01). */
-function ReaderContent({ view, hasItems, selected, dragging, onBrowse, onRetry }: ReaderProps): ReactNode {
+function ReaderContent({
+  view,
+  hasItems,
+  selected,
+  dragging,
+  onBrowse,
+  onRetry,
+  terms,
+}: ReaderProps): ReactNode {
   if (view === 'help') return <HelpPage />
   if (!hasItems) return <Dropzone active={dragging} onBrowse={onBrowse} />
   if (selected?.message)
-    return <MessageViewer key={selected.id} message={selected.message} file={selected.file} />
+    return <MessageViewer key={selected.id} message={selected.message} file={selected.file} terms={terms} />
   if (selected?.status === 'error') {
     return (
       <ExtractionFailed

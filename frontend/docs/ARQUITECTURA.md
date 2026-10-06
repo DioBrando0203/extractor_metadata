@@ -10,7 +10,7 @@ src/
   app/App.tsx                            estado de vista, panel móvil, búsqueda; ReaderContent decide el lector
   app/styles/global.css                  índice de imports; un CSS por módulo (tokens, base, ui-*, layout, ...)
   components/layout/AppLayout.tsx        cabecera, barra de apps, workspace con huecos, volver móvil, overlay
-  components/ui/                         Button, SearchBox, Tabs, Avatar, StatusAlert, EmptyState, Spinner
+  components/ui/                         Button, SearchBox, Tabs, Highlight, Avatar, StatusAlert, EmptyState, Spinner
   features/ingestion/
     components/Dropzone.tsx              portada
     components/QueueList.tsx, QueueRow.tsx  bandeja y filas
@@ -42,6 +42,7 @@ src/
   lib/types.ts                           contrato normalizado
   lib/mail.ts, lib/formatters.ts         utilidades puras (direcciones, título con asunto deducido, texto)
   lib/thread.ts                          hilo citado, marcadores [cid:…] y asunto deducido verificado
+  lib/textSearch.ts                      búsqueda sin tildes con rangos sobre el texto original y fragmentos
 e2e/                                     Playwright: funcional (backend real) y visual (@visual)
 ```
 
@@ -58,7 +59,7 @@ e2e/                                     Playwright: funcional (backend real) y 
 
 1. Archivos desde el input oculto de `App` ("Abrir MSG", portada) o soltados en la ventana (`useWindowFileDrop`).
 2. `useExtractionQueue` valida, encola y procesa de uno en uno con `lib/api.extractMessage`.
-3. `filterQueue` filtra la bandeja con el texto del buscador; la selección no cambia al filtrar.
+3. `filterQueue` filtra la bandeja con el texto del buscador en todos los correos cargados (archivo, asunto, personas, correos electrónicos, texto con historial y nombres de adjuntos); la selección no cambia al filtrar. Cada fila resalta la coincidencia y `matchPreview` muestra dónde aparece. `MessageViewer` recibe los términos por `HighlightContext` (`features/message-viewer/highlight.ts`) y los resalta con `Highlight`.
 4. `ReaderContent` elige el contenido del lector (SPEC-01).
 5. `MessageViewer` muestra el correo. `splitThread` separa el mensaje actual del historial y `parseInline` coloca cada `[cid:…]` como miniatura del adjunto con ese Content-ID o nombre.
 6. Si hay imágenes en posición aparecen las pestañas Mensaje (adjuntos restantes y cuerpo) y Datos adjuntos (galería completa); si no, la lista va sobre el cuerpo sin pestañas.

@@ -96,6 +96,11 @@ export function splitThread(text: string): Thread {
   return { current: trimSeparators(lines.slice(0, blocks[0].start).join('\n')), quoted }
 }
 
+/** Texto sin marcadores de imagen, para vistas previas de una línea. */
+export function stripInlineMarkers(text: string): string {
+  return text.replace(CID, ' ')
+}
+
 /** Divide un texto en tramos de texto e imágenes incrustadas, en el orden en que aparecen. */
 export function parseInline(text: string): BodyPart[] {
   const parts: BodyPart[] = []

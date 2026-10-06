@@ -76,3 +76,6 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 - CA-09: historial plegado que identifica al remitente de cada mensaje. Prueba: `MessageViewer.test.tsx`, `lib/thread.test.ts`.
 - CA-10: asunto deducido sólo si reproduce el nombre del archivo. Prueba: `MessageViewer.test.tsx`, `lib/thread.test.ts`, `lib/mail.test.ts`.
 - CA-11: los `<mailto:…>` duplicados no aparecen en el texto ni en los remitentes citados. Prueba: `lib/formatters.test.ts`.
+
+- CA-12: con búsqueda activa se resaltan asunto, remitente, destinatarios, texto e historial, se cuentan las coincidencias y el historial se despliega si la coincidencia está ahí. Prueba: `MessageViewer.test.tsx`.
+- CA-13: una imagen ubicada por medidas muestra "Ubicación reconstruida" y una no recuperada se indica con "Imagen no recuperada · nombre". Prueba: `MessageViewer.test.tsx`.

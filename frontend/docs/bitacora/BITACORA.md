@@ -43,3 +43,10 @@ Estado: terminada
 Cambios: `lib/thread.ts` (hilo citado, `[cid:…]`, emparejamiento por Content-ID o nombre, asunto deducido verificado); lector dividido en `MessageTitle`, `SenderBlock`, `MessageBody`, `InlineContent` y `QuotedThread`; pestañas Mensaje / Datos adjuntos con `Tabs` (ADR-13); visor elevado a `MessageViewer` (ADR-05); párrafos compactos y limpieza de `<mailto:…>` (ADR-14); asunto deducido sólo si reproduce el nombre del archivo (ADR-15); `content_id` en el contrato; Prettier con `endOfLine: 'auto'` (B-12).
 Evidencia: 50 unitarias; format:check, build y lint aprobados; 6 E2E con backend reiniciado; 5 visuales sin desborde con capturas de imagen en posición, historial y galería. Revisión local con el MSG real del usuario (no versionado): remitente, asunto, Para, CC y fecha identificados y 6 mensajes citados con su remitente.
 Notas: en ese MSG las posiciones de imagen no son recuperables (B-11 del backend); sus imágenes siguen en la lista de adjuntos.
+
+## 2026-10-06 01:32 -05:00 Búsqueda resaltada e imágenes reconstruidas en el lector
+
+Estado: terminada
+Cambios: `lib/textSearch.ts` y `components/ui/Highlight.tsx`; bandeja con fragmento de coincidencia y resaltado; lector con resaltado por contexto, contador de coincidencias e historial que se despliega si la coincidencia está ahí (ADR-16); atajo `/`; imágenes reconstruidas con nota y no recuperadas como aviso compacto (ADR-17); marcadores `[cid:…]` fuera de vistas previas y del texto buscable; `content_id_inferred` en el contrato.
+Evidencia: 58 unitarias; format:check, build y lint aprobados; 6 E2E y 5 visuales aprobados con el backend reiniciado. MSG real del usuario (local): logos de Cypress y BlueStream en sus firmas, "Permit Coordinator" resaltado con el historial desplegado y fragmento limpio en la bandeja.
+Notas: los marcadores se veían en el fragmento de la bandeja; corregido con `stripInlineMarkers`.

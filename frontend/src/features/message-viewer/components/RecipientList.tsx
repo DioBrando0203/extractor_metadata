@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Highlight } from '../../../components/ui/Highlight'
 import type { RecipientGroup } from '../../../lib/mail'
+import { useHighlightTerms } from '../highlight'
 
 /** Más destinatarios que este número por fila se pliegan detrás de "+N más". */
 const VISIBLE_RECIPIENTS = 8
@@ -16,6 +18,7 @@ export function RecipientList({ groups }: { groups: RecipientGroup[] }) {
 }
 
 function RecipientRow({ group }: { group: RecipientGroup }) {
+  const terms = useHighlightTerms()
   const [expanded, setExpanded] = useState(false)
   const visible = expanded ? group.addresses : group.addresses.slice(0, VISIBLE_RECIPIENTS)
   const hidden = group.addresses.length - visible.length
@@ -25,7 +28,7 @@ function RecipientRow({ group }: { group: RecipientGroup }) {
       <dd>
         {visible.map((address, index) => (
           <span key={`${address.name}-${index}`} className="recipient" title={address.email ?? undefined}>
-            {address.name}
+            <Highlight text={address.name} terms={terms} />
             {index < visible.length - 1 && '; '}
           </span>
         ))}

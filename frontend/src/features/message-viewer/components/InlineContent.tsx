@@ -1,6 +1,8 @@
 import { Image20Regular, ImageOff20Regular } from '@fluentui/react-icons'
+import { Highlight } from '../../../components/ui/Highlight'
 import { findInlineAttachment, parseInline } from '../../../lib/thread'
 import type { Attachment } from '../../../lib/types'
+import { useHighlightTerms } from '../highlight'
 
 type Props = { text: string; attachments: Attachment[]; onOpenAttachment: (index: number) => void }
 
@@ -35,10 +37,13 @@ export function InlineContent({ text, attachments, onOpenAttachment }: Props) {
  * completa (Outlook deja una en blanco entre cada línea al convertir HTML a texto).
  */
 function Paragraphs({ text }: { text: string }) {
+  const terms = useHighlightTerms()
   return (
     <div className="mail__text">
       {text.split(PARAGRAPH_BREAK).map((paragraph, index) => (
-        <p key={index}>{paragraph}</p>
+        <p key={index}>
+          <Highlight text={paragraph} terms={terms} />
+        </p>
       ))}
     </div>
   )
@@ -48,10 +53,11 @@ function InlineImage({ cid, attachments, onOpenAttachment }: Omit<Props, 'text'>
   const index = findInlineAttachment(cid, attachments)
   const attachment = attachments[index]
   if (!attachment) {
+    // El archivo dañado perdió esta imagen o no se pudo saber cuál es: se indica sin ocupar espacio.
     return (
-      <p className="inline-missing">
-        <ImageOff20Regular aria-hidden="true" /> Imagen incrustada no disponible
-      </p>
+      <span className="inline-missing" title="La imagen no se pudo recuperar o ubicar con certeza">
+        <ImageOff20Regular aria-hidden="true" /> Imagen no recuperada · {cid.split('@')[0]}
+      </span>
     )
   }
   if (!attachment.preview) {
@@ -61,7 +67,7 @@ function InlineImage({ cid, attachments, onOpenAttachment }: Omit<Props, 'text'>
       </button>
     )
   }
-  return (
+  const image = (
     <button
       type="button"
       className="inline-image"
@@ -70,5 +76,14 @@ function InlineImage({ cid, attachments, onOpenAttachment }: Omit<Props, 'text'>
     >
       <img src={attachment.preview} alt="" loading="lazy" decoding="async" />
     </button>
+  )
+  if (!attachment.content_id_inferred) return image
+  return (
+    <figure className="inline-figure">
+      {image}
+      <figcaption title="El archivo dañado perdió el identificador de esta imagen; se ubicó aquí porque su tamaño coincide con el del correo original.">
+        Ubicación reconstruida
+      </figcaption>
+    </figure>
   )
 }

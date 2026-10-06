@@ -6,15 +6,24 @@ import {
 } from '@fluentui/react-icons'
 import { Avatar } from '../../../components/ui/Avatar'
 import { Button } from '../../../components/ui/Button'
+import { Highlight } from '../../../components/ui/Highlight'
 import { Spinner } from '../../../components/ui/Spinner'
 import { formatBytes, formatListDate } from '../../../lib/formatters'
 import { fileStem, messageTitle, parseAddress, previewLine } from '../../../lib/mail'
 import type { Message, QueueItem } from '../../../lib/types'
+import { matchPreview } from '../lib/search'
 import { fileValidationError } from '../lib/validation'
 
-type Props = { item: QueueItem; selected: boolean; onSelect: () => void; onRetry: () => void }
+type Props = {
+  item: QueueItem
+  selected: boolean
+  /** Términos de búsqueda normalizados; vacío si no se está buscando. */
+  terms: string[]
+  onSelect: () => void
+  onRetry: () => void
+}
 
-export function QueueRow({ item, selected, onSelect, onRetry }: Props) {
+export function QueueRow({ item, selected, terms, onSelect, onRetry }: Props) {
   const retryable = item.status === 'error' && !fileValidationError(item.file)
   const classes = [
     'mail-item',
@@ -31,7 +40,7 @@ export function QueueRow({ item, selected, onSelect, onRetry }: Props) {
         onClick={onSelect}
       >
         {item.message ? (
-          <MessageSummary message={item.message} fileName={item.file.name} />
+          <MessageSummary message={item.message} fileName={item.file.name} terms={terms} />
         ) : (
           <PendingSummary item={item} />
         )}
@@ -53,18 +62,29 @@ export function QueueRow({ item, selected, onSelect, onRetry }: Props) {
   )
 }
 
-/** Correo leído: remitente, asunto con fecha y primera línea, como en la lista de un cliente de correo. */
-function MessageSummary({ message, fileName }: { message: Message; fileName: string }) {
+/**
+ * Correo leído: remitente, asunto con fecha y primera línea, como en la lista de un cliente de correo.
+ * Al buscar, resalta las coincidencias y la tercera línea muestra dónde aparece la palabra.
+ */
+function MessageSummary({
+  message,
+  fileName,
+  terms,
+}: {
+  message: Message
+  fileName: string
+  terms: string[]
+}) {
   const sender = message.sender ? parseAddress(message.sender) : null
   const date = formatListDate(message.sent_at ?? message.received_at)
-  const preview = previewLine(message.body_preview)
+  const preview = matchPreview(message, terms) ?? previewLine(message.body_preview)
   return (
     <>
       <Avatar name={sender?.name} size="sm" />
       <span className="mail-item__content">
         <span className="mail-item__line">
           <span className={`mail-item__from ${sender ? '' : 'is-missing'}`}>
-            {sender?.name ?? 'Remitente desconocido'}
+            <Highlight text={sender?.name ?? 'Remitente desconocido'} terms={terms} />
           </span>
           {message.attachments.length > 0 && (
             <span className="mail-item__clip" title={`${message.attachments.length} datos adjuntos`}>
@@ -75,13 +95,18 @@ function MessageSummary({ message, fileName }: { message: Message; fileName: str
         </span>
         <span className="mail-item__line">
           <span className="mail-item__subject">
-            {messageTitle(message.subject, fileName, message.body_preview).text}
+            <Highlight
+              text={messageTitle(message.subject, fileName, message.body_preview).text}
+              terms={terms}
+            />
           </span>
           {date && <span className="mail-item__date">{date}</span>}
         </span>
         <span className="mail-item__line">
           {message.status === 'partial' && <span className="chip chip--warn">Parcial</span>}
-          <span className="mail-item__preview">{preview || 'Sin texto legible'}</span>
+          <span className="mail-item__preview">
+            {preview ? <Highlight text={preview} terms={terms} /> : 'Sin texto legible'}
+          </span>
         </span>
       </span>
     </>

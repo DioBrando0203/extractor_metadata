@@ -1,6 +1,6 @@
 # Resultados de calidad
 
-Última ejecución: 2026-10-06 01:11 -05:00 (America/Lima).
+Última ejecución: 2026-10-06 01:32 -05:00 (America/Lima).
 Entorno: Windows 11, Node v24.19.0, Chromium de Playwright, backend reiniciado con el código actual en 127.0.0.1:8000.
 
 ## Comandos
@@ -8,7 +8,7 @@ Entorno: Windows 11, Node v24.19.0, Chromium de Playwright, backend reiniciado c
 - `npm run format:check`: aprobado.
 - `npm run build`: aprobado (TypeScript y Vite).
 - `npm run lint`: aprobado, sin warnings.
-- `npm test`: 10 archivos, 50 pruebas aprobadas.
+- `npm test`: 11 archivos, 58 pruebas aprobadas.
 - `npm run test:e2e`: 6 pruebas aprobadas.
 - `npm run test:visual`: 5 pruebas aprobadas (320, 390, 1024, 1440, 1920 px), sin desborde horizontal.
 - `npm audit`: 0 vulnerabilidades tras instalar `@fluentui/react-icons` y retirar `lucide-react`.
@@ -21,6 +21,7 @@ Entorno: Windows 11, Node v24.19.0, Chromium de Playwright, backend reiniciado c
 - Seguridad: miniaturas SVG o `text/html` rechazadas en la normalización; `fetch` sólo en `lib/api.ts`; sin `innerHTML` ni almacenamiento persistente.
 - Imágenes en posición, pestañas, historial plegado con remitente por mensaje y asunto deducido verificado (unitarias y capturas `02-correo`, `02b-historial`, `02c-galeria`).
 - MSG real del usuario (local, no versionado): remitente, asunto, destinatarios y fecha identificados; 6 mensajes citados con su remitente; sin artefactos `mailto`.
+- Búsqueda: resaltado sin tildes, fragmento en la bandeja, contador e historial desplegado; imágenes reconstruidas y no recuperadas (unitarias y MSG real).
 - Revisión visual de capturas: portada, correo con miniaturas y chips, visor de imagen, visor de plano con detalles, parcial, error, cargando, búsqueda y ayuda.
 - Tamaños: archivos TS de 173 líneas como máximo; CSS en 13 archivos de 248 como máximo.
 

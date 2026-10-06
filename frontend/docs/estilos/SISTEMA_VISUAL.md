@@ -70,6 +70,10 @@ Base: Fluent 2, sistema de diseño público de Microsoft (repositorio `microsoft
 - Imagen incrustada: tamaño natural hasta el ancho del cuerpo, borde `--stroke-3`, radio 4, cursor lupa; hover con `--shadow-4`.
 - Mensaje citado: borde superior `--stroke-2`; avatar de 32, nombre semibold, correo y campos 12/16 en `--fg-3`, fecha a la derecha (debajo en móvil).
 - Párrafos del cuerpo: separación `--space-s` en lugar de una línea en blanco.
+- Resaltado de búsqueda: `<mark class="highlight">` con `--search-hit` (#fde300, amarillo de estado de Fluent, como Outlook); contador de coincidencias con el mismo fondo.
+- Imagen reconstruida: nota "Ubicación reconstruida" 12/16 en `--fg-3` bajo la imagen.
+- Imagen no recuperada: chip con borde discontinuo `--stroke-1`, 10/14, icono de 14 px.
+- Pista de atajo del buscador: `kbd` de 20 px a la derecha, oculta al enfocar y con puntero táctil.
 
 ## Iconografía
 

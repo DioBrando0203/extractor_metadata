@@ -40,6 +40,8 @@
   --viewer-fg-muted: #d1d1d1;
   --viewer-media-bg: #000000;
   --skeleton: #ebebeb;
+  /* Resaltado de búsqueda: amarillo de estado de Fluent, como el de Outlook */
+  --search-hit: #fde300;
   --skeleton-shine: #f5f5f5;
 
   /* Estados: MessageBar de Fluent 2 */

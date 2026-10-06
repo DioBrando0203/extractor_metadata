@@ -5,6 +5,7 @@ import {
   inlineAttachmentIndices,
   parseInline,
   splitThread,
+  stripInlineMarkers,
 } from './thread'
 
 const attachment = (name: string, content_id: string | null = null) => ({
@@ -81,5 +82,11 @@ describe('inferSubject', () => {
     expect(inferSubject('RE_ Planos rev3', quoted)).toBe('RE: Planos rev3')
     expect(inferSubject('Planos rev4', quoted)).toBeNull()
     expect(inferSubject('RE_ Planos rev3', [])).toBeNull()
+  })
+})
+
+describe('stripInlineMarkers', () => {
+  it('quita los marcadores de imagen de las vistas previas', () => {
+    expect(stripInlineMarkers('Firma [cid:image001.png@01DA] Saludos')).toBe('Firma   Saludos')
   })
 })

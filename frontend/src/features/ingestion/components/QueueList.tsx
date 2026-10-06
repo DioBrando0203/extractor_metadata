@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import { ShieldCheckmark16Regular } from '@fluentui/react-icons'
 import { Button } from '../../../components/ui/Button'
+import { searchTerms } from '../../../lib/textSearch'
 import type { QueueItem } from '../../../lib/types'
 import { QueueRow } from './QueueRow'
 
@@ -16,11 +18,18 @@ type Props = {
 /** Lista de correos de la sesión, con el aspecto de la lista de mensajes de un cliente de correo. */
 export function QueueList({ items, total, query, selectedId, onSelect, onRetry, onClearQuery }: Props) {
   const filtering = query.trim().length > 0
+  const terms = useMemo(() => searchTerms(query), [query])
   return (
     <aside className="mail-list" aria-label="Bandeja de correos">
       <div className="mail-list__header">
         <h2>Bandeja</h2>
-        <span className="count">{filtering ? `${items.length} de ${total}` : total}</span>
+        <span
+          className="count"
+          role="status"
+          aria-label={filtering ? `${items.length} de ${total} correos coinciden` : `${total} correos`}
+        >
+          {filtering ? `${items.length} de ${total}` : total}
+        </span>
       </div>
       {items.length > 0 ? (
         <ul className="mail-list__items">
@@ -29,6 +38,7 @@ export function QueueList({ items, total, query, selectedId, onSelect, onRetry, 
               key={item.id}
               item={item}
               selected={item.id === selectedId}
+              terms={terms}
               onSelect={() => onSelect(item.id)}
               onRetry={() => onRetry(item.id)}
             />

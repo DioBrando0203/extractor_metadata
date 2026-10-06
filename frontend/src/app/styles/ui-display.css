@@ -240,3 +240,10 @@
   outline-offset: -2px;
   box-shadow: none;
 }
+
+.highlight {
+  padding: 0 1px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  background: var(--search-hit);
+}

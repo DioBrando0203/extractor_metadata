@@ -19,6 +19,8 @@ export interface Attachment {
   preview_source?: PreviewSource | null
   /** Content-ID con el que el cuerpo marca la posición de la imagen como `[cid:…]`. */
   content_id?: string | null
+  /** El Content-ID se reconstruyó por las medidas de la imagen (archivo dañado). */
+  content_id_inferred?: boolean
 }
 
 export interface AttachmentFile {

@@ -40,6 +40,9 @@ Que abrir uno o varios `.msg` sea obvio, tolerante a errores, y que encontrarlos
 - Busca en nombre de archivo, asunto, remitente, destinatarios, texto y nombres de adjuntos.
 - Sin distinguir mayúsculas ni tildes; todas las palabras deben aparecer.
 - Esc o el botón ✕ borran la búsqueda. Sin resultados: mensaje y "Borrar búsqueda".
+- Atajo `/` para enfocar el buscador desde cualquier parte (no mientras se escribe en otro campo); la pista `/` se oculta en pantallas táctiles.
+- Cada fila coincidente resalta remitente y asunto en amarillo y su tercera línea muestra el fragmento donde aparece la palabra, o "Adjunto: …" si coincide un adjunto.
+- El contador indica "N de M" y se anuncia a lectores de pantalla.
 
 ## Estados
 
@@ -62,3 +65,8 @@ Que abrir uno o varios `.msg` sea obvio, tolerante a errores, y que encontrarlos
 
 - Navegar filas con flechas.
 - Cancelar un archivo concreto de la cola.
+
+## Criterios añadidos (2026-10-06)
+
+- CA-07: búsqueda sin tildes con rangos correctos sobre el texto original y fragmentos de contexto. Prueba: `lib/textSearch.test.ts`.
+- CA-08: la vista previa explica la coincidencia (texto, adjunto o destinatarios) sin mostrar marcadores internos. Prueba: `features/ingestion/lib/search.test.ts`, `lib/thread.test.ts`.

@@ -1,4 +1,4 @@
-import { inferSubject, splitThread } from './thread'
+import { inferSubject, splitThread, stripInlineMarkers } from './thread'
 
 /**
  * Utilidades de presentación para direcciones y textos de correo.
@@ -117,6 +117,6 @@ export function messageTitle(
 /** Primera parte del cuerpo en una sola línea, para la vista previa de la bandeja. */
 export function previewLine(body: string | null | undefined, maxLength = 160): string {
   if (!body) return ''
-  const line = body.replace(/\s+/g, ' ').trim()
+  const line = stripInlineMarkers(body).replace(/\s+/g, ' ').trim()
   return line.length > maxLength ? line.slice(0, maxLength) : line
 }

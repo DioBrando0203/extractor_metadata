@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { QueueItem } from '../../../lib/types'
-import { filterQueue } from './search'
+import { filterQueue, matchPreview } from './search'
 
 const item = (
   id: string,
@@ -39,5 +39,28 @@ describe('filterQueue', () => {
   it('busca también en nombres de adjuntos y devuelve todo sin consulta', () => {
     expect(filterQueue(items, 'metrado').map((entry) => entry.id)).toEqual(['b'])
     expect(filterQueue(items, '   ')).toBe(items)
+  })
+})
+
+describe('matchPreview', () => {
+  const message = {
+    file_name: 'a.msg',
+    file_size_bytes: 1,
+    subject: 'Asunto',
+    recipients: ['Para: Ana <ana@example.test>'],
+    body_preview: 'Texto inicial. Más adelante aparece la revisión de planos estructurales.',
+    body_truncated: false,
+    headers: [],
+    properties: [],
+    attachments: [{ name: 'Metrado acero.xlsx', metadata: [], warnings: [] }],
+    warnings: [],
+    status: 'complete' as const,
+  }
+
+  it('muestra dónde coincide: texto, adjunto o destinatarios', () => {
+    expect(matchPreview(message, ['revision'])).toContain('revisión de planos')
+    expect(matchPreview(message, ['metrado'])).toBe('Adjunto: Metrado acero.xlsx')
+    expect(matchPreview(message, ['ana@example'])).toContain('ana@example.test')
+    expect(matchPreview(message, [])).toBeNull()
   })
 })

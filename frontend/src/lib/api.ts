@@ -23,6 +23,7 @@ type ApiAttachment = {
   preview?: unknown
   preview_source?: unknown
   content_id?: unknown
+  content_id_inferred?: unknown
 }
 
 // Sólo imágenes rasterizadas en base64: nunca SVG ni HTML como miniatura.
@@ -72,6 +73,7 @@ function attachmentList(value: unknown): Attachment[] {
       warnings: warningList(attachment.warnings),
       ...previewFields(attachment),
       content_id: text(attachment.content_id).trim() || null,
+      content_id_inferred: attachment.content_id_inferred === true,
     }
   })
 }

@@ -144,6 +144,51 @@ describe('MessageViewer', () => {
     expect(screen.getByText(/Asunto deducido del mensaje citado/)).toBeInTheDocument()
   })
 
+  it('resalta la búsqueda, cuenta coincidencias y abre el historial si están ahí', () => {
+    render(
+      <MessageViewer
+        message={{
+          ...base,
+          body_preview: [
+            'Gracias.',
+            '',
+            'From: Carlos',
+            'Sent: hoy',
+            'Subject: Planos',
+            '',
+            'Plano de Martin County',
+          ].join(String.fromCharCode(10)),
+        }}
+        file={file}
+        terms={['martin']}
+      />,
+    )
+    expect(screen.getByText(/1 coincidencia de la búsqueda/)).toBeInTheDocument()
+    expect(screen.getByText('Martin', { selector: 'mark' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ocultar mensajes anteriores' })).toBeInTheDocument()
+  })
+
+  it('marca la imagen ubicada por tamaño y avisa de las que no se recuperaron', () => {
+    renderViewer({
+      body_preview: ['Firma', '[cid:image001.jpg@01DD]', '[cid:image004.png@01DD]'].join(
+        String.fromCharCode(10),
+      ),
+      attachments: [
+        {
+          name: 'adjunto-1.jpg',
+          content_id: 'image001.jpg@01DD',
+          content_id_inferred: true,
+          preview: 'data:image/png;base64,iVBORw0KGgo=',
+          metadata: [],
+          warnings: [],
+        },
+      ],
+    })
+    expect(screen.getByRole('button', { name: 'Ver adjunto-1.jpg' })).toBeInTheDocument()
+    expect(screen.getByText(/^Ubicación reconstruida$/)).toBeInTheDocument()
+    expect(screen.getByText(/Imagen no recuperada · image004.png/)).toBeInTheDocument()
+  })
+
   it('no muestra diagnosticos tecnicos en la vista principal', () => {
     renderViewer({ warnings: ['Un campo no fue recuperado'] })
     expect(screen.queryByText(/observaciones del extractor/i)).not.toBeInTheDocument()
