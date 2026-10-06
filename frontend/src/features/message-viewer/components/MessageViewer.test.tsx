@@ -78,7 +78,7 @@ describe('MessageViewer', () => {
       warnings: [],
     }))
     renderViewer({ attachments })
-    const section = screen.getByRole('region', { name: /9 adjuntos/ })
+    const section = screen.getByRole('region', { name: /9 datos adjuntos/ })
     expect(within(section).getAllByRole('button', { name: /^Descargar/ })).toHaveLength(6)
     fireEvent.click(within(section).getByRole('button', { name: 'Mostrar los 9' }))
     expect(within(section).getAllByRole('button', { name: /^Descargar/ })).toHaveLength(9)

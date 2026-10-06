@@ -1,10 +1,12 @@
 # Componentes generales
 
-Presentacionales y reutilizables. Sin conocimiento de MSG, adjuntos ni de la API (P-04). Estilos en `global.css`, sección 3.
+Presentacionales y reutilizables, con nombres y apariencias de Fluent 2. Sin conocimiento de MSG, adjuntos ni de la API (P-04). Estilos en `ui-controls.css` y `ui-display.css`.
 
-- `Button`: variantes primary, secondary, ghost y danger; tamaños md y sm; `iconOnly` exige `aria-label`.
-- `Avatar`: iniciales con tono estable por nombre o icono genérico. Decorativo.
-- `EmptyState`: tarjeta centrada para vacío, error o selección pendiente.
-- `StatusAlert`: aviso con icono para error, warning, success e info. `role=alert` sólo en error.
+- `Button`: `primary`, `secondary`, `subtle`, `danger`; tamaños `md` (32) y `sm` (24); `iconOnly` exige `aria-label`.
+- `SearchBox`: buscador con lupa, borrar y Esc.
+- `Avatar`: iniciales con tono estable de la paleta de personas o icono genérico. Decorativo.
+- `StatusAlert`: MessageBar de Fluent para error, warning, success e info. `role=alert` sólo en error.
+- `EmptyState`: icono, título, texto y acciones para vacío, error o selección pendiente.
+- `Spinner`: anillo de progreso; con `label` se anuncia; `tone="inverted"` para fondos oscuros.
 
-Si un componente necesita tipos del dominio, va en `features/<dominio>/components`.
+Antes de crear otro componente aquí, comprobar que al menos dos features lo necesitan (P-24).

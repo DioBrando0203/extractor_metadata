@@ -1,66 +1,49 @@
 import { useId, useState } from 'react'
 import {
-  ChevronDown,
-  ChevronUp,
-  CircleAlert,
-  Download,
-  DraftingCompass,
-  File,
-  FileArchive,
-  FileCode,
-  FileImage,
-  FileSpreadsheet,
-  FileText,
-  FileVideo,
-  LoaderCircle,
-  Mail,
-  Paperclip,
-  Presentation,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+  Attach16Regular,
+  ChevronDown16Regular,
+  ChevronUp16Regular,
+  ErrorCircle16Regular,
+} from '@fluentui/react-icons'
 import { Button } from '../../../components/ui/Button'
-import { downloadAttachment } from '../../../lib/api'
 import { formatBytes } from '../../../lib/formatters'
 import type { Attachment } from '../../../lib/types'
-import { fileKind, kindLabel } from '../lib/fileKind'
-import type { FileKind } from '../lib/fileKind'
+import { useAttachmentFiles } from '../hooks/useAttachmentFiles'
+import { FileChip, PreviewCard } from './AttachmentTiles'
+import type { Entry } from './AttachmentTiles'
+import { AttachmentViewer } from './AttachmentViewer'
 
 type Props = { attachments: Attachment[]; file: File }
 
-/** Con más adjuntos que este número, la lista se pliega para no empujar el cuerpo fuera de la vista. */
+/** Con más adjuntos que este número la lista se pliega para no empujar el cuerpo fuera de la vista. */
 const COLLAPSED_COUNT = 6
-
-const ICONS: Record<FileKind, LucideIcon> = {
-  pdf: FileText,
-  word: FileText,
-  excel: FileSpreadsheet,
-  slides: Presentation,
-  image: FileImage,
-  cad: DraftingCompass,
-  archive: FileArchive,
-  mail: Mail,
-  text: FileCode,
-  media: FileVideo,
-  other: File,
-}
 
 export function AttachmentList({ attachments, file }: Props) {
   const headingId = useId()
+  const files = useAttachmentFiles(file)
   const [downloading, setDownloading] = useState<ReadonlySet<number>>(new Set())
   const [failed, setFailed] = useState<number | null>(null)
   const [expanded, setExpanded] = useState(false)
+  const [viewing, setViewing] = useState<number | null>(null)
 
-  const collapsible = attachments.length > COLLAPSED_COUNT
-  const visible = collapsible && !expanded ? attachments.slice(0, COLLAPSED_COUNT) : attachments
+  // Las vistas previas primero, como en un lector de correo; el índice original se conserva para la API.
+  const entries: Entry[] = attachments.map((attachment, index) => ({ attachment, index }))
+  const ordered = [
+    ...entries.filter((entry) => entry.attachment.preview),
+    ...entries.filter((e) => !e.attachment.preview),
+  ]
+  const collapsible = ordered.length > COLLAPSED_COUNT
+  const visible = collapsible && !expanded ? ordered.slice(0, COLLAPSED_COUNT) : ordered
+  const previews = visible.filter((entry) => entry.attachment.preview)
+  const others = visible.filter((entry) => !entry.attachment.preview)
   const knownSizes = attachments.map((item) => item.size_bytes).filter((size): size is number => size != null)
   const total = knownSizes.reduce((sum, size) => sum + size, 0)
 
-  async function download(attachment: Attachment, index: number) {
+  async function download({ attachment, index }: Entry) {
     setDownloading((current) => new Set(current).add(index))
     setFailed(null)
     try {
-      // El índice es la posición en la lista completa que devolvió el backend, no en la lista visible.
-      await downloadAttachment(file, index, attachment.name)
+      await files.download(attachment, index)
     } catch {
       setFailed(index)
     } finally {
@@ -72,71 +55,69 @@ export function AttachmentList({ attachments, file }: Props) {
     }
   }
 
+  const tileProps = (entry: Entry) => ({
+    entry,
+    busy: downloading.has(entry.index),
+    onOpen: () => setViewing(entry.index),
+    onDownload: () => void download(entry),
+  })
+
   return (
     <section className="attachments" aria-labelledby={headingId}>
       <div className="attachments__head">
         <h2 id={headingId} className="attachments__title">
-          <Paperclip size={15} aria-hidden="true" />
-          {attachments.length} {attachments.length === 1 ? 'adjunto' : 'adjuntos'}
+          <Attach16Regular aria-hidden="true" />
+          {attachments.length} {attachments.length === 1 ? 'dato adjunto' : 'datos adjuntos'}
           {knownSizes.length > 0 && <span className="attachments__total"> ({formatBytes(total)})</span>}
         </h2>
         {collapsible && (
           <Button
-            variant="ghost"
+            variant="subtle"
             size="sm"
             aria-expanded={expanded}
             onClick={() => setExpanded((value) => !value)}
           >
             {expanded ? 'Mostrar menos' : `Mostrar los ${attachments.length}`}
             {expanded ? (
-              <ChevronUp size={14} aria-hidden="true" />
+              <ChevronUp16Regular aria-hidden="true" />
             ) : (
-              <ChevronDown size={14} aria-hidden="true" />
+              <ChevronDown16Regular aria-hidden="true" />
             )}
           </Button>
         )}
       </div>
-      <ul className="attachments__grid">
-        {visible.map((attachment, index) => {
-          const kind = fileKind(attachment.name, attachment.content_type)
-          const Icon = ICONS[kind]
-          const busy = downloading.has(index)
-          return (
-            <li key={`${attachment.name}-${index}`}>
-              <button
-                type="button"
-                className="attachment-tile"
-                data-kind={kind}
-                aria-label={`Descargar ${attachment.name}`}
-                aria-busy={busy || undefined}
-                disabled={busy}
-                title={attachment.name}
-                onClick={() => void download(attachment, index)}
-              >
-                <span className="attachment-tile__icon" aria-hidden="true">
-                  <Icon size={20} />
-                </span>
-                <span className="attachment-tile__text">
-                  <span className="attachment-tile__name">{attachment.name}</span>
-                  <span className="attachment-tile__meta">
-                    {busy
-                      ? 'Preparando descarga…'
-                      : `${kindLabel(attachment.name, attachment.content_type)} · ${formatBytes(attachment.size_bytes)}`}
-                  </span>
-                </span>
-                <span className="attachment-tile__action" aria-hidden="true">
-                  {busy ? <LoaderCircle size={16} className="spin" /> : <Download size={16} />}
-                </span>
-              </button>
+      {previews.length > 0 && (
+        <ul className="attachments__previews">
+          {previews.map((entry) => (
+            <li key={entry.index}>
+              <PreviewCard {...tileProps(entry)} />
             </li>
-          )
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
+      {others.length > 0 && (
+        <ul className="attachments__files">
+          {others.map((entry) => (
+            <li key={entry.index}>
+              <FileChip {...tileProps(entry)} />
+            </li>
+          ))}
+        </ul>
+      )}
       {failed !== null && (
         <p className="attachments__error" role="alert">
-          <CircleAlert size={15} aria-hidden="true" />
+          <ErrorCircle16Regular aria-hidden="true" />
           No se pudo descargar “{attachments[failed]?.name}”. Inténtalo otra vez.
         </p>
+      )}
+      {viewing !== null && (
+        <AttachmentViewer
+          attachments={attachments}
+          index={viewing}
+          files={files}
+          onNavigate={setViewing}
+          onClose={() => setViewing(null)}
+        />
       )}
     </section>
   )

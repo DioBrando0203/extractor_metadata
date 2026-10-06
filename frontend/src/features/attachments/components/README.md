@@ -1,8 +1,10 @@
 # Componentes de adjuntos
 
-`AttachmentList.tsx`: cabecera con total, rejilla de tarjetas descargables, plegado a partir de 6 y error de descarga. Comportamiento en SPEC-04.
+- `AttachmentList`: cabecera "N datos adjuntos", plegado a partir de 6, descargas y apertura del visor. SPEC-04.
+- `AttachmentTiles`: `PreviewCard` (miniatura de frente) y `FileChip` (icono de tipo), ambos con botón de descarga.
+- `AttachmentViewer`: diálogo a pantalla completa con navegación, detalles y descarga. SPEC-05.
+- `AttachmentPreview`: contenido según `viewerMode` (imagen, conversión, PDF, texto, vídeo, audio, miniatura incrustada o sin vista).
+- `AttachmentDetails`: propiedades del adjunto leídas por el backend.
+- `FileTypeIcon`: icono Fluent por tipo con color de `--kind-*`.
 
-- Clasificación de tipo en `../lib/fileKind.ts`.
-- Descarga vía `lib/api.downloadAttachment`; el navegador reenvía el MSG en memoria (ADR-04).
-- Los binarios sólo llegan al navegador al descargar. Sin vistas previas ni ejecución.
-- `message-viewer` compone este componente (ADR-05).
+Binarios con `hooks/useAttachmentFiles` (caché por correo, URLs revocadas al cerrar). `message-viewer` compone `AttachmentList` (ADR-05).

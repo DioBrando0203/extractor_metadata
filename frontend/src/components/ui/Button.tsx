@@ -2,7 +2,8 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  /** Apariencias de Fluent 2: primary (una por zona), secondary, subtle (barras de comandos), danger. */
+  variant?: 'primary' | 'secondary' | 'subtle' | 'danger'
   size?: 'md' | 'sm'
   /** Botón cuadrado sólo con icono; exige `aria-label`. */
   iconOnly?: boolean

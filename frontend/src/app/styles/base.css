@@ -1,0 +1,54 @@
+/* Base: documento, foco, accesibilidad y utilidades mínimas. */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  min-width: 320px;
+  margin: 0;
+  color: var(--fg-1);
+  background: var(--bg-4);
+  font-family: var(--font-base);
+  font-size: var(--fs-300);
+  line-height: var(--lh-300);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+button:not(:disabled) {
+  cursor: pointer;
+}
+/* Indicador de foco de Fluent: contorno oscuro con halo claro, visible sobre cualquier fondo. */
+:focus-visible {
+  outline: 2px solid var(--focus-outer);
+  outline-offset: 1px;
+  box-shadow: 0 0 0 3px var(--focus-inner);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: var(--space-s);
+  left: var(--space-s);
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-md);
+  color: var(--fg-on-brand);
+  background: var(--brand-80);
+  font-weight: var(--fw-semibold);
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
+}
+.is-missing {
+  color: var(--fg-3);
+  font-style: italic;
+}

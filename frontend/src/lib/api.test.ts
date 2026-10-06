@@ -47,6 +47,26 @@ describe('extractMessage', () => {
     ])
   })
 
+  it('acepta sólo miniaturas raster en base64 y descarta cualquier otro data URI', async () => {
+    const attachments = [
+      { name: 'foto.png', preview: 'data:image/jpeg;base64,/9j/4AAQ', preview_source: 'image' },
+      { name: 'plano.dwg', preview: 'data:image/jpeg;base64,/9j/', preview_source: 'embedded' },
+      { name: 'logo.svg', preview: 'data:image/svg+xml;base64,PHN2Zz4=', preview_source: 'image' },
+      { name: 'web.html', preview: 'data:text/html,<script>alert(1)</script>', preview_source: 'image' },
+    ]
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ message: { attachments } }), { status: 200 })),
+    )
+    const { message } = await extractMessage(new File(['x'], 'correo.msg'))
+    expect(message.attachments.map((item) => [item.preview_source, Boolean(item.preview)])).toEqual([
+      ['image', true],
+      ['embedded', true],
+      [null, false],
+      [null, false],
+    ])
+  })
+
   it('traduce un fallo de red a una recomendación entendible', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
     await expect(extractMessage(new File(['x'], 'correo.msg'))).rejects.toThrow(

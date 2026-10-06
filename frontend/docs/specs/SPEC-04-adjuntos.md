@@ -1,48 +1,48 @@
-# SPEC-04 Adjuntos
+# SPEC-04 Datos adjuntos en el lector
 
 Estado: implementada
-Código: `src/features/attachments/`, `src/lib/api.ts` (`downloadAttachment`)
-Relacionadas: SPEC-03, ADR-04
+Código: `src/features/attachments/` (`AttachmentList`, `AttachmentTiles`, `FileTypeIcon`, `lib/fileKind.ts`, `hooks/useAttachmentFiles.ts`)
+Relacionadas: SPEC-03, SPEC-05, backend SPEC-B02, ADR-04, ADR-10
 
 ## Objetivo
 
-Ver de un vistazo qué archivos trae el correo y descargar cualquiera con un clic.
+Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y descargar cualquier adjunto con un clic, como en Outlook.
 
 ## Comportamiento
 
-- Cabecera: clip, "N adjunto(s)" y tamaño total entre paréntesis si se conoce algún tamaño.
-- Rejilla de tarjetas: columnas automáticas con mínimo 260 px; una sola columna en móvil.
-- Tarjeta: icono por tipo sobre fondo tenue, nombre (una línea con elipsis y `title` completo), tipo y tamaño, icono de descarga.
-- Toda la tarjeta es el botón. Nombre accesible: "Descargar <nombre>".
-- Más de 6 adjuntos: se muestran 6 y un botón "Mostrar los N" / "Mostrar menos" con `aria-expanded`.
-- Descarga: la tarjeta queda deshabilitada con spinner y "Preparando descarga…" hasta terminar. Se pueden descargar varias a la vez.
-- Error de descarga: mensaje `role="alert"` bajo la rejilla: "No se pudo descargar “nombre”. Inténtalo otra vez."
-- El índice enviado al backend es la posición en la lista completa, no en la visible.
+- Cabecera: clip, "N datos adjuntos" y tamaño total; "Mostrar los N" / "Mostrar menos" si hay más de 6.
+- Orden visual: primero los adjuntos con miniatura, después el resto, conservando el orden original dentro de cada grupo. El índice que se envía a la API es siempre la posición original.
+- Con miniatura (`preview`): tarjeta con la imagen (16:10; `cover` para fotos, `contain` para miniaturas incrustadas), icono de tipo, nombre y "TIPO · tamaño".
+- Sin miniatura: chip con icono de tipo coloreado, nombre, tipo y tamaño.
+- Toda tarjeta o chip es un botón "Ver <nombre>" que abre el visor (SPEC-05).
+- Cada adjunto tiene un botón "Descargar <nombre>": siempre visible en chips y en táctil; en tarjetas aparece al pasar el ratón o al enfocar.
+- Descarga: spinner en el botón mientras se prepara; se pueden descargar varios a la vez; el binario se reutiliza si ya se pidió para el visor.
+- Error de descarga: `role="alert"` bajo la lista con el nombre del adjunto.
 
-## Clasificación por tipo (`fileKind`)
+## Clasificación (`fileKind`, `kindLabel`)
 
-- Por extensión primero; si no hay, por MIME.
+- Por extensión primero; si falta, por MIME.
 - Grupos: pdf, word, excel, slides, image, cad, archive, mail, text, media, other.
-- Etiqueta: extensión en mayúsculas o, sin extensión, descripción genérica ("Imagen", "Archivo").
-- Colores en tokens `--kind-*`; el color nunca es la única señal (hay icono y etiqueta).
+- Etiqueta: extensión en mayúsculas o, sin extensión, descripción ("Imagen", "Archivo").
 
 ## Estados
 
-- Carga: tarjeta en descarga con spinner.
-- Vacío: la sección no se renderiza.
-- Éxito: el navegador inicia la descarga con el nombre de `Content-Disposition`.
-- Parcial: adjuntos sin tamaño muestran "—".
-- Error: mensaje de alerta; la tarjeta vuelve a estar disponible.
+- Carga: botón de descarga con spinner.
+- Vacío: la sección no se muestra.
+- Éxito: tarjetas o chips; descarga con el nombre de `Content-Disposition`.
+- Parcial: sin tamaño se muestra "—"; sin miniatura, chip.
+- Error: alerta; el botón vuelve a estar disponible.
 
 ## Criterios de aceptación
 
-- CA-01: pulsar un adjunto descarga los bytes correctos con su nombre. Prueba: `e2e/local-api.spec.ts`.
-- CA-02: con 9 adjuntos se ven 6 y se pueden expandir a 9. Prueba: `MessageViewer.test.tsx`.
-- CA-03: la clasificación prioriza la extensión y cae al MIME. Prueba: `fileKind.test.ts`.
-- CA-04: a 320 px el botón de descarga es visible sin desborde. Prueba: `e2e/local-api.spec.ts`.
+- CA-01: una imagen con miniatura muestra la imagen y un archivo sin miniatura muestra un chip con descarga. Prueba: `AttachmentList.test.tsx`.
+- CA-02: pulsar Descargar baja los bytes correctos con su nombre. Prueba: `e2e/local-api.spec.ts`.
+- CA-03: con 9 adjuntos se ven 6 y se pueden ver todos. Prueba: `MessageViewer.test.tsx`.
+- CA-04: la clasificación prioriza extensión y cae al MIME. Prueba: `fileKind.test.ts`.
+- CA-05: miniatura real generada por el backend para un PNG adjunto. Prueba: `e2e/local-api.spec.ts` (visor).
+- CA-06: a 320 px el botón de descarga es visible sin desborde. Prueba: `e2e/local-api.spec.ts` (móvil).
 
 ## Pendientes
 
-- Vista previa de imágenes y PDF.
 - Descargar todos en un ZIP.
-- Ocultar imágenes en línea de firmas.
+- Ocultar imágenes en línea de firmas (`cid:`).

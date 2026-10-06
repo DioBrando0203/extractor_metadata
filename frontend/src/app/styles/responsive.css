@@ -1,0 +1,158 @@
+/* Ajustes por tamaño de pantalla y tipo de puntero. Se importa al final. */
+
+@media (pointer: coarse) {
+  :root {
+    --control-sm: 32px;
+    --control-md: 40px;
+  }
+}
+@media (min-width: 1600px) {
+  :root {
+    --list-w: 400px;
+    --reading-max: 1120px;
+  }
+}
+@media (max-width: 1180px) {
+  :root {
+    --list-w: 320px;
+  }
+  .app-header {
+    grid-template-columns: max-content minmax(0, 1fr) max-content;
+  }
+}
+@media (max-width: 960px) {
+  .viewer-details {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: min(320px, 90vw);
+    box-shadow: var(--shadow-28);
+  }
+}
+
+/* Pantallas angostas: lista y lector se alternan (maestro-detalle) y la barra de apps pasa abajo. */
+@media (max-width: 860px) {
+  :root {
+    --pane-gap: 0px;
+  }
+  .app-body {
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .app-bar {
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--space-s);
+    padding: var(--space-xs) var(--space-s) calc(var(--space-xs) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--stroke-2);
+    background: var(--bg-1);
+  }
+  .app-bar__item {
+    flex: 0 1 120px;
+  }
+  .app-bar__item[aria-current='page'] {
+    box-shadow: none;
+    background: var(--brand-160);
+  }
+  .app-bar__item[aria-current='page']::before {
+    top: calc(-1 * var(--space-xs) - 1px);
+    left: 30%;
+    width: 40%;
+    height: 3px;
+  }
+  .workspace,
+  .workspace--with-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mail-list,
+  .reader {
+    grid-row: -2;
+    grid-column: 1;
+  }
+  .workspace[data-pane='reader'] .mail-list,
+  .workspace[data-pane='list'] .reader {
+    display: none;
+  }
+  .command-bar,
+  .mail-list,
+  .workspace--with-list .reader {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .command-bar {
+    border-bottom: 1px solid var(--stroke-2);
+  }
+  .reader__back {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    display: flex;
+    padding: var(--space-xs) var(--space-s);
+    border-bottom: 1px solid var(--stroke-2);
+    background: var(--bg-1);
+  }
+  .mail__subject-bar {
+    padding: var(--space-m) var(--space-l) var(--space-s);
+  }
+  .mail__card {
+    margin: 0;
+    border-top: 1px solid var(--stroke-3);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .mail__foot {
+    border-radius: 0;
+  }
+  .landing {
+    padding: var(--space-xxl) var(--space-l);
+  }
+  .landing__features {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .page {
+    padding: var(--space-xxl) var(--space-l) var(--space-xxxl);
+  }
+  .viewer__stage {
+    padding: var(--space-xs) var(--space-s) var(--space-huge);
+  }
+  .viewer__nav {
+    top: auto;
+    bottom: var(--space-s);
+    transform: none;
+  }
+  .viewer__nav--prev {
+    left: calc(50% - 48px);
+  }
+  .viewer__nav--next {
+    right: calc(50% - 48px);
+  }
+}
+@media (max-width: 640px) {
+  .app-header {
+    gap: var(--space-s);
+    padding: 0 var(--space-s);
+  }
+  .brand__name,
+  .app-header__badge-text,
+  .viewer__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .app-header__badge {
+    padding: var(--space-xs);
+  }
+  .mail__email {
+    display: block;
+    margin-left: 0;
+  }
+  .dropzone {
+    padding: var(--space-xxl) var(--space-l);
+  }
+  .attachments__previews {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

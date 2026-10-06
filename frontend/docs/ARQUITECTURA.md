@@ -1,71 +1,89 @@
 # Arquitectura del frontend
 
-Cliente React local que abre `.msg` mediante el backend en loopback y los presenta como un cliente de correo: bandeja a la izquierda, panel de lectura a la derecha. Decisiones y motivos en `decisiones/ADR.md`.
+Cliente React local con el aspecto del nuevo Outlook: cabecera con buscador, barra de apps, barra de comandos, bandeja y panel de lectura. Abre `.msg` mediante el backend en loopback. Decisiones en `decisiones/ADR.md`; patrones en `patrones/PATRONES.md`.
 
 ## Estructura
 
 ```text
 src/
-  main.tsx                         monta App e importa la hoja global
-  app/App.tsx                      composición, vista activa, panel móvil y estado de selección
-  app/styles/global.css            tokens y estilos de toda la app, por secciones
-  components/layout/AppLayout.tsx  barra superior, rail, columnas, botón volver y overlay
-  components/ui/                   Button, Avatar, EmptyState, StatusAlert (sin dominio)
-  features/ingestion/              portada, bandeja, cola de extracción, arrastre y error de lectura
-  features/message-viewer/         panel de lectura y esqueleto de carga
-  features/attachments/            lista de adjuntos, descarga y clasificación por tipo
-  features/help/                   guía rápida
-  lib/api.ts                       único punto HTTP y normalización del contrato
-  lib/types.ts                     tipos del contrato ya normalizado
-  lib/mail.ts                      direcciones, destinatarios, título y vista previa (puro)
-  lib/formatters.ts                bytes, fechas y limpieza de texto (puro)
-e2e/                               Playwright contra el backend real
+  main.tsx                               monta App e importa global.css
+  app/App.tsx                            estado de vista, panel móvil, búsqueda; ReaderContent decide el lector
+  app/styles/global.css                  índice de imports; un CSS por módulo (tokens, base, ui-*, layout, ...)
+  components/layout/AppLayout.tsx        cabecera, barra de apps, workspace con huecos, volver móvil, overlay
+  components/ui/                         Button, SearchBox, Avatar, StatusAlert, EmptyState, Spinner
+  features/ingestion/
+    components/Dropzone.tsx              portada
+    components/QueueList.tsx, QueueRow.tsx  bandeja y filas
+    components/ExtractionFailed.tsx      error de lectura en el lector
+    components/DropOverlay.tsx           aviso al arrastrar sobre la bandeja
+    hooks/useExtractionQueue.ts          cola secuencial, reintento, limpieza
+    hooks/useWindowFileDrop.ts           arrastre en toda la ventana
+    lib/validation.ts, lib/search.ts     extensión .msg y filtro de la bandeja
+  features/message-viewer/
+    components/MessageViewer.tsx         asunto, aviso parcial y tarjeta del mensaje
+    components/RecipientList.tsx         Para/CC/CCO con plegado
+    components/MessageLoading.tsx        esqueleto
+  features/attachments/
+    components/AttachmentList.tsx        cabecera, plegado, descargas y apertura del visor
+    components/AttachmentTiles.tsx       PreviewCard (miniatura) y FileChip (icono)
+    components/AttachmentViewer.tsx      diálogo a pantalla completa, navegación y descarga
+    components/AttachmentPreview.tsx     contenido según modo: imagen, PDF, texto, media, miniatura, sin vista
+    components/AttachmentDetails.tsx     panel de propiedades del adjunto
+    components/FileTypeIcon.tsx          icono Fluent por tipo
+    hooks/useAttachmentFiles.ts          caché de binarios y URLs blob
+    lib/fileKind.ts, lib/viewerMode.ts, lib/decodeText.ts
+  features/help/components/HelpPage.tsx  guía rápida
+  lib/api.ts                             único punto HTTP y normalización
+  lib/types.ts                           contrato normalizado
+  lib/mail.ts, lib/formatters.ts         utilidades puras
+e2e/                                     Playwright: funcional (backend real) y visual (@visual)
 ```
 
 ## Dependencias permitidas
 
-- `app` puede importar todo.
+- `app` importa todo.
 - `features/*` importan `components/*` y `lib/*`.
-- `features/message-viewer` compone `features/attachments/components/AttachmentList` (única dependencia entre features, documentada en ADR-05).
+- `features/message-viewer` compone `features/attachments/components/AttachmentList` (ADR-05). Nada más cruza features.
 - `components/*` no importan `features/*`, `lib/api.ts` ni `lib/types.ts`.
-- `lib/*` no importa React ni componentes.
-- Ningún componente llama a `fetch`; sólo `lib/api.ts`.
+- `lib/*` no importa React.
+- Sólo `lib/api.ts` usa `fetch`.
 
 ## Flujo de datos
 
-1. El usuario elige archivos (input oculto en `App`) o los suelta en cualquier parte de la ventana (`useWindowFileDrop`).
-2. `useExtractionQueue.addFiles` valida la extensión, crea items `queued` o `error` y selecciona el primero si no había selección.
-3. La cola procesa de uno en uno: `extracting`, luego `complete`/`partial` con `message`, o `error` con texto.
-4. `lib/api.extractMessage` envía multipart a `POST /api/messages/extract` y normaliza la respuesta a `Message`.
-5. `App` decide el contenido del lector según la vista y el item seleccionado (tabla de estados en SPEC-01).
-6. `AttachmentList` descarga bajo demanda con `lib/api.downloadAttachment`, que reenvía el MSG en memoria y el índice del adjunto a `POST /api/messages/attachment`.
+1. Archivos desde el input oculto de `App` ("Abrir MSG", portada) o soltados en la ventana (`useWindowFileDrop`).
+2. `useExtractionQueue` valida, encola y procesa de uno en uno con `lib/api.extractMessage`.
+3. `filterQueue` filtra la bandeja con el texto del buscador; la selección no cambia al filtrar.
+4. `ReaderContent` elige el contenido del lector (SPEC-01).
+5. `MessageViewer` muestra el correo; `AttachmentList` las miniaturas que trae la respuesta (`preview`).
+6. Abrir un adjunto monta `AttachmentViewer`; `viewerMode` decide cómo mostrarlo y `useAttachmentFiles` pide el binario (`fetchAttachment`, con `preview=true` para TIFF/EMF) una sola vez.
+7. Descargar reutiliza el binario en caché si existe; si no, lo pide y lo guarda con `saveBlob`.
 
 ## Estado
 
-- `useExtractionQueue`: items, selección, cola pendiente. Usa refs para no revivir items tras `clear()` durante una petición en curso.
-- `App`: vista activa (`analysis` o `help`) y panel móvil (`list` o `reader`).
-- `MessageViewer` se monta con `key={item.id}`: plegado de adjuntos y descargas se reinician al cambiar de correo.
-- `AppLayout` devuelve el scroll del lector al inicio cuando cambia `contentKey`.
-- No hay estado global, contexto ni almacenamiento persistente.
+- `useExtractionQueue`: items, selección y cola, con refs para no revivir items tras `clear()`.
+- `App`: vista, panel móvil y texto de búsqueda.
+- `AttachmentList`: plegado, descargas en curso, error y adjunto abierto en el visor.
+- `useAttachmentFiles`: promesas y URLs `blob:` por adjunto; se revocan al desmontar el lector.
+- `MessageViewer key={id}` y `AttachmentPreview key={index}` reinician su estado al cambiar de entidad.
+- Sin estado global ni almacenamiento persistente.
 
 ## Contrato con el backend
 
-- `POST /api/messages/extract`: multipart `file`. Respuesta `{ message, processed_locally }`.
-- `POST /api/messages/attachment`: multipart `file` y `attachment_index`. Respuesta binaria con `Content-Disposition`.
-- `Message`: file_name, file_size_bytes, subject, sender, recipients (líneas `Para:`/`CC:`/`CCO:`), sent_at, received_at, body_preview, body_truncated, headers, properties, attachments, warnings, status (`complete`/`partial`).
-- `headers`, `properties` y `warnings` se normalizan pero no se muestran en la vista principal.
-- Base URL: `VITE_API_URL`; por defecto `http://127.0.0.1:8000/api` en desarrollo y `/api` en el build servido por FastAPI.
+- `POST /api/messages/extract` → `{ message, processed_locally }`.
+- `POST /api/messages/attachment` con `file`, `attachment_index` y `preview` opcional → binario.
+- `Attachment.preview`: data URI raster validada en `lib/api.ts` (sólo jpeg, png, gif, webp en base64); `preview_source`: `image` o `embedded`.
+- Detalle completo: `backend/docs/estilos/API.md`.
 
 ## Seguridad y privacidad
 
-- Cuerpo del correo siempre como texto en `<pre>`; nunca HTML.
-- Las referencias a `File` sólo viven en el estado de la cola; `clear()` las suelta.
-- Las URLs `blob:` de descarga se revocan inmediatamente tras el clic.
-- Sin localStorage, IndexedDB, cookies, analítica ni recursos remotos. El favicon es un SVG en línea.
+- Cuerpo del correo como texto en `<pre>`; adjuntos de texto en `<pre>` decodificados con `decodeText`. Nunca HTML.
+- PDF en `<iframe>` con URL `blob:` y tipo `application/pdf`: lo dibuja el visor del navegador (ADR-11).
+- SVG sólo en `<img>` (no ejecuta scripts). Miniaturas SVG rechazadas en la normalización.
+- URLs `blob:` revocadas al desmontar o tras la descarga. Sin localStorage, IndexedDB, analítica ni recursos remotos.
 
 ## Archivos clave por tarea
 
-- Cambiar qué se ve al abrir un correo: `features/message-viewer/components/MessageViewer.tsx` y SPEC-03.
-- Cambiar la bandeja o la cola: `features/ingestion/` y SPEC-02.
-- Cambiar paneles, navegación o responsive: `components/layout/AppLayout.tsx`, sección 4 y 9 de `global.css`, SPEC-01.
-- Cambiar adjuntos: `features/attachments/` y SPEC-04.
+- Qué se ve al abrir un correo: `MessageViewer.tsx`, SPEC-03.
+- Adjuntos y visor: `features/attachments/`, SPEC-04 y SPEC-05.
+- Bandeja, cola, búsqueda: `features/ingestion/`, SPEC-02.
+- Paneles, cabecera, barra de comandos, responsive: `AppLayout.tsx`, `layout.css`, `responsive.css`, SPEC-01.

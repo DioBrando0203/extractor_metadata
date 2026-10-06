@@ -7,7 +7,7 @@ Fuente de verdad del frontend de Inspector MSG. Metodología: desarrollo guiado 
 1. `GUIA_IA.md`: protocolo de trabajo, definición de terminado y prohibiciones. Obligatorio.
 2. `ARQUITECTURA.md`: módulos, dependencias permitidas, flujo de datos y estado.
 3. La spec del área afectada en `specs/`.
-4. Las reglas que aplican: `reglas_programacion/`, `reglas_estilos/`, `reglas_calidad/`.
+4. Las reglas que aplican: `reglas_programacion/`, `reglas_estilos/`, `reglas_calidad/` y el catálogo `patrones/PATRONES.md`.
 5. `estilos/SISTEMA_VISUAL.md` si el cambio toca interfaz.
 6. `bloqueos/BLOQUEOS.md` antes de diagnosticar un fallo: puede estar ya resuelto.
 
@@ -20,11 +20,13 @@ Leer sólo lo que el cambio necesita. Cada documento es autosuficiente.
 - `specs/SPEC-01-layout.md`: estructura de pantalla, navegación, responsive y vista Ayuda.
 - `specs/SPEC-02-ingesta.md`: portada, apertura, arrastre, cola y bandeja.
 - `specs/SPEC-03-lector.md`: panel de lectura del correo.
-- `specs/SPEC-04-adjuntos.md`: lista y descarga de adjuntos.
+- `specs/SPEC-04-adjuntos.md`: miniaturas, chips y descarga de adjuntos.
+- `specs/SPEC-05-visor.md`: visor de adjuntos a pantalla completa.
 - `specs/PLANTILLA.md`: plantilla para specs nuevas.
 - `decisiones/ADR.md`: decisiones de arquitectura y diseño con su motivo.
-- `estilos/SISTEMA_VISUAL.md`: tokens, escalas, anatomía de componentes y breakpoints.
-- `reglas_programacion/REGLAS.md`: reglas P-xx de código.
+- `estilos/SISTEMA_VISUAL.md`: tokens de Fluent 2, escalas, componentes y breakpoints.
+- `patrones/PATRONES.md`: patrones de diseño en uso y antipatrones.
+- `reglas_programacion/REGLAS.md`: reglas P-xx de código, tamaño, reutilización y patrones.
 - `reglas_estilos/REGLAS.md`: reglas E-xx de CSS y diseño.
 - `reglas_calidad/REGLAS.md`: reglas C-xx de pruebas, accesibilidad y revisión.
 - `calidad/PLAN_CALIDAD.md`: qué prueba cada capa y cómo revisar visualmente.
@@ -35,4 +37,4 @@ Leer sólo lo que el cambio necesita. Cada documento es autosuficiente.
 
 ## Formato de estos documentos
 
-Escritos para ser leídos por IA con bajo costo de tokens: listas cortas, `clave: valor`, identificadores citables (P-01, CA-03, ADR-02). Sin tablas, sin separadores horizontales, sin adornos. Ver `GUIA_IA.md`, sección Documentación.
+Backend: `backend/docs/README.md`. Escritos para ser leídos por IA con bajo costo de tokens: listas cortas, `clave: valor`, identificadores citables (P-01, CA-03, ADR-02). Sin tablas, sin separadores horizontales, sin adornos. Ver `GUIA_IA.md`, sección Documentación.

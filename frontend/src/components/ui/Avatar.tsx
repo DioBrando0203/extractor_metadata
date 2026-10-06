@@ -1,8 +1,9 @@
-import { UserRound } from 'lucide-react'
+import { Person16Regular, Person20Regular } from '@fluentui/react-icons'
 
 type Props = { name?: string | null; size?: 'sm' | 'md' }
 
-const TONES = 6
+/** Número de colores de la paleta de personas (tokens `--avatar-N-*`, tomados de Fluent 2). */
+const TONES = 10
 
 /** Iniciales de un nombre o, si es una dirección, de su parte local. */
 function initials(name: string): string {
@@ -27,9 +28,10 @@ function tone(name: string): number {
 export function Avatar({ name, size = 'md' }: Props) {
   const label = name?.trim() ? initials(name) : ''
   if (!label) {
+    const Icon = size === 'sm' ? Person16Regular : Person20Regular
     return (
       <span className={`avatar avatar--${size} avatar--empty`} aria-hidden="true">
-        <UserRound size={size === 'sm' ? 16 : 20} />
+        <Icon />
       </span>
     )
   }

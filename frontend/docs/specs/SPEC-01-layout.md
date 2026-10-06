@@ -1,56 +1,50 @@
 # SPEC-01 Estructura de pantalla, navegación y responsive
 
 Estado: implementada
-Código: `src/components/layout/AppLayout.tsx`, `src/app/App.tsx`, `src/features/help/`, secciones 4 y 9 de `global.css`
-Relacionadas: SPEC-02, SPEC-03, ADR-01, ADR-03
+Código: `src/components/layout/AppLayout.tsx`, `src/app/App.tsx`, `layout.css`, `responsive.css`, `src/features/help/`
+Relacionadas: SPEC-02, SPEC-03, ADR-01, ADR-03, ADR-09
 
 ## Objetivo
 
-Ocupar la ventana como un cliente de correo de escritorio: nada se estira sin control, cada panel tiene su propio scroll y en móvil la lista y el lector se alternan.
+Ocupar la ventana como el nuevo Outlook: nada se estira sin control, cada panel tiene su scroll y en móvil la lista y el lector se alternan.
 
 ## Comportamiento
 
-- La app ocupa exactamente el alto de la ventana (`100dvh`); la página nunca hace scroll, sólo la bandeja y el lector.
-- Columnas en escritorio: rail 72 px, bandeja 340 px (300 px bajo 1180, 380 px desde 1600), lector flexible.
-- Sin archivos en la sesión no se muestra la bandeja; el lector ocupa todo el ancho con la portada.
-- El contenido del lector es una tarjeta centrada con ancho máximo `--reading-max` (960 px; 1040 px desde 1600) sobre fondo `--canvas`.
-- Barra superior de 48 px: marca a la izquierda, insignia "Sesión local · sin cuenta" a la derecha.
-- Rail: Bandeja y Ayuda. El activo lleva `aria-current="page"`, fondo `--brand-50` e indicador lateral.
+- La app ocupa exactamente el alto de la ventana (`100dvh`); la página no hace scroll, sólo los paneles.
+- Cabecera de 48 px en `--brand-80`: marca a la izquierda, buscador centrado (máximo 468 px) cuando hay correos, insignia "Sesión local" a la derecha.
+- Barra de apps de 68 px sobre el lienzo `--bg-4`: "Correo" y "Ayuda" con icono y etiqueta; el activo usa icono relleno, fondo blanco, sombra y una barra de marca a la izquierda.
+- Con correos: barra de comandos blanca (Abrir MSG, Limpiar bandeja) sobre bandeja (360 px) y lector, todos paneles blancos con radio 8 y separación de 8 px.
+- Sin correos: no hay barra de comandos ni bandeja; la portada ocupa el lector sobre el lienzo.
+- El correo se centra en el lector con ancho máximo `--reading-max`.
 - Enlace "Saltar al contenido" visible al recibir foco.
 
-## Contenido del lector según estado
+## Contenido del lector (ReaderContent)
 
 - Vista Ayuda: `HelpPage`.
-- Sin items: `Dropzone` (portada).
+- Sin items: `Dropzone`.
 - Item con `message`: `MessageViewer`.
-- Item con `status=error`: `ExtractionFailed`.
-- Item `queued` o `extracting`: `MessageLoading`.
-- Hay items pero ninguno seleccionado: `EmptyState` "Selecciona un correo para leerlo".
+- Item con error: `ExtractionFailed`.
+- Item en cola o en lectura: `MessageLoading`.
+- Hay items y ninguno seleccionado: `EmptyState` "Selecciona un correo para leerlo".
 
 ## Responsive
 
-- 861 px o más: tres columnas.
-- 860 px o menos: maestro-detalle. `data-pane` en `.workspace` decide si se ve la bandeja o el lector. El rail pasa a barra inferior.
-- En el lector móvil aparece "‹ Bandeja (n)" fijo arriba para volver.
-- Seleccionar un item muestra el lector. Pulsar Bandeja en el rail muestra la lista.
-- Al agregar archivos con un correo ya abierto, en móvil se muestra la lista; si no había selección, el lector.
-- 520 px o menos: la insignia de la barra superior queda sólo como icono con texto accesible.
-- Punteros táctiles: controles de 40 px (36 px los pequeños).
-
-## Vista Ayuda
-
-Tarjeta con pasos numerados, explicación de "lectura parcial", qué hacer si falla un archivo y aviso de privacidad.
+- 861 px o más: barra de apps, bandeja y lector a la vez.
+- 860 px o menos: maestro-detalle con `data-pane`; barra de apps abajo; paneles a sangre; botón "‹ Bandeja (n)" fijo arriba del lector.
+- Seleccionar un correo muestra el lector; "Correo" en la barra de apps muestra la lista.
+- 640 px o menos: marca e insignia sólo como icono; buscador ocupa el espacio libre.
+- Puntero táctil: controles de 32 y 40 px.
 
 ## Criterios de aceptación
 
-- CA-01: a 320 y 390 px no hay desborde horizontal del documento. Prueba: `e2e/local-api.spec.ts` (móvil).
-- CA-02: en móvil se puede volver a la bandeja y reabrir el correo. Prueba: `e2e/local-api.spec.ts` (móvil).
-- CA-03: la Ayuda es accesible desde el rail y muestra "Cómo analizar un MSG". Prueba: `e2e/app.spec.ts`.
-- CA-04: con un correo largo, sólo el lector hace scroll y la bandeja queda fija. Prueba: manual a 1440 px.
+- CA-01: a 320 y 390 px no hay desborde horizontal. Prueba: `e2e/local-api.spec.ts` (móvil), `e2e/visual.spec.ts`.
+- CA-02: en móvil se vuelve a la bandeja y se reabre el correo. Prueba: `e2e/local-api.spec.ts` (móvil).
+- CA-03: Ayuda accesible desde la barra de apps. Prueba: `e2e/app.spec.ts`.
+- CA-04: con un correo largo sólo el lector hace scroll. Prueba: manual a 1440 px.
 - CA-05: al cambiar de correo el lector vuelve arriba. Prueba: manual.
-- CA-06: a 1920 px la tarjeta de lectura no supera 1040 px de ancho. Prueba: manual con captura.
+- CA-06: a 1920 px la lectura no supera 1120 px. Prueba: captura `1920-02-correo.png` de `test:visual`.
 
 ## Pendientes
 
-- Ancho de la bandeja no redimensionable por el usuario.
-- Sin tema oscuro.
+- Bandeja redimensionable.
+- Tema oscuro (Fluent tiene tokens oscuros; requiere ADR).

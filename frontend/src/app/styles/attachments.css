@@ -1,0 +1,248 @@
+/* Feature attachments: tarjetas, chips e iconos por tipo. */
+
+.attachments {
+  padding: 0 var(--space-l) var(--space-l);
+}
+.attachments__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-m);
+  min-height: var(--control-sm);
+  margin-bottom: var(--space-s);
+}
+.attachments__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s-nudge);
+  color: var(--fg-2);
+  font-size: var(--fs-200);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-200);
+}
+.attachments__total {
+  color: var(--fg-3);
+  font-weight: var(--fw-regular);
+}
+.attachments__previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 176px), 1fr));
+  gap: var(--space-s);
+}
+.attachments__files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: var(--space-s);
+}
+.attachments__previews + .attachments__files {
+  margin-top: var(--space-s);
+}
+.attachments__error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s-nudge);
+  margin-top: var(--space-s);
+  color: var(--danger-fg);
+  font-size: var(--fs-200);
+}
+
+.file-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--kind-other);
+  background: var(--kind-other-bg);
+}
+.file-icon--sm {
+  width: 24px;
+  height: 24px;
+}
+.file-icon--sm svg {
+  width: 16px;
+  height: 16px;
+}
+.file-icon--md {
+  width: 32px;
+  height: 32px;
+}
+.file-icon--md svg {
+  width: 20px;
+  height: 20px;
+}
+.file-icon--lg {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-xl);
+}
+.file-icon--lg svg {
+  width: 36px;
+  height: 36px;
+}
+.file-icon[data-kind='pdf'] {
+  color: var(--kind-pdf);
+  background: var(--kind-pdf-bg);
+}
+.file-icon[data-kind='word'] {
+  color: var(--kind-word);
+  background: var(--kind-word-bg);
+}
+.file-icon[data-kind='excel'] {
+  color: var(--kind-excel);
+  background: var(--kind-excel-bg);
+}
+.file-icon[data-kind='slides'] {
+  color: var(--kind-slides);
+  background: var(--kind-slides-bg);
+}
+.file-icon[data-kind='image'] {
+  color: var(--kind-image);
+  background: var(--kind-image-bg);
+}
+.file-icon[data-kind='cad'] {
+  color: var(--kind-cad);
+  background: var(--kind-cad-bg);
+}
+.file-icon[data-kind='archive'] {
+  color: var(--kind-archive);
+  background: var(--kind-archive-bg);
+}
+.file-icon[data-kind='mail'] {
+  color: var(--kind-mail);
+  background: var(--kind-mail-bg);
+}
+.file-icon[data-kind='text'] {
+  color: var(--kind-text);
+  background: var(--kind-text-bg);
+}
+.file-icon[data-kind='media'] {
+  color: var(--kind-media);
+  background: var(--kind-media-bg);
+}
+
+.attachment-card,
+.attachment-chip {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  transition:
+    border-color var(--duration-faster) var(--curve-easy-ease),
+    box-shadow var(--duration-faster) var(--curve-easy-ease);
+}
+.attachment-card:hover,
+.attachment-chip:hover {
+  border-color: var(--stroke-1-hover);
+  box-shadow: var(--shadow-4);
+}
+.attachment-card__open {
+  display: grid;
+  width: 100%;
+  text-align: left;
+}
+.attachment-card__open:focus-visible,
+.attachment-chip__open:focus-visible {
+  outline-offset: -2px;
+  box-shadow: none;
+}
+.attachment-card__thumb {
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  background: var(--bg-3);
+}
+.attachment-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.attachment-card[data-source='embedded'] .attachment-card__thumb img {
+  padding: var(--space-xs);
+  object-fit: contain;
+}
+.attachment-card__info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  min-width: 0;
+  padding: var(--space-s);
+  border-top: 1px solid var(--stroke-3);
+}
+.attachment-card__text,
+.attachment-chip__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.attachment-card__name,
+.attachment-chip__name {
+  overflow: hidden;
+  color: var(--fg-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attachment-card__name {
+  font-size: var(--fs-200);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-200);
+}
+.attachment-card__meta,
+.attachment-chip__meta {
+  overflow: hidden;
+  color: var(--fg-3);
+  font-size: var(--fs-200);
+  line-height: var(--lh-200);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attachment-chip {
+  display: flex;
+  align-items: center;
+  padding-right: var(--space-xs);
+}
+.attachment-chip__open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-m-nudge);
+  min-width: 0;
+  padding: var(--space-s) var(--space-xs) var(--space-s) var(--space-s);
+  text-align: left;
+}
+.attachment-download {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--control-md);
+  height: var(--control-md);
+  border-radius: var(--radius-md);
+  color: var(--fg-2);
+  transition:
+    background-color var(--duration-faster) var(--curve-easy-ease),
+    color var(--duration-faster) var(--curve-easy-ease),
+    opacity var(--duration-faster) var(--curve-easy-ease);
+}
+.attachment-download:not(:disabled):hover {
+  color: var(--brand-80);
+  background: var(--bg-1-hover);
+}
+.attachment-card .attachment-download {
+  position: absolute;
+  top: var(--space-s-nudge);
+  right: var(--space-s-nudge);
+  background: var(--bg-1);
+  box-shadow: var(--shadow-4);
+}
+/* Con ratón, la descarga de las tarjetas aparece al pasar o enfocar; en táctil, siempre visible. */
+@media (hover: hover) {
+  .attachment-card .attachment-download {
+    opacity: 0;
+  }
+  .attachment-card:hover .attachment-download,
+  .attachment-card:focus-within .attachment-download,
+  .attachment-card .attachment-download[aria-busy='true'] {
+    opacity: 1;
+  }
+}

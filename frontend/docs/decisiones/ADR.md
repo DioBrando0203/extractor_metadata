@@ -51,9 +51,37 @@ Contexto: el HTML de un correo puede contener scripts, rastreadores y recursos r
 Decisión: el backend convierte HTML a texto y el frontend lo muestra en `<pre>` con fuente de lectura. Limpieza sólo de presentación (`tidyText`).
 Consecuencias: se pierde formato visual (negritas, tablas). Cambiarlo exige sanitizador evaluado y un ADR nuevo.
 
-## ADR-08 CSS global con tokens
+## ADR-08 CSS por módulo con tokens
 
-Fecha: 2026-10-05. Estado: vigente.
-Contexto: los estilos anteriores mezclaban colores y tamaños sueltos; no había escalas.
-Decisión: una hoja `global.css` organizada en secciones numeradas, con tokens para color, tipografía, espaciado, radios, sombras, alturas de control y dimensiones de layout. Tailwind se mantiene por su preflight; no se usan utilidades en JSX.
-Consecuencias: un estilo nuevo usa tokens existentes o crea uno documentado en `SISTEMA_VISUAL.md`.
+Fecha: 2026-10-05. Estado: vigente (actualizada el 2026-10-06).
+Contexto: los estilos anteriores mezclaban valores sueltos; luego una sola hoja creció a casi 2000 líneas.
+Decisión: tokens en `tokens.css` y un archivo CSS por módulo (máximo 250 líneas) importados en orden desde `global.css`. Tailwind se mantiene sólo por su preflight; sin utilidades en JSX.
+Consecuencias: un estilo nuevo usa tokens existentes y vive en el archivo de su módulo (E-04, E-05).
+
+## ADR-09 Fluent 2 como sistema de diseño
+
+Fecha: 2026-10-06. Estado: vigente. Reemplaza la paleta propia anterior.
+Contexto: el usuario pide que la interfaz se parezca lo más posible a Outlook.
+Decisión: tokens públicos de Fluent 2 (`microsoft/fluentui`, MIT) para color, tipografía, espaciado, radios y sombras, e iconos `@fluentui/react-icons` (MIT). Se retira `lucide-react`. Layout del nuevo Outlook: cabecera de marca con buscador, barra de apps, barra de comandos y paneles blancos redondeados.
+Consecuencias: aspecto familiar; sin logotipo, nombre de producto ni capturas de Microsoft (E-20). El paquete de iconos es grande en disco pero se importa por nombre y el bundle sólo incluye los usados.
+
+## ADR-10 Miniaturas en la respuesta y vista previa bajo demanda
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: los adjuntos sólo mostraban un icono; el usuario quiere ver imágenes y planos de frente.
+Decisión: el backend incluye una miniatura JPEG por adjunto (`preview`, `preview_source`) y el visor pide el binario original, o `preview=true` para formatos que el navegador no muestra. `lib/api.ts` sólo acepta data URIs raster en base64.
+Consecuencias: el JSON del análisis crece (con presupuesto en backend); se evita una petición por miniatura.
+
+## ADR-11 Visor con diálogo nativo y visores del navegador
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: mostrar PDF, texto y multimedia sin dependencias de render ni riesgo de HTML activo.
+Decisión: `<dialog>` modal nativo; PDF en `<iframe>` con URL `blob:` y tipo `application/pdf`; texto en `<pre>`; vídeo y audio con elementos nativos; DWG/DXF/Office con su miniatura incrustada.
+Consecuencias: el PDF lo dibuja el visor aislado del navegador; no hay zoom propio de imágenes (pendiente).
+
+## ADR-12 Búsqueda local en la bandeja
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: con muchos MSG abiertos hace falta encontrarlos como en Outlook.
+Decisión: buscador en la cabecera que filtra en memoria con `filterQueue` (sin tildes ni mayúsculas, todas las palabras).
+Consecuencias: sin índices ni almacenamiento; el costo es lineal y suficiente para una sesión local.

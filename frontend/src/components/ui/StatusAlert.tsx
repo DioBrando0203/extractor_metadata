@@ -1,15 +1,29 @@
 import type { ReactNode } from 'react'
-import { CircleAlert, CircleCheck, Info, TriangleAlert } from 'lucide-react'
+import {
+  CheckmarkCircle20Filled,
+  ErrorCircle20Filled,
+  Info20Filled,
+  Warning20Filled,
+} from '@fluentui/react-icons'
+
 type Props = { tone: 'error' | 'warning' | 'success' | 'info'; children: ReactNode; title?: string }
-const icons = { error: CircleAlert, warning: TriangleAlert, success: CircleCheck, info: Info }
+
+const ICONS = {
+  error: ErrorCircle20Filled,
+  warning: Warning20Filled,
+  success: CheckmarkCircle20Filled,
+  info: Info20Filled,
+}
+
+/** Barra de mensaje al estilo MessageBar de Fluent 2: icono de color, título en negrita y texto. */
 export function StatusAlert({ tone, title, children }: Props) {
-  const Icon = icons[tone]
+  const Icon = ICONS[tone]
   return (
     <div className={`status-alert status-alert--${tone}`} role={tone === 'error' ? 'alert' : 'status'}>
-      <Icon aria-hidden="true" size={19} />
+      <Icon className="status-alert__icon" aria-hidden="true" />
       <div>
-        {title && <strong>{title}</strong>}
-        <div>{children}</div>
+        {title && <strong>{title} </strong>}
+        {children}
       </div>
     </div>
   )

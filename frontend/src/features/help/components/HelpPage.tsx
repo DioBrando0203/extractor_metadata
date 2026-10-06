@@ -1,10 +1,10 @@
-import { CircleHelp } from 'lucide-react'
+import { QuestionCircle20Regular } from '@fluentui/react-icons'
 import { StatusAlert } from '../../../components/ui/StatusAlert'
 
 const STEPS = [
   {
     title: 'Abre los archivos',
-    text: 'Arrastra uno o varios .msg a cualquier parte de la ventana, o usa “Abrir MSG”.',
+    text: 'Arrastra uno o varios .msg a cualquier parte de la ventana, o usa “Abrir MSG”. Puedes buscar en la bandeja desde la barra superior.',
   },
   {
     title: 'Espera la lectura',
@@ -15,8 +15,8 @@ const STEPS = [
     text: 'Elige un elemento de la bandeja para ver remitente, destinatarios, fecha, texto y adjuntos.',
   },
   {
-    title: 'Descarga los adjuntos',
-    text: 'Pulsa cualquier adjunto para guardarlo en tu equipo. El archivo original no se modifica.',
+    title: 'Mira y descarga los adjuntos',
+    text: 'Pulsa un adjunto para verlo de frente (imágenes, PDF, texto y la miniatura de planos AutoCAD) o usa el botón de descarga. El archivo original no se modifica.',
   },
 ]
 
@@ -24,7 +24,7 @@ export function HelpPage() {
   return (
     <article className="page" aria-labelledby="help-title">
       <p className="eyebrow eyebrow--brand">
-        <CircleHelp size={15} aria-hidden="true" /> Guía rápida
+        <QuestionCircle20Regular aria-hidden="true" /> Guía rápida
       </p>
       <h1 id="help-title">Cómo analizar un MSG</h1>
       <ol className="steps">

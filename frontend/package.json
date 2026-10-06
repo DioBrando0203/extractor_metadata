@@ -16,9 +16,9 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@fluentui/react-icons": "2.0.343",
     "@tailwindcss/vite": "4.3.3",
     "@vitejs/plugin-react": "5.2.0",
-    "lucide-react": "1.52.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "typescript": "5.9.3",

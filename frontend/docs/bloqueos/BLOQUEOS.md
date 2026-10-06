@@ -38,7 +38,7 @@ Fecha: 2026-10-05. Estado: resuelto.
 Síntoma: la página crecía con el contenido, la bandeja mostraba scroll horizontal y el lector tenía grandes huecos.
 Causa: ítems de grid con `min-width: auto` y layout a `min-height: 100vh` sin scroll por panel.
 Solución: shell a `100dvh`, columnas `minmax(0, 1fr)`, scroll por panel y tarjeta de lectura con ancho máximo (ADR-01).
-Prevención: E-08 a E-11; `test:visual` falla si hay desborde.
+Prevención: E-10 a E-13; `test:visual` falla si hay desborde.
 
 ## B-06 Soltar un archivo fuera de la zona cerraba la sesión
 
@@ -61,5 +61,26 @@ Prevención: no simular demoras con `setTimeout` largos en rutas interceptadas.
 Fecha: 2026-10-05. Estado: resuelto.
 Síntoma: ESLint `no-irregular-whitespace` en `formatters.ts`.
 Causa: un NBSP literal dentro de una expresión regular.
-Solución: usar el escape ` `.
+Solución: usar el escape `\u00a0`.
 Prevención: escribir siempre caracteres invisibles como escapes.
+
+## B-09 Visor sin altura completa
+
+Fecha: 2026-10-06. Estado: resuelto.
+Síntoma: la imagen del visor quedaba arriba y el fondo de la página se veía detrás.
+Causa: el `<dialog>` usaba una rejilla de 3 filas; sin aviso de error, el contenido caía en una fila `auto` y la última quedaba vacía.
+Solución: columna flexible con el cuerpo en `flex: 1` y fondo opaco `--viewer-backdrop`.
+Prevención: medir con `getComputedStyle` antes de ajustar a ojo; capturas `03-visor-*` de `test:visual`.
+
+## B-10 E2E contra un backend viejo
+
+Fecha: 2026-10-06. Estado: entendido.
+Síntoma: las pruebas no ven cambios recientes del backend.
+Causa: Playwright reutiliza el servidor del puerto 8000 y `iniciar.py` no recarga código.
+Prevención: detener el proceso del puerto 8000 antes de `test:e2e` cuando cambió el backend (backend B-09).
+
+## B-11 Hoja de estilos de casi 2000 líneas
+
+Fecha: 2026-10-06. Estado: resuelto.
+Causa: todos los estilos en `global.css`.
+Solución: un CSS por módulo de máximo 250 líneas (ADR-08, E-05).

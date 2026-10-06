@@ -1,4 +1,4 @@
-import { CircleAlert, FolderOpen, RotateCcw } from 'lucide-react'
+import { ArrowClockwise20Regular, ErrorCircle24Regular, FolderOpen20Regular } from '@fluentui/react-icons'
 import { Button } from '../../../components/ui/Button'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { StatusAlert } from '../../../components/ui/StatusAlert'
@@ -15,17 +15,17 @@ export function ExtractionFailed({ name, error, retryable, onRetry, onBrowse }: 
   return (
     <EmptyState
       tone="danger"
-      icon={<CircleAlert size={26} />}
+      icon={<ErrorCircle24Regular />}
       title={`No se pudo abrir “${name}”`}
       actions={
         <>
           {retryable && (
             <Button onClick={onRetry}>
-              <RotateCcw size={16} aria-hidden="true" /> Reintentar
+              <ArrowClockwise20Regular aria-hidden="true" /> Reintentar
             </Button>
           )}
           <Button variant={retryable ? 'secondary' : 'primary'} onClick={onBrowse}>
-            <FolderOpen size={16} aria-hidden="true" /> Abrir otro archivo
+            <FolderOpen20Regular aria-hidden="true" /> Abrir otro archivo
           </Button>
         </>
       }

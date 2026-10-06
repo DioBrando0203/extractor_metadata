@@ -6,12 +6,22 @@ export interface MetadataItem {
   label: string
   value: string
 }
+export type PreviewSource = 'image' | 'embedded'
+
 export interface Attachment {
   name: string
   content_type?: string | null
   size_bytes?: number | null
   metadata: MetadataItem[]
   warnings: string[]
+  /** Miniatura como data URI de imagen; `embedded` si la guardó el propio archivo (DWG, DXF, Office). */
+  preview?: string | null
+  preview_source?: PreviewSource | null
+}
+
+export interface AttachmentFile {
+  blob: Blob
+  filename: string
 }
 export interface Message {
   file_name: string

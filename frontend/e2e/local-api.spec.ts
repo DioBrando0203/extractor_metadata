@@ -4,16 +4,27 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 
 const backend = resolve('..', 'backend')
-const python = resolve(backend, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python')
+const interpreter = resolve(
+  backend,
+  '.venv',
+  process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python',
+)
+
+function python(code: string) {
+  return execFileSync(interpreter, ['-c', `import sys; sys.path.insert(0,'tests'); ${code}`], {
+    cwd: backend,
+  })
+}
 
 function fixture() {
-  return execFileSync(
-    python,
-    [
-      '-c',
-      "import sys; sys.path.insert(0,'tests'); from msg_factory import make_msg; sys.stdout.buffer.write(make_msg(attachment=b'AC1032' + b'0'*64,filename='plano.dwg'))",
-    ],
-    { cwd: backend },
+  return python(
+    "from msg_factory import make_msg; sys.stdout.buffer.write(make_msg(attachment=b'AC1032' + b'0'*64,filename='plano.dwg'))",
+  )
+}
+
+function photoFixture() {
+  return python(
+    "import io; from PIL import Image; from msg_factory import make_msg; b=io.BytesIO(); Image.new('RGB',(320,200),(30,120,200)).save(b,'PNG'); sys.stdout.buffer.write(make_msg(attachment=b.getvalue(),filename='foto.png'))",
   )
 }
 
@@ -63,6 +74,25 @@ for (const viewportWidth of [320, 390]) {
     expect(width.scroll).toBeLessThanOrEqual(width.client)
   })
 }
+
+test('una imagen adjunta se ve en miniatura y se abre de frente en el visor', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('input[type=file]').first().setInputFiles({
+    name: 'foto.msg',
+    mimeType: 'application/vnd.ms-outlook',
+    buffer: photoFixture(),
+  })
+  const card = page.getByRole('button', { name: 'Ver foto.png' })
+  await expect(card.locator('img')).toHaveAttribute('src', /^data:image\/jpeg;base64,/, { timeout: 20_000 })
+  await card.click()
+  const viewer = page.getByRole('dialog', { name: 'foto.png' })
+  const image = viewer.getByRole('img', { name: 'foto.png' })
+  await expect(image).toBeVisible()
+  expect(await image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBe(320)
+  await page.keyboard.press('Escape')
+  await expect(viewer).toHaveCount(0)
+  await expect(card).toBeFocused()
+})
 
 test('el backend sirve el build y extrae un MSG desde el mismo origen', async ({ page }) => {
   await page.goto('http://127.0.0.1:8000')

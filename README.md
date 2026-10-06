@@ -1,6 +1,6 @@
 # Lector local de correos MSG
 
-Elija o arrastre un archivo `.msg` para leer el correo y descargar los archivos adjuntos que aun se puedan abrir. La aplicacion esta pensada para personas que solo quieren ver su correo: la pantalla principal evita diagnosticos tecnicos y muestra Resumen, Cuerpo y Adjuntos.
+Elija o arrastre un archivo `.msg` para leer el correo y descargar los archivos adjuntos que aun se puedan abrir. La aplicacion esta pensada para personas que solo quieren ver su correo: la pantalla se parece a Outlook (bandeja, panel de lectura y buscador), muestra de frente imagenes, PDF y miniaturas de planos AutoCAD, y deja los detalles tecnicos de cada adjunto en el panel Detalles del visor.
 
 Todo funciona en su equipo. No hay login, base de datos, nube, telemetria ni historial. El MSG original no se modifica: el backend usa una copia temporal que borra al terminar. Para descargar un adjunto, el navegador reenvia el MSG que conserva en memoria y el servidor crea otra copia temporal solo durante esa descarga.
 

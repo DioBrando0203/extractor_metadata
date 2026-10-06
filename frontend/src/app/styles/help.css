@@ -1,0 +1,60 @@
+/* Feature help: guía rápida. */
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-xxxl) var(--space-huge) var(--space-huge);
+}
+.page h1 {
+  margin-top: var(--space-l);
+  color: var(--fg-1);
+  font-size: var(--fs-600);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-600);
+}
+.page h2 {
+  margin-top: var(--space-xxxl);
+  color: var(--fg-1);
+  font-size: var(--fs-400);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-400);
+}
+.page p {
+  margin-top: var(--space-s);
+  color: var(--fg-2);
+}
+.page .status-alert {
+  margin-top: var(--space-xxxl);
+}
+.steps {
+  display: grid;
+  gap: var(--space-l);
+  margin-top: var(--space-xxl);
+  counter-reset: step;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--space-xxs) var(--space-m);
+  counter-increment: step;
+}
+.steps li::before {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-circular);
+  color: var(--brand-70);
+  background: var(--brand-160);
+  font-size: var(--fs-200);
+  font-weight: var(--fw-bold);
+  content: counter(step);
+}
+.steps strong {
+  padding-top: var(--space-xs);
+  font-weight: var(--fw-semibold);
+}
+.steps span {
+  color: var(--fg-2);
+}

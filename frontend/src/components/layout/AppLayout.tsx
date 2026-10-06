@@ -1,6 +1,14 @@
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { ChevronLeft, CircleHelp, Inbox, MailSearch, ShieldCheck } from 'lucide-react'
+import {
+  ChevronLeft20Regular,
+  MailInbox24Filled,
+  MailInbox24Regular,
+  QuestionCircle24Filled,
+  QuestionCircle24Regular,
+  ShieldCheckmark16Regular,
+} from '@fluentui/react-icons'
+import type { FluentIcon } from '@fluentui/react-icons'
 import { Button } from '../ui/Button'
 
 export type View = 'analysis' | 'help'
@@ -10,6 +18,10 @@ type Props = {
   children: ReactNode
   activeView: View
   onViewChange: (view: View) => void
+  /** Buscador de la cabecera; sólo tiene sentido cuando hay correos. */
+  search?: ReactNode
+  /** Barra de comandos sobre la bandeja y el lector. */
+  commands?: ReactNode
   /** Panel de lista. Si falta, el lector ocupa todo el ancho disponible. */
   list?: ReactNode
   /** Panel visible en pantallas angostas, donde lista y lector no caben juntos. */
@@ -21,15 +33,17 @@ type Props = {
   overlay?: ReactNode
 }
 
-const NAVIGATION: { view: View; label: string; icon: typeof Inbox }[] = [
-  { view: 'analysis', label: 'Bandeja', icon: Inbox },
-  { view: 'help', label: 'Ayuda', icon: CircleHelp },
+const NAVIGATION: { view: View; label: string; icon: FluentIcon; activeIcon: FluentIcon }[] = [
+  { view: 'analysis', label: 'Correo', icon: MailInbox24Regular, activeIcon: MailInbox24Filled },
+  { view: 'help', label: 'Ayuda', icon: QuestionCircle24Regular, activeIcon: QuestionCircle24Filled },
 ]
 
 export function AppLayout({
   children,
   activeView,
   onViewChange,
+  search,
+  commands,
   list,
   pane,
   back,
@@ -47,46 +61,60 @@ export function AppLayout({
       <a className="skip-link" href="#reader">
         Saltar al contenido
       </a>
-      <header className="topbar">
+      <header className="app-header">
         <div className="brand">
           <span className="brand__mark" aria-hidden="true">
-            <MailSearch size={18} />
+            <MailInbox24Filled />
           </span>
-          <span className="brand__name">
-            Inspector <strong>MSG</strong>
-          </span>
+          <span className="brand__name">Inspector MSG</span>
         </div>
-        <p className="topbar__badge" title="Sin cuenta, sin nube y sin historial">
-          <ShieldCheck size={15} aria-hidden="true" />
-          <span className="topbar__badge-text">Sesión local · sin cuenta</span>
+        <div className="app-header__search">{search}</div>
+        <p className="app-header__badge" title="Sin cuenta, sin nube y sin historial">
+          <ShieldCheckmark16Regular aria-hidden="true" />
+          <span className="app-header__badge-text">Sesión local</span>
         </p>
       </header>
-      <div className={`workspace ${list ? 'workspace--with-list' : ''}`} data-pane={pane}>
-        <nav className="rail" aria-label="Navegación principal">
-          {NAVIGATION.map(({ view, label, icon: Icon }) => (
-            <button
-              key={view}
-              type="button"
-              className="rail__item"
-              aria-current={activeView === view ? 'page' : undefined}
-              onClick={() => onViewChange(view)}
-            >
-              <Icon size={20} aria-hidden="true" />
-              <span>{label}</span>
-            </button>
-          ))}
+      <div className="app-body">
+        <nav className="app-bar" aria-label="Navegación principal">
+          {NAVIGATION.map(({ view, label, icon: Icon, activeIcon: ActiveIcon }) => {
+            const active = activeView === view
+            return (
+              <button
+                key={view}
+                type="button"
+                className="app-bar__item"
+                aria-current={active ? 'page' : undefined}
+                onClick={() => onViewChange(view)}
+              >
+                {active ? <ActiveIcon aria-hidden="true" /> : <Icon aria-hidden="true" />}
+                <span>{label}</span>
+              </button>
+            )
+          })}
         </nav>
-        {list}
-        <main id="reader" ref={reader} className="reader" tabIndex={-1}>
-          {back && (
-            <div className="reader__back">
-              <Button variant="ghost" size="sm" onClick={back.onClick}>
-                <ChevronLeft size={16} aria-hidden="true" /> {back.label}
-              </Button>
+        <div
+          className={['workspace', list && 'workspace--with-list', commands && 'workspace--with-commands']
+            .filter(Boolean)
+            .join(' ')}
+          data-pane={pane}
+        >
+          {commands && (
+            <div className="command-bar" role="toolbar" aria-label="Acciones de la bandeja">
+              {commands}
             </div>
           )}
-          {children}
-        </main>
+          {list}
+          <main id="reader" ref={reader} className="reader" tabIndex={-1}>
+            {back && (
+              <div className="reader__back">
+                <Button variant="subtle" size="sm" onClick={back.onClick}>
+                  <ChevronLeft20Regular aria-hidden="true" /> {back.label}
+                </Button>
+              </div>
+            )}
+            {children}
+          </main>
+        </div>
       </div>
       {overlay}
     </div>

@@ -1,4 +1,12 @@
-import type { Attachment, ExtractionResponse, ExtractionStatus, Message, MetadataItem } from './types'
+import type {
+  Attachment,
+  AttachmentFile,
+  ExtractionResponse,
+  ExtractionStatus,
+  Message,
+  MetadataItem,
+  PreviewSource,
+} from './types'
 
 const API_URL = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://127.0.0.1:8000/api' : '/api')
 
@@ -12,7 +20,12 @@ type ApiAttachment = {
   size?: unknown
   metadata?: unknown
   warnings?: unknown
+  preview?: unknown
+  preview_source?: unknown
 }
+
+// Sólo imágenes rasterizadas en base64: nunca SVG ni HTML como miniatura.
+const PREVIEW_URI = /^data:image\/(jpeg|png|gif|webp);base64,[A-Za-z0-9+/]+=*$/
 type ApiMessage = Record<string, unknown> & { headers?: unknown; properties?: unknown; attachments?: unknown }
 
 function text(value: unknown, fallback = ''): string {
@@ -39,6 +52,12 @@ function recipientList(value: unknown): string[] {
     .filter(Boolean)
     .map((item) => (/^(para|to|cc|cco|bcc)\s*:/i.test(item) ? item : `Para: ${item}`))
 }
+function previewFields(attachment: ApiAttachment): Pick<Attachment, 'preview' | 'preview_source'> {
+  const preview = typeof attachment.preview === 'string' ? attachment.preview : ''
+  if (!PREVIEW_URI.test(preview)) return { preview: null, preview_source: null }
+  const source: PreviewSource = attachment.preview_source === 'embedded' ? 'embedded' : 'image'
+  return { preview, preview_source: source }
+}
 function attachmentList(value: unknown): Attachment[] {
   if (!Array.isArray(value)) return []
   return value.map((item, index) => {
@@ -50,6 +69,7 @@ function attachmentList(value: unknown): Attachment[] {
       size_bytes: typeof size === 'number' ? size : Number(size) || null,
       metadata: items(attachment.metadata, 'Adjunto'),
       warnings: warningList(attachment.warnings),
+      ...previewFields(attachment),
     }
   })
 }
@@ -103,23 +123,48 @@ function filenameFromDisposition(value: string | null, fallback: string): string
   return value?.match(/filename="?([^";]+)"?/i)?.[1] || fallback
 }
 
-export async function downloadAttachment(file: File, attachmentIndex: number, fallbackName: string) {
+/**
+ * Pide al backend un adjunto. Con `preview` recibe una imagen JPEG generada a partir del adjunto
+ * (TIFF, EMF y similares que el navegador no muestra). El MSG se reenvía: el servidor no guarda nada.
+ */
+export async function fetchAttachment(
+  file: File,
+  attachmentIndex: number,
+  fallbackName: string,
+  options: { preview?: boolean } = {},
+): Promise<AttachmentFile> {
   const data = new FormData()
   data.append('file', file)
   data.append('attachment_index', String(attachmentIndex))
+  if (options.preview) data.append('preview', 'true')
   let response: Response
   try {
     response = await fetch(`${API_URL}/messages/attachment`, { method: 'POST', body: data })
   } catch {
-    throw new Error('No se pudo preparar la descarga. Inténtalo otra vez.')
+    throw new Error('No se pudo conectar con el extractor local.')
   }
-  if (!response.ok) throw new Error('No se pudo preparar la descarga. Inténtalo otra vez.')
-  const url = URL.createObjectURL(await response.blob())
+  if (!response.ok) {
+    throw new Error(options.preview ? 'Este adjunto no tiene vista previa.' : 'No se pudo abrir el adjunto.')
+  }
+  return {
+    blob: await response.blob(),
+    filename: filenameFromDisposition(response.headers.get('content-disposition'), fallbackName),
+  }
+}
+
+/** Inicia la descarga de un binario ya presente en memoria y libera la URL temporal. */
+export function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = filenameFromDisposition(response.headers.get('content-disposition'), fallbackName)
+  link.download = filename
   document.body.appendChild(link)
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+}
+
+export async function downloadAttachment(file: File, attachmentIndex: number, fallbackName: string) {
+  const attachment = await fetchAttachment(file, attachmentIndex, fallbackName)
+  saveBlob(attachment.blob, attachment.filename)
 }

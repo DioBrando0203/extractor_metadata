@@ -1,7 +1,7 @@
 # SPEC-03 Panel de lectura del correo
 
 Estado: implementada
-Código: `src/features/message-viewer/`, `src/lib/mail.ts`, `src/lib/formatters.ts`
+Código: `src/features/message-viewer/` (`MessageViewer`, `RecipientList`, `MessageLoading`), `src/lib/mail.ts`, `src/lib/formatters.ts`
 Relacionadas: SPEC-04, ADR-02, ADR-07
 
 ## Objetivo
@@ -10,15 +10,16 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 
 ## Anatomía (de arriba abajo)
 
-1. Asunto: `h1`, 20 px semibold, ajusta en varias líneas.
+1. Barra de asunto: `h1` 20/28 semibold, fuera de la tarjeta, como en Outlook.
 2. Nota bajo el asunto si se usó el nombre del archivo: "Asunto no recuperado: se muestra el nombre del archivo."
-3. Barra de lectura parcial si `status=partial`: "Lectura parcial. Es posible que falten algunos datos de este correo; se muestra todo lo que se pudo leer."
-4. Remitente: avatar de 40 px, nombre en semibold, `<correo>` en gris, fecha a la derecha (`lun 05/10/2026, 20:13`).
-5. Destinatarios en lista de definición: filas Para, CC y CCO. Nombre visible y correo en `title`. Más de 8 se pliegan con el botón "+N más" (nombre accesible "+N más, mostrar todos los destinatarios").
-6. Adjuntos (SPEC-04) si hay al menos uno.
-7. Cuerpo: texto plano, fuente de lectura, 15 px, interlineado 1.55, `pre-wrap`.
-8. Nota si el cuerpo fue truncado: "El mensaje es muy largo: se muestra sólo la primera parte."
-9. Pie: nombre del archivo `.msg` y su tamaño.
+3. MessageBar de advertencia si `status=partial`: "Lectura parcial. Es posible que falten algunos datos de este correo; se muestra todo lo que se pudo leer."
+4. Tarjeta del mensaje (blanca, radio 8, `--shadow-4`):
+   1. Remitente: avatar de 40 px, nombre semibold, `<correo>` en `--fg-3`, fecha a la derecha (`lun 05/10/2026, 20:13`).
+   2. Destinatarios Para, CC y CCO (12/16). Más de 8 se pliegan con "+N más" (nombre accesible "+N más, mostrar todos los destinatarios").
+   3. Datos adjuntos (SPEC-04).
+   4. Cuerpo: texto plano, fuente de lectura, 15 px, interlineado 1.5.
+   5. Nota si el cuerpo fue truncado.
+   6. Pie: nombre del archivo `.msg` y tamaño.
 
 ## Reglas de datos
 
@@ -57,8 +58,8 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 
 ## Responsive
 
-- 520 px o menos: asunto a 16 px y correo del remitente en su propia línea.
-- 860 px o menos: tarjeta a sangre completa, sin borde ni sombra.
+- 640 px o menos: el correo del remitente pasa a su propia línea.
+- 860 px o menos: tarjeta a sangre completa, sin radio ni sombra.
 
 ## Pendientes
 
