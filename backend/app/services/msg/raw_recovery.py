@@ -21,7 +21,7 @@ class RawAttachment:
     content_type: str
 
 
-def _signature_offsets(path: Path, signature: bytes) -> list[int]:
+def signature_offsets(path: Path, signature: bytes) -> list[int]:
     """Busca una firma por bloques para no cargar el MSG completo en memoria."""
     offsets: list[int] = []
     tail = b""
@@ -117,11 +117,11 @@ def raw_attachment_candidates(path: Path, known_digests: set[bytes]) -> list[Raw
     file_size = path.stat().st_size
     candidates: list[tuple[int, int, str, str]] = []
     with path.open("rb") as source:
-        for offset in _signature_offsets(path, b"\x89PNG\r\n\x1a\n"):
+        for offset in signature_offsets(path, b"\x89PNG\r\n\x1a\n"):
             size = _png_size(source, offset, file_size)
             if size:
                 candidates.append((offset, size, "imagen", "image/png"))
-        for offset in _signature_offsets(path, b"%PDF-"):
+        for offset in signature_offsets(path, b"%PDF-"):
             size = _pdf_size(source, offset)
             if size:
                 candidates.append((offset, size, "documento", "application/pdf"))

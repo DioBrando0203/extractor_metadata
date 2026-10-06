@@ -43,7 +43,9 @@ app/
     envelope.py                sobre de respaldo: propiedades MAPI alternativas y encabezados de transporte
     ole_reader.py              OleMetadata: propiedades MAPI, adjuntos (OleAttachment con Content-ID), página de códigos
     attachments.py             adjuntos desde el parser o desde OLE
-    raw_recovery.py            PNG/PDF completos fuera de enlaces OLE
+    raw_recovery.py            PNG/PDF completos fuera de enlaces OLE; búsqueda de firmas por bloques
+    raw_body.py                cuerpo HTML desde un RTF comprimido suelto (CRC y coherencia con el texto)
+    inline_images.py           posición de imágenes reconstruida por medidas cuando falta el Content-ID
     fat_recovery.py            DIFAT truncada reparada en copia temporal
     download.py                copia un adjunto al temporal de la solicitud
     limits.py                  presupuesto de miniaturas y metadatos
@@ -70,9 +72,10 @@ app/
 5. Estrategia principal: `extract_msg.openMsg`. Si falla y hay asunto, cuerpo, remitente o encabezados de transporte en OLE, estrategia de recuperación.
 6. En ambas estrategias, los campos del sobre vacíos se completan con `Envelope.complete_with`: primero propiedades MAPI alternativas, luego encabezados de transporte (`007D`), que viven en sectores normales y resisten daños del mini stream.
 7. Cuerpo: texto plano; si no marca imágenes incrustadas pero el HTML sí, se usa el HTML convertido, que conserva cada `<img src="cid:…">` como marcador `[cid:…]` en su posición.
-8. Cada adjunto pasa por `attachment_from_payload`: metadatos por formato y miniatura si queda presupuesto de tiempo.
-9. `limit_response` acota miniaturas (`max_total_preview_chars`) y metadatos (`max_total_metadata_chars`).
-10. El hijo envía JSON; el padre valida con Pydantic y borra el temporal.
+8. Si el parser falló y el cuerpo legible no marca imágenes, se busca el RTF comprimido suelto (`LZFu`), se valida su CRC y que su texto coincida con el cuerpo legible, y se usa su HTML. Después `assign_by_size` asigna Content-ID a adjuntos sin él sólo si sus píxeles coinciden exactamente con las medidas declaradas en el HTML o si son el único candidato con la misma proporción; quedan marcados `content_id_inferred`.
+9. Cada adjunto pasa por `attachment_from_payload`: metadatos por formato y miniatura si queda presupuesto de tiempo.
+10. `limit_response` acota miniaturas (`max_total_preview_chars`) y metadatos (`max_total_metadata_chars`).
+11. El hijo envía JSON; el padre valida con Pydantic y borra el temporal.
 
 ## Flujo de adjunto
 

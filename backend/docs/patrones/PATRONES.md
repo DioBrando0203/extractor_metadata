@@ -22,6 +22,12 @@ Qué: varias fuentes del mismo dato en orden de confianza; cada campo vacío se 
 Cuándo: un dato puede venir de varias partes del archivo con distinta resistencia al daño.
 Regla: sólo fuentes reales del archivo; las deducciones van aparte y se marcan como tales.
 
+## Emparejamiento inequívoco
+
+Dónde: `msg/inline_images.py` (`_unique_pairs`).
+Qué: una inferencia sólo se acepta si el candidato es único para el dato y nadie más lo reclama; las pasadas se calculan en orden y retiran lo ya emparejado.
+Cuándo: reconstruir relaciones perdidas con evidencia indirecta. Siempre marcar el resultado como inferido.
+
 ## Fachada de paquete
 
 Dónde: `msg/__init__.py`, `metadata/__init__.py`, `previews/__init__.py`.

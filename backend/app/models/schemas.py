@@ -21,6 +21,8 @@ class AttachmentMetadata(BaseModel):
     preview_source: Literal["image", "embedded"] | None = None
     # Content-ID sin "<>": el cuerpo lo referencia como "[cid:…]" donde va la imagen incrustada.
     content_id: str | None = None
+    # True si el archivo perdió el Content-ID y se reconstruyó por las medidas de la imagen.
+    content_id_inferred: bool = False
 
 
 class MessageMetadata(BaseModel):

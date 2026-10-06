@@ -71,3 +71,10 @@ Fecha: 2026-10-06. Estado: vigente.
 Contexto: el usuario quiere ver las imágenes donde iban en el correo, pero el cuerpo se entrega como texto plano por seguridad (ADR-07 del frontend).
 Decisión: al convertir HTML a texto, cada `<img src="cid:…">` se vuelve `[cid:…]` en su línea (convención del texto plano de Outlook) y cada adjunto expone su `content_id`. Las imágenes remotas se descartan.
 Consecuencias: el frontend coloca la miniatura en su posición sin interpretar HTML. Si el daño borró HTML, RTF y nombres, no hay posición y la imagen queda sólo en la lista de adjuntos.
+
+## ADR-B11 Cuerpo desde el RTF suelto y posición reconstruida por medidas
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: en el MSG real del usuario, el RTF del cuerpo (con el HTML y las posiciones `cid:`) seguía entero en el archivo pero sin enlace, y los Content-ID de los adjuntos se perdieron con el mini stream.
+Decisión: buscar la firma `LZFu`, aceptar el RTF sólo con CRC válido y texto coherente con el cuerpo legible, y usar su HTML. Para enlazar imágenes sin Content-ID se comparan las medidas declaradas en cada `<img>` con los píxeles de cada adjunto: tamaño exacto, o proporción (±1 %) con resolución suficiente cuando el par es inequívoco. Dos pasadas secuenciales: lo emparejado por tamaño exacto no compite después.
+Consecuencias: en el MSG real se ubicaron 4 de 14 imágenes (logos de firmas); iconos repetidos y capturas con varias candidatas quedan sin posición por diseño. Cada asignación se marca `content_id_inferred` y la interfaz lo indica.

@@ -18,7 +18,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - RQ-10 Lectura parcial: lo legible se conserva; PNG/PDF completos fuera de enlaces OLE se ofrecen como recuperados.
 - RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin externos rechazados.
 - RQ-12 Pruebas: MSG y adjuntos sintéticos; nunca correos privados en el repositorio.
-- RQ-13 Imágenes en posición: las imágenes incrustadas se marcan en el cuerpo (`[cid:…]`) y se enlazan con su adjunto por Content-ID o nombre. Si el daño borró el HTML/RTF y los nombres, no se inventa la posición.
+- RQ-13 Imágenes en posición: las imágenes incrustadas se marcan en el cuerpo (`[cid:…]`) y se enlazan con su adjunto por Content-ID o nombre. En un MSG dañado se recupera el HTML del RTF suelto y la posición se reconstruye sólo con evidencia inequívoca de medidas; lo ambiguo se queda en la lista de adjuntos y la interfaz lo dice.
 
 ## Límites honestos
 

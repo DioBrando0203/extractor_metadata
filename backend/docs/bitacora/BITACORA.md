@@ -45,3 +45,10 @@ Estado: terminada
 Cambios: `msg/envelope.py` con cadena de respaldo (ADR-B09); `msg/parsed_fields.py` separado de `reader.py` (PY-01); `OleAttachment` con Content-ID; `content_id` en `AttachmentMetadata`; `body_text` convierte `<img src="cid:…">` en `[cid:…]` (ADR-B10); `msg_factory` admite `omit`, `headers`, `html` y `content_id`.
 Evidencia: 65 pruebas aprobadas (7 nuevas en `test_envelope.py`); ruff check y format aprobados. Con el MSG real del usuario (sólo local): antes sin asunto, remitente, destinatarios ni fecha; ahora asunto con prefijo RE, remitente con correo, Para con 2 direcciones, CC con 4 y fecha.
 Notas: causa raíz en B-10; límite de posiciones en B-11.
+
+## 2026-10-06 01:32 -05:00 Cuerpo recuperado del RTF suelto y posición de imágenes por medidas
+
+Estado: terminada
+Cambios: `msg/raw_body.py` (RTF `LZFu` suelto con CRC y coherencia), `msg/inline_images.py` (emparejamiento inequívoco por medidas), `signature_offsets` público para reutilizar la búsqueda por bloques, `content_id_inferred` en el contrato.
+Evidencia: 73 pruebas aprobadas (8 nuevas); ruff check y format aprobados. MSG real del usuario (sólo local): RTF de 20 738 bytes recuperado con CRC válido; texto del HTML cubre el 99,1 % de las palabras del texto plano; 16 marcadores de imagen; 4 imágenes ubicadas (2 por tamaño exacto, 2 por proporción única) y 10 ambiguas sin ubicar.
+Notas: ADR-B11, B-11 mitigado, B-12 resuelto.

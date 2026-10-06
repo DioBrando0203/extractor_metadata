@@ -39,3 +39,7 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-11: un asunto ausente en un MSG legible se completa desde los encabezados. Prueba: `test_envelope.py::test_parsed_message_completes_missing_subject_from_headers`.
 - CA-12: se prefiere el SMTP sobre direcciones internas de Exchange y se arma el asunto con su prefijo. Prueba: `test_envelope.py::test_properties_prefer_smtp_and_skip_exchange_addresses`.
 - CA-13: las imágenes HTML `cid:` quedan como marcadores en su posición y las remotas se descartan. Prueba: `test_envelope.py::test_html_images_become_position_markers_and_remote_images_are_dropped`, `::test_inline_image_keeps_content_id_and_position_in_body`.
+
+- CA-14: el RTF comprimido suelto se recupera sólo si su CRC es válido y su texto coincide con el cuerpo legible. Prueba: `test_inline_recovery.py::test_loose_rtf_is_recovered_only_if_it_matches_the_readable_body`, `::test_corrupted_rtf_is_ignored`.
+- CA-15: posición reconstruida por tamaño exacto o proporción única; lo ambiguo no se asigna y un Content-ID leído nunca se reemplaza. Prueba: `test_inline_recovery.py` (`exact_size`, `unique_aspect`, `ambiguous`, `existing_content_ids`).
+- CA-16: un MSG dañado recupera el cuerpo con imágenes en posición. Prueba: `test_inline_recovery.py::test_damaged_message_gets_images_back_in_position`.

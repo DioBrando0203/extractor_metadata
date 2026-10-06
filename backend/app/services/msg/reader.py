@@ -21,6 +21,7 @@ from app.models.schemas import AttachmentMetadata, MessageMetadata
 from app.services.msg.attachments import extract_ole_attachments, extract_parsed_attachments
 from app.services.msg.envelope import Envelope, envelope_from_headers, envelope_from_properties
 from app.services.msg.fat_recovery import recovered_ole_path
+from app.services.msg.inline_images import assign_by_size
 from app.services.msg.limits import limit_response
 from app.services.msg.names import filename_warnings
 from app.services.msg.ole_reader import OleMetadata, read_ole_metadata
@@ -32,6 +33,7 @@ from app.services.msg.parsed_fields import (
     read_received_at,
     read_recipients,
 )
+from app.services.msg.raw_body import best_recovered_body
 from app.services.msg.raw_recovery import raw_recovered_attachments
 from app.services.msg.text import clean_text, read_attribute
 
@@ -122,11 +124,13 @@ def _recovered_message(context: _ReadContext) -> MessageMetadata:
         "El lector MSG falló. Se recuperaron propiedades desde OLE y los adjuntos "
         "que permanecen legibles."
     )
-    body = recovered.get("1000")
+    body = best_recovered_body(context.path, recovered.get("1000"), settings.max_body_chars)
     envelope = Envelope().complete_with(*context.fallback_envelope())
     attachments = context.finish_attachments(
         extract_ole_attachments(context.path, context.ole.attachments, context.deadline)
     )
+    if body.inline and assign_by_size(attachments, body.inline):
+        context.warnings.append("Posición de imágenes incrustadas reconstruida por sus medidas.")
     return limit_response(
         MessageMetadata(
             file_name=context.original_name,
@@ -135,8 +139,8 @@ def _recovered_message(context: _ReadContext) -> MessageMetadata:
             sender=envelope.sender,
             recipients=envelope.recipients,
             sent_at=envelope.sent_at,
-            body_preview=body,
-            body_truncated=bool(body and "[truncado;" in body),
+            body_preview=body.text,
+            body_truncated=body.truncated,
             properties=context.ole.items,
             attachments=attachments,
             warnings=context.warnings,

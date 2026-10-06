@@ -65,9 +65,16 @@ Causa: el parser falla y las propiedades cortas viven en el mini stream, ilegibl
 Solución: cadena de respaldo con los encabezados de transporte (ADR-B09).
 Prevención: CA-10 a CA-12 de SPEC-B01.
 
-## B-11 Posición de imágenes imposible en un MSG muy dañado
+## B-11 Posición de imágenes en un MSG muy dañado
 
-Estado: límite honesto.
+Estado: mitigado (ADR-B11); límite honesto para los casos ambiguos.
 Causa: si el mini stream se pierde, también se pierden los nombres y Content-ID de los adjuntos, y el RTF/HTML del cuerpo puede no ser legible.
 Mitigación: las imágenes se muestran en la lista de adjuntos; no se adivina su posición (RQ-13).
 
+## B-12 Una pasada de emparejamiento bloqueaba a la siguiente
+
+Fecha: 2026-10-06. Estado: resuelto.
+Síntoma: una imagen con candidato único por proporción no se ubicaba.
+Causa: las pasadas por tamaño exacto y por proporción se calculaban a la vez; una imagen ya emparejada seguía compitiendo.
+Solución: calcular cada pasada después de aplicar la anterior.
+Prevención: `test_inline_recovery.py::test_unique_aspect_ratio_after_exact_matches`.

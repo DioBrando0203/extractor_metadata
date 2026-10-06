@@ -33,6 +33,7 @@
 - `preview`: `data:image/jpeg;base64,…` de hasta 480 px o `null`.
 - `preview_source`: `image` o `embedded` o `null`.
 - `content_id`: Content-ID sin `<>` o `null`; enlaza el adjunto con su `[cid:…]` del cuerpo.
+- `content_id_inferred`: `true` si el Content-ID se reconstruyó por las medidas de la imagen (archivo dañado); la interfaz lo indica.
 
 ## Códigos de error
 
