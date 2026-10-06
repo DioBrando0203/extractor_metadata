@@ -14,7 +14,7 @@ Fuente de verdad del servicio local que lee MSG. Metodología: desarrollo guiado
 
 - `GUIA_IA.md`: protocolo para agentes IA.
 - `ARQUITECTURA.md`: estructura y límites entre módulos.
-- `REQUERIMIENTOS.md`: alcance, cobertura por formato y límites honestos.
+- `REQUERIMIENTOS.md`: alcance, cobertura por formato, límites honestos y backlog priorizado (PEN-01 a PEN-11).
 - `specs/SPEC-B01-analisis.md`: análisis de un MSG.
 - `specs/SPEC-B02-adjuntos.md`: descarga, miniaturas y vista previa grande.
 - `decisiones/ADR.md`: decisiones con contexto y consecuencias.

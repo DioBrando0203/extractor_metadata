@@ -52,3 +52,10 @@ Estado: terminada
 Cambios: `msg/raw_body.py` (RTF `LZFu` suelto con CRC y coherencia), `msg/inline_images.py` (emparejamiento inequívoco por medidas), `signature_offsets` público para reutilizar la búsqueda por bloques, `content_id_inferred` en el contrato.
 Evidencia: 73 pruebas aprobadas (8 nuevas); ruff check y format aprobados. MSG real del usuario (sólo local): RTF de 20 738 bytes recuperado con CRC válido; texto del HTML cubre el 99,1 % de las palabras del texto plano; 16 marcadores de imagen; 4 imágenes ubicadas (2 por tamaño exacto, 2 por proporción única) y 10 ambiguas sin ubicar.
 Notas: ADR-B11, B-11 mitigado, B-12 resuelto.
+
+## 2026-10-06 01:45 -05:00 Backlog de huecos conocidos
+
+Estado: terminada
+Cambios: `REQUERIMIENTOS.md` pasa de una lista suelta a un backlog priorizado PEN-01 a PEN-11 con situación, qué hacer y criterio de terminado; punteros en `AGENTS.md` y en los índices de docs.
+Evidencia: revisión del código actual (métodos de adjunto, rescate de datos sueltos, formatos de Pillow, extractores registrados) y de lo observado en el MSG real.
+Notas: prioridad alta para correos adjuntos (PEN-01), adjuntos en la nube (PEN-02) y rescate ampliado (PEN-03).

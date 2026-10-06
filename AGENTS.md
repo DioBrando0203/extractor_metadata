@@ -1,9 +1,13 @@
 # Guía breve para retomar el proyecto
 
+## ¿Qué podemos continuar?
+
+Si el usuario pregunta qué sigue, qué falta o qué podemos continuar: leer `backend/docs/REQUERIMIENTOS.md`, sección "Pendientes por revisar" (PEN-01 a PEN-11), y responder con esa lista en orden de prioridad (alta, media, baja), indicando por cada pendiente su situación y qué haría falta. No inventar pendientes fuera de esa lista sin revisarla primero; si se descubre uno nuevo, agregarlo allí con su ID antes de trabajarlo. Al terminar uno, actualizar su estado y la bitácora.
+
 Antes de modificar, leer este archivo y la guía del lado afectado (metodología SDD: spec, plan, código, prueba, registro):
 - Backend: `backend/docs/README.md` y `backend/docs/GUIA_IA.md`; reglas `PY-xx` y `patrones/PATRONES.md`.
 - Frontend: `frontend/docs/README.md` y `frontend/docs/GUIA_IA.md`; reglas `P-xx`, `E-xx`, `C-xx` y `patrones/PATRONES.md`.
-- `backend/docs/REQUERIMIENTOS.md`: alcance, cobertura y pendientes reales.
+- `backend/docs/REQUERIMIENTOS.md`: alcance, cobertura y backlog priorizado de pendientes (PEN-xx). Revisarlo antes de proponer trabajo nuevo.
 
 ## Requisitos permanentes
 

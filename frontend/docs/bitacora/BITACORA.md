@@ -50,3 +50,9 @@ Estado: terminada
 Cambios: `lib/textSearch.ts` y `components/ui/Highlight.tsx`; bandeja con fragmento de coincidencia y resaltado; lector con resaltado por contexto, contador de coincidencias e historial que se despliega si la coincidencia está ahí (ADR-16); atajo `/`; imágenes reconstruidas con nota y no recuperadas como aviso compacto (ADR-17); marcadores `[cid:…]` fuera de vistas previas y del texto buscable; `content_id_inferred` en el contrato.
 Evidencia: 58 unitarias; format:check, build y lint aprobados; 6 E2E y 5 visuales aprobados con el backend reiniciado. MSG real del usuario (local): logos de Cypress y BlueStream en sus firmas, "Permit Coordinator" resaltado con el historial desplegado y fragmento limpio en la bandeja.
 Notas: los marcadores se veían en el fragmento de la bandeja; corregido con `stripInlineMarkers`.
+
+## 2026-10-06 01:45 -05:00 Pendientes registrados
+
+Estado: terminada
+Cambios: los huecos que afectan a la interfaz (correos adjuntos, adjuntos en la nube, vistas previas, cifrados, invitaciones, cuerpo con formato) quedan en `backend/docs/REQUERIMIENTOS.md` como PEN-xx.
+Evidencia: no aplica (sólo documentación).

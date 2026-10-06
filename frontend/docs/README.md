@@ -34,6 +34,7 @@ Leer sólo lo que el cambio necesita. Cada documento es autosuficiente.
 - `tecnologias/STACK.md`: dependencias, versiones y restricciones.
 - `bloqueos/BLOQUEOS.md`: problemas conocidos con causa y prevención.
 - `bitacora/BITACORA.md`: registro cronológico de trabajo.
+- Pendientes del producto (frontend y backend): `backend/docs/REQUERIMIENTOS.md`, sección PEN-xx.
 
 ## Formato de estos documentos
 
