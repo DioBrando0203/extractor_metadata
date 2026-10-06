@@ -15,6 +15,13 @@ Dónde: `msg/reader.py` (`_parsed_message`, `_recovered_message`, `_ReadContext`
 Qué: dos formas de obtener el correo (parser completo o recuperación OLE) que comparten datos y cierre.
 Cuándo: un proceso con camino principal y camino de respaldo.
 
+## Cadena de respaldo (Chain of fallbacks)
+
+Dónde: `msg/envelope.py` (`Envelope.complete_with`), `reader._ReadContext.fallback_envelope`.
+Qué: varias fuentes del mismo dato en orden de confianza; cada campo vacío se completa con la primera fuente que lo tenga.
+Cuándo: un dato puede venir de varias partes del archivo con distinta resistencia al daño.
+Regla: sólo fuentes reales del archivo; las deducciones van aparte y se marcan como tales.
+
 ## Fachada de paquete
 
 Dónde: `msg/__init__.py`, `metadata/__init__.py`, `previews/__init__.py`.

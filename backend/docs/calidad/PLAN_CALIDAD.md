@@ -7,6 +7,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `tests/msg_factory.py`: genera MSG CFB v4 sintéticos con asunto, remitente, cuerpo y un adjunto.
 - `test_messages.py`: rutas HTTP, limpieza de temporales, recuperación FAT y OLE, presupuestos, origen y host, adjuntos grandes, descarga.
 - `test_previews.py`: miniaturas de imágenes, DWG (PNG y BMP), DXF y Office; formatos rechazados; presupuesto; endpoint `preview=true`.
+- `test_envelope.py`: sobre desde encabezados de transporte y propiedades alternativas, cadena de respaldo, imágenes `cid:` como marcadores y Content-ID.
 - `test_file_metadata.py`: extractores por formato (imagen, PDF, Office, DXF, DWG) e integración segura con ExifTool simulado.
 - `test_worker.py`: timeout del hijo, plazo proporcional y diagnóstico seguro.
 - `test_encoding.py`: páginas de códigos ANSI.

@@ -29,3 +29,13 @@ def read_attribute(message: object, name: str, warnings: list[str]) -> object | 
             f"No se pudo recuperar la propiedad {name}; se conserva el resto del mensaje."
         )
         return None
+
+
+def normalize_content_id(value: str | None) -> str | None:
+    """Content-ID comparable: sin ``<>``, espacios ni prefijo ``cid:``."""
+    if not value:
+        return None
+    cleaned = value.strip().strip("<>").strip()
+    if cleaned.lower().startswith("cid:"):
+        cleaned = cleaned[4:]
+    return cleaned or None

@@ -38,3 +38,10 @@ Estado: terminada
 Cambios: `previews/` con miniaturas de imágenes y de las previews incrustadas en DWG, DXF y Office (ADR-B05, ADR-B06, ADR-B08); campos `preview` y `preview_source`; parámetro `preview` en `/attachment`; metadato "Miniatura incrustada" en AutoCAD. `message_extractor.py` (857 líneas) y `file_metadata.py` (633) divididos en los paquetes `msg/` y `metadata/` con funciones cortas y Parameter Objects; `worker.py` unifica el ciclo del proceso hijo en `_run_isolated` (ADR-B07). Docs nuevos: README, GUIA_IA, specs B01 y B02, ADR, reglas PY-01 a PY-30, patrones, estilo, calidad, API y bloqueos.
 Evidencia: 58 pruebas aprobadas (18 nuevas de vistas previas) sin cambiar aserciones previas; ruff check y format aprobados; E2E del frontend con el backend reiniciado aprobados.
 Notas: módulo más grande tras la división, `msg/reader.py` con 266 líneas.
+
+## 2026-10-06 01:11 -05:00 Identificación del remitente y marcadores de imágenes incrustadas
+
+Estado: terminada
+Cambios: `msg/envelope.py` con cadena de respaldo (ADR-B09); `msg/parsed_fields.py` separado de `reader.py` (PY-01); `OleAttachment` con Content-ID; `content_id` en `AttachmentMetadata`; `body_text` convierte `<img src="cid:…">` en `[cid:…]` (ADR-B10); `msg_factory` admite `omit`, `headers`, `html` y `content_id`.
+Evidencia: 65 pruebas aprobadas (7 nuevas en `test_envelope.py`); ruff check y format aprobados. Con el MSG real del usuario (sólo local): antes sin asunto, remitente, destinatarios ni fecha; ahora asunto con prefijo RE, remitente con correo, Para con 2 direcciones, CC con 4 y fecha.
+Notas: causa raíz en B-10; límite de posiciones en B-11.

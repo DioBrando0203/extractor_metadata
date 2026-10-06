@@ -17,9 +17,9 @@
 
 - `file_name`, `file_size_bytes`.
 - `subject`, `sender`: texto o `null`.
-- `recipients`: líneas `Para: …`, `CC: …`, `CCO: …`; en recuperación OLE, una línea sin prefijo.
+- `recipients`: líneas `Para: …`, `CC: …`, `CCO: …` con direcciones separadas por `;`, del parser o, si faltan, de propiedades MAPI o encabezados de transporte.
 - `sent_at`, `received_at`: ISO-8601 o `null`.
-- `body_preview`: texto plano (HTML convertido a texto) o `null`; `body_truncated`.
+- `body_preview`: texto plano (HTML convertido a texto) o `null`; las imágenes incrustadas aparecen como `[cid:<content-id>]` en su posición; `body_truncated`.
 - `status`: `complete` o `partial` (hay advertencias).
 - `headers`, `properties`: `MetadataItem[]` diagnósticos; el frontend no los muestra.
 - `attachments`: `AttachmentMetadata[]`; su posición es el índice para `/attachment`.
@@ -32,6 +32,7 @@
 - `warnings`.
 - `preview`: `data:image/jpeg;base64,…` de hasta 480 px o `null`.
 - `preview_source`: `image` o `embedded` o `null`.
+- `content_id`: Content-ID sin `<>` o `null`; enlaza el adjunto con su `[cid:…]` del cuerpo.
 
 ## Códigos de error
 

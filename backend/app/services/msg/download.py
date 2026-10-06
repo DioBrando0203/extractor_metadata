@@ -34,8 +34,8 @@ def extract_attachment_file(
                 directories = attachment_directories(container.listdir())
                 if attachment_index < len(directories):
                     directory = directories[attachment_index]
-                    fallback = (f"adjunto-{attachment_index + 1}", 0)
-                    name = names.get(directory, fallback)[0]
+                    entry = names.get(directory)
+                    name = entry.name if entry else f"adjunto-{attachment_index + 1}"
                     return _copy_ole_attachment(
                         container, directory, name, attachment_index, destination
                     )

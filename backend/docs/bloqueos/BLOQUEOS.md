@@ -56,3 +56,18 @@ Fecha: 2026-10-05. Estado: entendido.
 Síntoma: E2E o pruebas manuales usan código viejo.
 Causa: `iniciar.py` arranca Uvicorn sin recarga y Playwright reutiliza el servidor existente.
 Prevención: detener el proceso del puerto 8000 antes de verificar cambios del backend.
+
+## B-10 Remitente y asunto perdidos en un MSG con FAT dañada
+
+Fecha: 2026-10-06. Estado: resuelto.
+Síntoma: "Mensaje sin asunto" y "Remitente desconocido" aunque el archivo los contenía.
+Causa: el parser falla y las propiedades cortas viven en el mini stream, ilegible tras el daño; la recuperación sólo miraba esas propiedades.
+Solución: cadena de respaldo con los encabezados de transporte (ADR-B09).
+Prevención: CA-10 a CA-12 de SPEC-B01.
+
+## B-11 Posición de imágenes imposible en un MSG muy dañado
+
+Estado: límite honesto.
+Causa: si el mini stream se pierde, también se pierden los nombres y Content-ID de los adjuntos, y el RTF/HTML del cuerpo puede no ser legible.
+Mitigación: las imágenes se muestran en la lista de adjuntos; no se adivina su posición (RQ-13).
+

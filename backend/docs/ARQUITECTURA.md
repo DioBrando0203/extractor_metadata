@@ -39,7 +39,9 @@ app/
   services/msg/
     __init__.py                API: extract_msg_file, extract_attachment_file
     reader.py                  orquesta: parser MSG o recuperación OLE (_ReadContext)
-    ole_reader.py              OleMetadata: propiedades MAPI, adjuntos, página de códigos
+    parsed_fields.py           lectura aislada de cada campo del parser (cuerpo, fechas, encabezados)
+    envelope.py                sobre de respaldo: propiedades MAPI alternativas y encabezados de transporte
+    ole_reader.py              OleMetadata: propiedades MAPI, adjuntos (OleAttachment con Content-ID), página de códigos
     attachments.py             adjuntos desde el parser o desde OLE
     raw_recovery.py            PNG/PDF completos fuera de enlaces OLE
     fat_recovery.py            DIFAT truncada reparada en copia temporal
@@ -65,10 +67,12 @@ app/
 2. La ruta copia por bloques a `temp_root/analysis-*/input.msg` y toma un cupo de `extraction_slots`.
 3. `run_extraction` lanza `_worker` en un hijo `spawn`; el plazo crece con el tamaño (`_timeout_for_size`).
 4. `extract_msg_file` valida firma OLE, aplica `recovered_ole_path` y lee `OleMetadata`.
-5. Estrategia principal: `extract_msg.openMsg`. Si falla y hay asunto, cuerpo o remitente en OLE, estrategia de recuperación.
-6. Cada adjunto pasa por `attachment_from_payload`: metadatos por formato y miniatura si queda presupuesto de tiempo.
-7. `limit_response` acota miniaturas (`max_total_preview_chars`) y metadatos (`max_total_metadata_chars`).
-8. El hijo envía JSON; el padre valida con Pydantic y borra el temporal.
+5. Estrategia principal: `extract_msg.openMsg`. Si falla y hay asunto, cuerpo, remitente o encabezados de transporte en OLE, estrategia de recuperación.
+6. En ambas estrategias, los campos del sobre vacíos se completan con `Envelope.complete_with`: primero propiedades MAPI alternativas, luego encabezados de transporte (`007D`), que viven en sectores normales y resisten daños del mini stream.
+7. Cuerpo: texto plano; si no marca imágenes incrustadas pero el HTML sí, se usa el HTML convertido, que conserva cada `<img src="cid:…">` como marcador `[cid:…]` en su posición.
+8. Cada adjunto pasa por `attachment_from_payload`: metadatos por formato y miniatura si queda presupuesto de tiempo.
+9. `limit_response` acota miniaturas (`max_total_preview_chars`) y metadatos (`max_total_metadata_chars`).
+10. El hijo envía JSON; el padre valida con Pydantic y borra el temporal.
 
 ## Flujo de adjunto
 
@@ -82,6 +86,7 @@ app/
 - Detalle de campos y errores: `estilos/API.md`.
 - `AttachmentMetadata.preview`: data URI JPEG de hasta 480 px o `null`.
 - `AttachmentMetadata.preview_source`: `image` (el adjunto es imagen) o `embedded` (miniatura guardada por DWG, DXF u Office).
+- `AttachmentMetadata.content_id`: Content-ID sin `<>`; el cuerpo lo referencia como `[cid:…]`.
 - Índice de adjunto: posición en `attachments` de la respuesta (OLE primero, luego recuperados).
 
 ## Seguridad y recursos

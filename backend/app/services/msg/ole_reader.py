@@ -14,9 +14,11 @@ import olefile
 from app.core.config import settings
 from app.core.errors import ExtractionError
 from app.models.schemas import MetadataItem
+from app.services.msg.text import normalize_content_id
 
 ATTACHMENT_DATA_STREAM = "__substg1.0_37010102"
 _ATTACHMENT_NAME_STREAM = "__substg1.0_3707001F"
+_CONTENT_ID_STREAMS = ("__substg1.0_3712001F", "__substg1.0_3712001E")
 _PROPERTIES_STREAM = "__properties_version1.0"
 _PROPERTY_PREFIX = "__substg1.0_"
 _CODEPAGE_TAG = 0x3FFD0003
@@ -40,6 +42,16 @@ MAPI_LABELS = {
 }
 
 
+@dataclass(frozen=True)
+class OleAttachment:
+    """Datos de un adjunto que se leen sin abrir su contenido."""
+
+    name: str
+    size: int
+    #: Content-ID con el que el cuerpo HTML referencia la imagen (``cid:…``), si existe.
+    content_id: str | None = None
+
+
 @dataclass
 class OleMetadata:
     """Lo que se pudo leer del contenedor sin interpretar el mensaje."""
@@ -48,8 +60,8 @@ class OleMetadata:
     #: Texto de propiedades MAPI de primer nivel por identificador, p. ej. ``"0037"`` (asunto).
     recovered: dict[str, str] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
-    #: Carpeta OLE del adjunto → (nombre, tamaño en bytes).
-    attachments: dict[str, tuple[str, int]] = field(default_factory=dict)
+    #: Carpeta OLE del adjunto → nombre, tamaño y Content-ID.
+    attachments: dict[str, OleAttachment] = field(default_factory=dict)
 
 
 def attachment_directories(storage_paths: list[list[str]]) -> list[str]:
@@ -67,7 +79,7 @@ def read_ole_metadata(path: Path) -> OleMetadata:
     try:
         with olefile.OleFileIO(str(path)) as container:
             streams = container.listdir()
-            result.attachments = _attachment_names(container, streams, result.warnings)
+            result.attachments = _attachment_entries(container, streams, result.warnings)
             encoding = _ansi_encoding(container, result.warnings)
             if not any(parts[-1].startswith(_PROPERTY_PREFIX) for parts in streams):
                 raise ExtractionError(
@@ -93,27 +105,43 @@ def read_ole_metadata(path: Path) -> OleMetadata:
     return result
 
 
-def _attachment_names(
+def _attachment_entries(
     container: olefile.OleFileIO, streams: list[list[str]], warnings: list[str]
-) -> dict[str, tuple[str, int]]:
-    names: dict[str, tuple[str, int]] = {}
+) -> dict[str, OleAttachment]:
+    entries: dict[str, OleAttachment] = {}
     for parts in streams:
         is_data = len(parts) == 2 and parts[0].startswith("__attach")
         if not is_data or parts[-1] != ATTACHMENT_DATA_STREAM:
             continue
         try:
-            name = f"adjunto-{len(names) + 1}"
-            name_path = [parts[0], _ATTACHMENT_NAME_STREAM]
-            if container.exists(name_path):
-                with container.openstream(name_path) as stream:
-                    raw = stream.read(1024)
-                candidate = raw.decode("utf-16-le", errors="replace").rstrip("\x00")
-                if candidate:
-                    name = candidate
-            names[parts[0]] = (name, container.get_size(parts))
+            directory = parts[0]
+            name = _small_text(container, [directory, _ATTACHMENT_NAME_STREAM])
+            content_id = next(
+                (
+                    value
+                    for stream in _CONTENT_ID_STREAMS
+                    if (value := _small_text(container, [directory, stream]))
+                ),
+                None,
+            )
+            entries[directory] = OleAttachment(
+                name=name or f"adjunto-{len(entries) + 1}",
+                size=container.get_size(parts),
+                content_id=normalize_content_id(content_id),
+            )
         except Exception:
             warnings.append("Un adjunto tiene estructura OLE incompleta.")
-    return names
+    return entries
+
+
+def _small_text(container: olefile.OleFileIO, path: list[str]) -> str | None:
+    """Texto corto de un stream MAPI (nombres, Content-ID); ``None`` si falta o está vacío."""
+    if not container.exists(path):
+        return None
+    with container.openstream(path) as stream:
+        raw = stream.read(1024)
+    encoding = "utf-16-le" if path[-1].endswith("001F") else "cp1252"
+    return raw.decode(encoding, errors="replace").rstrip("\x00") or None
 
 
 def _ansi_encoding(container: olefile.OleFileIO, warnings: list[str]) -> str:

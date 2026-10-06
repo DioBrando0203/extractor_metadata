@@ -18,9 +18,11 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 6. Estrategia principal: parser MSG. Remitente, Para/CC/CCO, fecha (o `Date` del encabezado), cuerpo (texto, o HTML a texto, o stream OLE), encabezados, propiedades y adjuntos.
 7. Estrategia de respaldo: si el parser falla y hay asunto, cuerpo o remitente en OLE, devolver correo `partial` con adjuntos OLE.
 8. Con FAT reparada, añadir PNG/PDF completos encontrados fuera de los enlaces OLE.
-9. Cada adjunto: metadatos por formato y miniatura si queda presupuesto de tiempo.
-10. Acotar la respuesta: miniaturas hasta `max_total_preview_chars`, metadatos hasta `max_total_metadata_chars`.
-11. `status = partial` si hay cualquier advertencia.
+9. Completar asunto, remitente, destinatarios y fecha vacíos con propiedades MAPI alternativas (`0E1D`, `003D`, `0070`, `0042`, `5D01`, `5D02`, `0065`) y después con los encabezados de transporte.
+10. Cuerpo con marcadores `[cid:…]` en la posición de cada imagen incrustada.
+11. Cada adjunto: metadatos por formato, Content-ID y miniatura si queda presupuesto de tiempo.
+12. Acotar la respuesta: miniaturas hasta `max_total_preview_chars`, metadatos hasta `max_total_metadata_chars`.
+13. `status = partial` si hay cualquier advertencia.
 
 ## Criterios de aceptación
 
@@ -33,3 +35,7 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-07: el presupuesto de miniaturas no cambia estado ni advertencias. Prueba: `test_previews.py::test_preview_budget_drops_extra_thumbnails_without_partial`.
 - CA-08: Host u Origin externos reciben 403 antes de leer el cuerpo. Prueba: `test_messages.py::test_foreign_origin_cannot_upload`, `::test_reject_rebound_host`.
 - CA-09: un adjunto grande no se omite por un tope fijo. Prueba: `test_messages.py::test_attachment_is_not_omitted_by_a_fixed_size_limit`, `::test_large_msg_and_attachment_are_processed`.
+- CA-10: con el parser caído y sin propiedades cortas, remitente, asunto, Para y fecha salen de los encabezados de transporte. Prueba: `test_envelope.py::test_recovered_message_identifies_sender_from_transport_headers`.
+- CA-11: un asunto ausente en un MSG legible se completa desde los encabezados. Prueba: `test_envelope.py::test_parsed_message_completes_missing_subject_from_headers`.
+- CA-12: se prefiere el SMTP sobre direcciones internas de Exchange y se arma el asunto con su prefijo. Prueba: `test_envelope.py::test_properties_prefer_smtp_and_skip_exchange_addresses`.
+- CA-13: las imágenes HTML `cid:` quedan como marcadores en su posición y las remotas se descartan. Prueba: `test_envelope.py::test_html_images_become_position_markers_and_remote_images_are_dropped`, `::test_inline_image_keeps_content_id_and_position_in_body`.

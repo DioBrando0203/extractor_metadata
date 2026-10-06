@@ -19,6 +19,8 @@ class AttachmentMetadata(BaseModel):
     # Miniatura JPEG como data URI. ``embedded``: la guardó el propio archivo (DWG, DXF, Office).
     preview: str | None = None
     preview_source: Literal["image", "embedded"] | None = None
+    # Content-ID sin "<>": el cuerpo lo referencia como "[cid:…]" donde va la imagen incrustada.
+    content_id: str | None = None
 
 
 class MessageMetadata(BaseModel):

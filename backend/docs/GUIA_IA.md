@@ -30,6 +30,7 @@ Protocolo obligatorio para cualquier IA que modifique `backend/`. Si contradice 
 
 ## Prohibiciones
 
+- No escribir código con secuencias de escape dentro de heredocs de shell: se convierten en caracteres reales (B-13 del frontend). Usar el editor o un archivo de script.
 - No escribir sobre el archivo recibido ni fuera del directorio temporal de la solicitud.
 - No persistir correos, adjuntos, metadatos, rutas ni nombres en disco, logs o caché.
 - No ejecutar macros, HTML, scripts ni comandos construidos con datos del usuario; nunca `shell=True`.

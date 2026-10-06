@@ -57,3 +57,17 @@ Fecha: 2026-10-05. Estado: vigente.
 Contexto: renderizar DWG o páginas PDF exige motores pesados o con licencia.
 Decisión: usar la miniatura que el propio archivo guarda (DWG, DXF, Office) y el visor de PDF del navegador.
 Consecuencias: archivos guardados sin miniatura sólo muestran icono y detalles; queda como pendiente evaluado.
+
+## ADR-B09 Cadena de respaldo para el sobre del correo
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: en un MSG real con FAT dañada, el parser falla y las propiedades cortas (asunto, remitente, Para) viven en el mini stream, que queda ilegible; la app mostraba "Remitente desconocido" aunque los encabezados de transporte estaban completos.
+Decisión: `Envelope.complete_with` rellena cada campo vacío en orden de confianza: parser, propiedades MAPI alternativas y encabezados de transporte (`007D`), que viven en sectores normales.
+Consecuencias: remitente, asunto, destinatarios y fecha se identifican con datos reales del correo, nunca deducidos; un campo sólo cambia si estaba vacío.
+
+## ADR-B10 Imágenes incrustadas como marcadores en el texto
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: el usuario quiere ver las imágenes donde iban en el correo, pero el cuerpo se entrega como texto plano por seguridad (ADR-07 del frontend).
+Decisión: al convertir HTML a texto, cada `<img src="cid:…">` se vuelve `[cid:…]` en su línea (convención del texto plano de Outlook) y cada adjunto expone su `content_id`. Las imágenes remotas se descartan.
+Consecuencias: el frontend coloca la miniatura en su posición sin interpretar HTML. Si el daño borró HTML, RTF y nombres, no hay posición y la imagen queda sólo en la lista de adjuntos.

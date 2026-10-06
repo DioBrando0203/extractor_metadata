@@ -7,13 +7,22 @@ import olefile
 
 from app.models.schemas import AttachmentMetadata
 from app.services.metadata import extract_file_metadata
-from app.services.msg.ole_reader import ATTACHMENT_DATA_STREAM, attachment_directories
-from app.services.msg.text import clean_text, read_attribute
+from app.services.msg.ole_reader import (
+    ATTACHMENT_DATA_STREAM,
+    OleAttachment,
+    attachment_directories,
+)
+from app.services.msg.text import clean_text, normalize_content_id, read_attribute
 from app.services.previews import thumbnail_data_uri
 
 
 def attachment_from_payload(
-    name: str, payload: bytes, external_deadline: float, *, recovered: bool = False
+    name: str,
+    payload: bytes,
+    external_deadline: float,
+    *,
+    recovered: bool = False,
+    content_id: str | None = None,
 ) -> AttachmentMetadata:
     content_type, metadata, attachment_warnings = extract_file_metadata(
         payload, name, external_deadline=external_deadline
@@ -54,13 +63,14 @@ def attachment_from_payload(
         warnings=attachment_warnings,
         preview=preview,
         preview_source=preview_source,
+        content_id=content_id,
     )
 
 
 def extract_parsed_attachments(
     message: object,
     warnings: list[str],
-    attachment_info: dict[str, tuple[str, int]],
+    attachment_info: dict[str, OleAttachment],
     external_deadline: float,
 ) -> list[AttachmentMetadata]:
     """Inicializa y libera cada adjunto sin descartar archivos por su tamaño."""
@@ -77,7 +87,8 @@ def extract_parsed_attachments(
         return attachments
 
     for index, attachment_dir in enumerate(attachment_dirs, start=1):
-        name, known_size = attachment_info.get(attachment_dir, (f"adjunto-{index}", 0))
+        info = attachment_info.get(attachment_dir) or OleAttachment(f"adjunto-{index}", 0)
+        name, known_size = info.name, info.size
         attachment = None
         payload = None
         try:
@@ -98,7 +109,14 @@ def extract_parsed_attachments(
                     )
                 )
                 continue
-            attachments.append(attachment_from_payload(name, payload, external_deadline))
+            content_id = normalize_content_id(
+                clean_text(read_attribute(attachment, "cid", warnings))
+            )
+            attachments.append(
+                attachment_from_payload(
+                    name, payload, external_deadline, content_id=content_id or info.content_id
+                )
+            )
         except Exception:
             attachments.append(
                 AttachmentMetadata(
@@ -115,7 +133,7 @@ def extract_parsed_attachments(
 
 
 def extract_ole_attachments(
-    path: Path, attachment_info: dict[str, tuple[str, int]], external_deadline: float
+    path: Path, attachment_info: dict[str, OleAttachment], external_deadline: float
 ) -> list[AttachmentMetadata]:
     """Recupera adjuntos si el parser MSG falla pero el árbol OLE sigue legible."""
     attachments: list[AttachmentMetadata] = []
@@ -123,7 +141,8 @@ def extract_ole_attachments(
         with olefile.OleFileIO(str(path)) as container:
             attachment_dirs = attachment_directories(container.listdir())
             for index, attachment_dir in enumerate(attachment_dirs, start=1):
-                name, known_size = attachment_info.get(attachment_dir, (f"adjunto-{index}", 0))
+                info = attachment_info.get(attachment_dir) or OleAttachment(f"adjunto-{index}", 0)
+                name, known_size = info.name, info.size
                 stream_path = [attachment_dir, ATTACHMENT_DATA_STREAM]
                 try:
                     if not container.exists(stream_path):
@@ -131,7 +150,13 @@ def extract_ole_attachments(
                     with container.openstream(stream_path) as stream:
                         payload = stream.read()
                     attachments.append(
-                        attachment_from_payload(name, payload, external_deadline, recovered=True)
+                        attachment_from_payload(
+                            name,
+                            payload,
+                            external_deadline,
+                            recovered=True,
+                            content_id=info.content_id,
+                        )
                     )
                 except Exception:
                     attachments.append(

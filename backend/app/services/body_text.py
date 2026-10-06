@@ -1,6 +1,14 @@
-"""Convierte un cuerpo HTML a texto sin ejecutar contenido ni resolver recursos."""
+"""Convierte un cuerpo HTML a texto sin ejecutar contenido ni resolver recursos.
+
+Las imágenes incrustadas (``<img src="cid:…">``) se conservan como marcadores ``[cid:…]`` en su
+posición, la misma convención que Outlook usa en el cuerpo de texto plano. Imágenes remotas y
+cualquier otro recurso externo se descartan.
+"""
 
 from html.parser import HTMLParser
+
+_HIDDEN = {"script", "style", "head"}
+_BLOCKS = {"br", "p", "div", "li", "tr", "h1", "h2", "h3"}
 
 
 class _TextParser(HTMLParser):
@@ -10,13 +18,19 @@ class _TextParser(HTMLParser):
         self.parts: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag in {"script", "style", "head"}:
+        if tag in _HIDDEN:
             self.hidden_depth += 1
-        elif tag in {"br", "p", "div", "li", "tr", "h1", "h2", "h3"} and not self.hidden_depth:
+        elif self.hidden_depth:
+            return
+        elif tag in _BLOCKS:
             self.parts.append("\n")
+        elif tag == "img":
+            source = (dict(attrs).get("src") or "").strip()
+            if source.lower().startswith("cid:") and len(source) > 4:
+                self.parts.append(f"\n[cid:{source[4:]}]\n")
 
     def handle_endtag(self, tag: str) -> None:
-        if tag in {"script", "style", "head"}:
+        if tag in _HIDDEN:
             self.hidden_depth = max(0, self.hidden_depth - 1)
 
     def handle_data(self, data: str) -> None:

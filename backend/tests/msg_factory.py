@@ -120,7 +120,12 @@ def make_msg(
     attachment: bytes | None = None,
     filename: str = "plano.dwg",
     extra_streams: dict[tuple[str, ...], bytes] | None = None,
+    omit: tuple[str, ...] = (),
+    headers: str | None = None,
+    html: str | None = None,
+    content_id: str | None = None,
 ) -> bytes:
+    """MSG mínimo. ``omit`` quita propiedades (p. ej. ``("0037",)``) para simular daños."""
     strings = {
         "001A": "IPM.Note",
         "0037": "Mensaje de prueba — áéíóú",
@@ -132,9 +137,15 @@ def make_msg(
         "Date: Mon, 05 Oct 2026 10:00:00 -0500\r\n"
         "Message-ID: <local@example.test>\r\n",
     }
+    if headers is not None:
+        strings["007D"] = headers
     streams = {
-        (f"__substg1.0_{key}001F",): value.encode("utf-16-le") for key, value in strings.items()
+        (f"__substg1.0_{key}001F",): value.encode("utf-16-le")
+        for key, value in strings.items()
+        if key not in omit
     }
+    if html is not None:
+        streams[("__substg1.0_10130102",)] = html.encode("utf-8")
     for tag in ("00020102", "00030102", "00040102"):
         streams[("__nameid_version1.0", f"__substg1.0_{tag}")] = b""
     flags = struct.pack("<II8s", 0x340D0003, 6, struct.pack("<I", 0x40000) + b"\0" * 4)
@@ -147,5 +158,7 @@ def make_msg(
         streams[(folder, "__properties_version1.0")] = b"\0" * 8 + method
         streams[(folder, "__substg1.0_3707001F")] = filename.encode("utf-16-le")
         streams[(folder, "__substg1.0_37010102")] = attachment
+        if content_id is not None:
+            streams[(folder, "__substg1.0_3712001F")] = content_id.encode("utf-16-le")
     streams.update(extra_streams or {})
     return build_cfb(streams)

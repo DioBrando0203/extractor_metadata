@@ -9,7 +9,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - RQ-01 Local: loopback, sin cuenta, base de datos, nube, telemetría ni historial.
 - RQ-02 Privacidad: estado en memoria del navegador; temporales efímeros del backend borrados al terminar.
 - RQ-03 Original intacto: sólo se trabaja sobre copias temporales; la reparación de FAT ocurre en una copia.
-- RQ-04 Correo legible: asunto, remitente, destinatarios Para/CC/CCO, fechas y cuerpo de texto cuando los streams existen.
+- RQ-04 Correo legible: asunto, remitente, destinatarios Para/CC/CCO, fechas y cuerpo de texto. Si el parser o las propiedades cortas fallan, se identifican desde propiedades MAPI alternativas o los encabezados de transporte.
 - RQ-05 Adjuntos de cualquier tipo: todo adjunto con stream legible se lista y se descarga con sus bytes exactos, sea imagen, PDF, Office, AutoCAD, comprimido, multimedia u otro.
 - RQ-06 Vista previa: imágenes (PNG, JPEG, GIF, BMP, TIFF, WEBP, ICO; EMF/WMF en Windows) con miniatura; PDF, texto, vídeo y audio se muestran en el navegador; TIFF/EMF se convierten a JPEG bajo demanda.
 - RQ-07 AutoCAD: DWG desde R13 y DXF ASCII muestran la miniatura que AutoCAD guardó dentro (PNG o BMP), además de versión de formato (DWG) o versión, unidades y capas (DXF).
@@ -18,6 +18,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - RQ-10 Lectura parcial: lo legible se conserva; PNG/PDF completos fuera de enlaces OLE se ofrecen como recuperados.
 - RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin externos rechazados.
 - RQ-12 Pruebas: MSG y adjuntos sintéticos; nunca correos privados en el repositorio.
+- RQ-13 Imágenes en posición: las imágenes incrustadas se marcan en el cuerpo (`[cid:…]`) y se enlazan con su adjunto por Content-ID o nombre. Si el daño borró el HTML/RTF y los nombres, no se inventa la posición.
 
 ## Límites honestos
 
