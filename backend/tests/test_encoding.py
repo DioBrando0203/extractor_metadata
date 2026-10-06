@@ -2,7 +2,7 @@ import struct
 
 from msg_factory import build_cfb
 
-from app.services.message_extractor import extract_msg_file
+from app.services.msg import extract_msg_file
 
 
 def test_ansi_codepage_is_respected_in_parser_and_raw_metadata(tmp_path):

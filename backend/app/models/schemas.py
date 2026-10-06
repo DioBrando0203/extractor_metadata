@@ -16,6 +16,9 @@ class AttachmentMetadata(BaseModel):
     size_bytes: int | None = None
     metadata: list[MetadataItem] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    # Miniatura JPEG como data URI. ``embedded``: la guardó el propio archivo (DWG, DXF, Office).
+    preview: str | None = None
+    preview_source: Literal["image", "embedded"] | None = None
 
 
 class MessageMetadata(BaseModel):

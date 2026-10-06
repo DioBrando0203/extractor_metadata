@@ -12,8 +12,14 @@ from app.api.routes import messages
 from app.core.errors import ExtractionError
 from app.main import app
 from app.models.schemas import MessageMetadata, MetadataItem
-from app.services import message_extractor
-from app.services.message_extractor import extract_msg_file
+from app.services.msg import (
+    extract_msg_file,
+    fat_recovery,
+    limits,
+    ole_reader,
+    raw_recovery,
+    reader,
+)
 
 
 @pytest.fixture
@@ -59,7 +65,7 @@ def test_recovers_complete_raw_png_and_pdf_when_ole_links_are_missing(tmp_path):
     path = tmp_path / "parcial.msg"
     path.write_bytes(b"cabecera" + image.getvalue() + b"relleno" + pdf)
 
-    candidates = message_extractor._raw_attachment_candidates(path, set())
+    candidates = raw_recovery.raw_attachment_candidates(path, set())
 
     assert [(item.name, item.content_type, item.size) for item in candidates] == [
         ("imagen-recuperado-1.png", "image/png", len(image.getvalue())),
@@ -97,7 +103,7 @@ def test_recover_text_and_attachments_when_primary_parser_fails(tmp_path, monkey
     def fail(*args, **kwargs):
         raise ValueError("parser roto")
 
-    monkeypatch.setattr(message_extractor.extract_msg, "openMsg", fail)
+    monkeypatch.setattr(reader.extract_msg, "openMsg", fail)
     result = extract_msg_file(path, path.name, path.stat().st_size)
     assert result.status == "partial"
     assert result.subject == "Mensaje de prueba — áéíóú"
@@ -174,16 +180,16 @@ def test_health_does_not_block_during_extraction(client, monkeypatch):
 
 def test_metadata_budget_is_explicit(monkeypatch):
     monkeypatch.setattr(
-        message_extractor,
+        limits,
         "settings",
-        replace(message_extractor.settings, max_total_metadata_chars=20),
+        replace(limits.settings, max_total_metadata_chars=20),
     )
     message = MessageMetadata(
         file_name="x.msg",
         file_size_bytes=1,
         properties=[MetadataItem(group="Test", label="Nombre", value="x" * 100)],
     )
-    result = message_extractor._limit_response(message)
+    result = limits.limit_response(message)
     assert result.properties == []
     assert result.status == "partial"
     assert "límite total" in result.warnings[0]
@@ -230,14 +236,14 @@ def test_native_metadata_inside_real_msg_worker(client, kind):
 def test_broken_optional_ole_stream_does_not_discard_readable_message(tmp_path, monkeypatch):
     path = tmp_path / "parcial.msg"
     path.write_bytes(make_msg(extra_streams={("__substg1.0_6666001F",): b"broken"}))
-    original = message_extractor.olefile.OleFileIO.openstream
+    original = ole_reader.olefile.OleFileIO.openstream
 
     def open_without_bad_stream(self, filename):
         if filename == ["__substg1.0_6666001F"]:
             raise OSError("stream defectuoso")
         return original(self, filename)
 
-    monkeypatch.setattr(message_extractor.olefile.OleFileIO, "openstream", open_without_bad_stream)
+    monkeypatch.setattr(ole_reader.olefile.OleFileIO, "openstream", open_without_bad_stream)
     result = extract_msg_file(path, path.name, path.stat().st_size)
     assert result.subject == "Mensaje de prueba — áéíóú"
     assert result.status == "partial"
@@ -271,4 +277,4 @@ def test_detects_recoverable_truncated_fat_header(tmp_path):
     path = tmp_path / "fat-incompleta.msg"
     path.write_bytes(data)
 
-    assert message_extractor._recover_fat_sectors(path) == [0, 108, 253, 336]
+    assert fat_recovery.recover_fat_sectors(path) == [0, 108, 253, 336]

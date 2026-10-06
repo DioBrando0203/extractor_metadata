@@ -15,14 +15,15 @@ from PIL import Image
 from pypdf import PdfWriter
 
 from app.core.config import settings
-from app.services import file_metadata
+from app.services import metadata
+from app.services.metadata import exiftool, extractor, results
 
 
 def _without_exiftool(monkeypatch) -> None:
     monkeypatch.setattr(
-        file_metadata,
-        "_exiftool_metadata",
-        lambda _payload, _filename, *, deadline=None: file_metadata._ExtractionResult(),
+        extractor,
+        "exiftool_metadata",
+        lambda _payload, _filename, *, deadline=None: results.ExtractionResult(),
     )
 
 
@@ -76,9 +77,7 @@ def test_extracts_image_dimensions_and_exif(monkeypatch) -> None:
     output = io.BytesIO()
     image.save(output, format="JPEG", exif=exif)
 
-    content_type, items, warnings = file_metadata.extract_file_metadata(
-        output.getvalue(), "foto.jpg"
-    )
+    content_type, items, warnings = metadata.extract_file_metadata(output.getvalue(), "foto.jpg")
 
     values = _values(items)
     assert content_type == "image/jpeg"
@@ -95,7 +94,7 @@ def test_extracts_pdf_properties_and_uses_signature_over_extension(monkeypatch) 
     output = io.BytesIO()
     writer.write(output)
 
-    content_type, items, warnings = file_metadata.extract_file_metadata(
+    content_type, items, warnings = metadata.extract_file_metadata(
         output.getvalue(), "aparenta-ser-imagen.jpg"
     )
 
@@ -117,9 +116,7 @@ def test_extracts_xlsx_properties_without_reading_worksheets(monkeypatch) -> Non
     book.save(output)
     book.close()
 
-    content_type, items, warnings = file_metadata.extract_file_metadata(
-        output.getvalue(), "matriz.xlsx"
-    )
+    content_type, items, warnings = metadata.extract_file_metadata(output.getvalue(), "matriz.xlsx")
 
     values = _values(items)
     assert content_type and "spreadsheetml" in content_type
@@ -138,9 +135,7 @@ def test_extracts_docx_core_properties(monkeypatch) -> None:
     output = io.BytesIO()
     document.save(output)
 
-    content_type, items, warnings = file_metadata.extract_file_metadata(
-        output.getvalue(), "acta.docx"
-    )
+    content_type, items, warnings = metadata.extract_file_metadata(output.getvalue(), "acta.docx")
 
     values = _values(items)
     assert content_type and "wordprocessingml" in content_type
@@ -159,7 +154,7 @@ def test_extracts_dxf_header_and_layers(monkeypatch) -> None:
     output = io.StringIO()
     document.write(output)
 
-    content_type, items, warnings = file_metadata.extract_file_metadata(
+    content_type, items, warnings = metadata.extract_file_metadata(
         output.getvalue().encode("latin-1"), "plano.dxf"
     )
 
@@ -174,9 +169,7 @@ def test_extracts_dxf_header_and_layers(monkeypatch) -> None:
 def test_corrupt_pdf_returns_generic_metadata_and_warning(monkeypatch) -> None:
     _without_exiftool(monkeypatch)
 
-    content_type, items, warnings = file_metadata.extract_file_metadata(
-        b"%PDF-truncado", "roto.pdf"
-    )
+    content_type, items, warnings = metadata.extract_file_metadata(b"%PDF-truncado", "roto.pdf")
 
     assert content_type == "application/pdf"
     assert _values(items)["Firma detectada"] == "PDF"
@@ -190,7 +183,7 @@ def test_office_zip_bomb_is_not_decompressed(monkeypatch) -> None:
         archive.writestr("xl/workbook.xml", "<workbook/>")
         archive.writestr("xl/worksheets/sheet1.xml", "0" * 400_000)
 
-    _content_type, _items, warnings = file_metadata.extract_file_metadata(
+    _content_type, _items, warnings = metadata.extract_file_metadata(
         output.getvalue(), "sospechoso.xlsx"
     )
 
@@ -200,7 +193,7 @@ def test_office_zip_bomb_is_not_decompressed(monkeypatch) -> None:
 def test_dwg_reports_only_header_level_coverage(monkeypatch) -> None:
     _without_exiftool(monkeypatch)
 
-    content_type, items, warnings = file_metadata.extract_file_metadata(
+    content_type, items, warnings = metadata.extract_file_metadata(
         b"AC1032\x00contenido", "plano.dwg"
     )
 
@@ -218,10 +211,10 @@ def test_exiftool_is_read_only_stdin_and_combined_with_native(monkeypatch) -> No
             io.BytesIO(b'[{"SourceFile":"-","File:FileName":"-","EXIF:Artist":"Ada"}]')
         )
 
-    monkeypatch.setattr(file_metadata.shutil, "which", lambda _name: "/opt/exiftool")
-    monkeypatch.setattr(file_metadata.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(exiftool.shutil, "which", lambda _name: "/opt/exiftool")
+    monkeypatch.setattr(exiftool.subprocess, "Popen", fake_popen)
 
-    _content_type, items, warnings = file_metadata.extract_file_metadata(
+    _content_type, items, warnings = metadata.extract_file_metadata(
         b"adjunto desconocido", "nombre-malicioso.jpg"
     )
 
@@ -229,9 +222,9 @@ def test_exiftool_is_read_only_stdin_and_combined_with_native(monkeypatch) -> No
     assert command == ["/opt/exiftool", "-j", "-G1", "-s", "-"]
     assert all("FileName=" not in argument for argument in command)
     assert kwargs["shell"] is False
-    assert kwargs["stdin"] is file_metadata.subprocess.PIPE
-    assert kwargs["stdout"] is file_metadata.subprocess.PIPE
-    assert kwargs["stderr"] is file_metadata.subprocess.DEVNULL
+    assert kwargs["stdin"] is exiftool.subprocess.PIPE
+    assert kwargs["stdout"] is exiftool.subprocess.PIPE
+    assert kwargs["stderr"] is exiftool.subprocess.DEVNULL
     assert _values(items)["EXIF:Artist"] == "Ada"
     assert not warnings
 
@@ -240,14 +233,14 @@ def test_exiftool_values_are_truncated_before_serialization(monkeypatch) -> None
     huge_value = "x" * (settings.max_property_chars + 100)
     exiftool_output = ('[{"XMP:Description":"' + huge_value + '"}]').encode()
 
-    monkeypatch.setattr(file_metadata.shutil, "which", lambda _name: "/opt/exiftool")
+    monkeypatch.setattr(exiftool.shutil, "which", lambda _name: "/opt/exiftool")
     monkeypatch.setattr(
-        file_metadata.subprocess,
+        exiftool.subprocess,
         "Popen",
         lambda _command, **_kwargs: _FakeProcess(io.BytesIO(exiftool_output)),
     )
 
-    _content_type, items, warnings = file_metadata.extract_file_metadata(b"x", "datos.bin")
+    _content_type, items, warnings = metadata.extract_file_metadata(b"x", "datos.bin")
 
     value = _values(items)["XMP:Description"]
     assert len(value) > settings.max_property_chars
@@ -256,11 +249,11 @@ def test_exiftool_values_are_truncated_before_serialization(monkeypatch) -> None
 
 
 def test_exiftool_output_larger_than_budget_is_killed(monkeypatch) -> None:
-    process = _FakeProcess(io.BytesIO(b"x" * (file_metadata.EXIFTOOL_STDOUT_MAX_BYTES + 1)))
-    monkeypatch.setattr(file_metadata.shutil, "which", lambda _name: "/opt/exiftool")
-    monkeypatch.setattr(file_metadata.subprocess, "Popen", lambda *_args, **_kwargs: process)
+    process = _FakeProcess(io.BytesIO(b"x" * (exiftool.EXIFTOOL_STDOUT_MAX_BYTES + 1)))
+    monkeypatch.setattr(exiftool.shutil, "which", lambda _name: "/opt/exiftool")
+    monkeypatch.setattr(exiftool.subprocess, "Popen", lambda *_args, **_kwargs: process)
 
-    _content_type, _items, warnings = file_metadata.extract_file_metadata(b"archivo", "datos.bin")
+    _content_type, _items, warnings = metadata.extract_file_metadata(b"archivo", "datos.bin")
 
     assert process.killed is True
     assert process.returncode is not None
@@ -272,10 +265,10 @@ def test_exiftool_timeout_keeps_native_metadata_and_leaves_no_process(monkeypatc
     output = io.BytesIO()
     image.save(output, format="PNG")
     process = _FakeProcess(_BlockingStdout(), hangs=True)
-    monkeypatch.setattr(file_metadata.shutil, "which", lambda _name: "/opt/exiftool")
-    monkeypatch.setattr(file_metadata.subprocess, "Popen", lambda *_args, **_kwargs: process)
+    monkeypatch.setattr(exiftool.shutil, "which", lambda _name: "/opt/exiftool")
+    monkeypatch.setattr(exiftool.subprocess, "Popen", lambda *_args, **_kwargs: process)
 
-    _content_type, items, warnings = file_metadata.extract_file_metadata(
+    _content_type, items, warnings = metadata.extract_file_metadata(
         output.getvalue(), "foto.png", external_deadline=time.monotonic() + 0.02
     )
 
@@ -289,14 +282,14 @@ def test_expired_external_deadline_skips_exiftool_but_keeps_native(monkeypatch) 
     image = Image.new("RGB", (2, 1))
     output = io.BytesIO()
     image.save(output, format="PNG")
-    monkeypatch.setattr(file_metadata.shutil, "which", lambda _name: "/opt/exiftool")
+    monkeypatch.setattr(exiftool.shutil, "which", lambda _name: "/opt/exiftool")
     monkeypatch.setattr(
-        file_metadata.subprocess,
+        exiftool.subprocess,
         "Popen",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("no debe iniciar ExifTool")),
     )
 
-    _content_type, items, warnings = file_metadata.extract_file_metadata(
+    _content_type, items, warnings = metadata.extract_file_metadata(
         output.getvalue(), "foto.png", external_deadline=time.monotonic() - 1
     )
 

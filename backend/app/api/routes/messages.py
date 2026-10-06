@@ -59,6 +59,7 @@ async def download_attachment(
     request: Request,
     file: Annotated[UploadFile, File()],
     attachment_index: Annotated[int, Form(ge=0)],
+    preview: Annotated[bool, Form()] = False,
 ) -> FileResponse:
     filename = re.split(r"[/\\]", file.filename or "mensaje.msg")[-1]
     directory: Path | None = None
@@ -80,6 +81,7 @@ async def download_attachment(
                 total,
                 attachment_index,
                 output,
+                preview,
             )
         return FileResponse(
             output,

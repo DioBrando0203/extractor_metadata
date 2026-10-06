@@ -2,30 +2,36 @@
 
 ## Prioridad de uso
 
-La aplicacion esta pensada primero para una persona que no conoce formatos MSG, OLE, FAT ni metadata. Debe poder elegir un correo, leer su asunto, remitente, contenido y descargar los archivos que encuentre. Los detalles de diagnostico permanecen internos y no son parte de la vista principal.
+Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abrir un correo, leer asunto, remitente, destinatarios, fecha y texto, ver de frente imágenes, PDF y planos, y descargar cualquier adjunto. El diagnóstico técnico queda fuera de la vista principal; las propiedades de cada adjunto se consultan en el panel Detalles del visor.
 
-## Criterios verificables
+## Requisitos verificables
 
-| Requisito | Cobertura actual |
-|---|---|
-| Aplicacion local | Loopback, sin cuenta, base de datos, nube, telemetria ni historial. |
-| Privacidad | Estado en memoria del navegador; temporales efimeros del backend. |
-| Original intacto | Solo se analiza una copia temporal; no se escribe sobre el MSG elegido. |
-| Correo legible | Asunto, remitente, destinatarios, fecha y cuerpo de texto cuando los streams existen. |
-| Adjuntos descargables | Cada adjunto legible se entrega bajo demanda como descarga temporal, incluidos imagenes, PDF, Word y Excel. |
-| Sin limite fijo de peso | MSG y adjuntos se copian/procesan por bloques; el timeout aumenta con el tamano. |
-| Lectura parcial | Si una parte esta danada, se conserva lo que siga legible; PNG/PDF completos fuera de enlaces OLE se validan y se ofrecen como recuperados, sin afirmar reparar el archivo. |
-| Formatos | Imagenes, PDF, Office OOXML, DXF y firma basica DWG; otros conservan nombre y bytes si el stream es legible. |
-| Seguridad | Sin macros ni HTML activo; host y Origin externos rechazados. |
-| Pruebas | MSG y adjuntos sinteticos; nunca se agrega un correo privado al repositorio. |
+- RQ-01 Local: loopback, sin cuenta, base de datos, nube, telemetría ni historial.
+- RQ-02 Privacidad: estado en memoria del navegador; temporales efímeros del backend borrados al terminar.
+- RQ-03 Original intacto: sólo se trabaja sobre copias temporales; la reparación de FAT ocurre en una copia.
+- RQ-04 Correo legible: asunto, remitente, destinatarios Para/CC/CCO, fechas y cuerpo de texto cuando los streams existen.
+- RQ-05 Adjuntos de cualquier tipo: todo adjunto con stream legible se lista y se descarga con sus bytes exactos, sea imagen, PDF, Office, AutoCAD, comprimido, multimedia u otro.
+- RQ-06 Vista previa: imágenes (PNG, JPEG, GIF, BMP, TIFF, WEBP, ICO; EMF/WMF en Windows) con miniatura; PDF, texto, vídeo y audio se muestran en el navegador; TIFF/EMF se convierten a JPEG bajo demanda.
+- RQ-07 AutoCAD: DWG desde R13 y DXF ASCII muestran la miniatura que AutoCAD guardó dentro (PNG o BMP), además de versión de formato (DWG) o versión, unidades y capas (DXF).
+- RQ-08 Office: DOCX, XLSX y PPTX muestran la portada `docProps/thumbnail` cuando el archivo la incluye, y sus propiedades de documento.
+- RQ-09 Sin límite fijo de peso: MSG y adjuntos se procesan por bloques; el plazo crece con el tamaño.
+- RQ-10 Lectura parcial: lo legible se conserva; PNG/PDF completos fuera de enlaces OLE se ofrecen como recuperados.
+- RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin externos rechazados.
+- RQ-12 Pruebas: MSG y adjuntos sintéticos; nunca correos privados en el repositorio.
 
-## Limites honestos
+## Límites honestos
 
-No es posible recuperar datos que ya no estan presentes en el archivo. Un adjunto puede mostrarse y descargarse aunque no sea posible obtener todos sus detalles. DWG solo tiene reconocimiento basico; no se promete interpretacion profunda. Un corte de energia o terminacion forzada puede impedir la limpieza normal de temporales del sistema.
+- No se recuperan datos que ya no están en el archivo.
+- La miniatura de un DWG/DXF/Office es la que guardó el programa al último guardado; puede no coincidir con el contenido actual y no existe si se desactivó al guardar.
+- No hay render de DWG ni de páginas PDF en el backend; el PDF lo dibuja el visor del navegador.
+- EMF/WMF sólo se convierten donde Pillow puede renderizarlos (Windows).
+- Un corte de energía o terminación forzada puede impedir la limpieza de temporales.
 
 ## Pendientes fuera del alcance actual
 
 - Adjuntos MSG anidados y objetos OLE embebidos.
-- Lectura profunda de DWG con una herramienta evaluada y licenciada.
-- Corpus autorizado de corrupciones reales, sin incorporar correos privados.
+- Render completo de DWG con una herramienta evaluada y licenciada.
+- Miniatura de la primera página de PDF (requiere motor de render).
+- Descargar todos los adjuntos en un ZIP.
+- Corpus autorizado de corrupciones reales, sin correos privados.
 - Empaquetado instalable para Windows.

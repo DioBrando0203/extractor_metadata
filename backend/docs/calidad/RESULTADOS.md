@@ -1,19 +1,24 @@
-# Resultados de calidad
+# Resultados de calidad (backend)
 
-Registro: 2026-10-05 20:31:53 -05:00 (America/Lima).
+Última ejecución: 2026-10-06 00:37 -05:00 (America/Lima).
+Entorno: Windows 11, Python 3.12.10 en `.venv`.
 
-| Comprobacion | Resultado |
-|---|---|
-| Backend pytest | 40 pruebas aprobadas. |
-| Backend Ruff | Lint y formato correctos. |
-| Frontend Vitest | 9 pruebas aprobadas. |
-| Frontend lint y build | Correctos. |
-| Frontend E2E | 5 pruebas aprobadas, incluida descarga y vista movil. |
-| Descarga de adjunto | Prueba HTTP descarga un PDF sintetico, conserva sus bytes, nombre y MIME. |
-| MSG de prueba principal | PDF recuperado de 2,635,579 bytes; descarga HTTP con SHA-256 identico al PDF extraido localmente. |
-| Limpieza | El fixture confirma directorio temporal vacio tras extraer y descargar. |
-| Peso | No hay rechazo fijo por peso; copia por bloques y timeout proporcional al MSG. |
-| Recuperacion parcial | FAT truncada recuperable solo en copia temporal; adjuntos legibles conservados. |
-| Privacidad | Sin correos reales en tests ni almacenamiento persistente. |
+## Comandos
 
-La suite backend muestra una advertencia de deprecacion de Starlette/TestClient con httpx; no falla ninguna prueba. La comprobacion manual del MSG proporcionado se mantuvo local y no se incorporo al repositorio.
+- `python -m pytest`: 58 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
+- `python -m ruff check app tests`: aprobado.
+- `python -m ruff format --check app tests`: 41 archivos con formato correcto.
+
+## Verificaciones destacadas
+
+- Miniaturas: PNG, JPEG, GIF, BMP, TIFF y WEBP; DWG con preview PNG y BMP; DXF `THUMBNAILIMAGE`; Office `docProps/thumbnail`.
+- Rechazo: EPS y PDF no se decodifican como imagen; sección DWG alterada se ignora.
+- Endpoint `preview=true`: TIFF a JPEG; `NO_PREVIEW` sin vista previa; temporal vacío en ambos casos.
+- Presupuesto de miniaturas: omite sin cambiar estado ni advertencias.
+- Refactorización: la suite previa pasa sin modificar aserciones; sólo cambiaron imports y puntos de parcheo.
+- Integración: E2E del frontend (6) contra este backend reiniciado, incluida miniatura real y visor.
+
+## No ejecutado
+
+- Suite en Linux en esta sesión.
+- MSG real del usuario con la nueva versión.

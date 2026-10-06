@@ -10,6 +10,7 @@ class Settings:
     max_property_chars: int = 8_000
     max_properties: int = 1_000
     max_total_metadata_chars: int = 3_000_000
+    max_total_preview_chars: int = 8_000_000
     extraction_timeout_seconds: int = 90
     minimum_processing_bytes_per_second: int = 4 * 1024 * 1024
     max_worker_memory_bytes: int = 1024 * 1024 * 1024

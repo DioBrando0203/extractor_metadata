@@ -1,10 +1,34 @@
-# Plan de calidad
+# Plan de calidad (backend)
 
-Usar fixtures sintéticos propios, nunca correos privados. Ejecutar tests, Ruff y chequeo de formato.
-Verificar MSG válido/CFB genérico/corrupto, recuperación, cuerpo largo, adjunto >10 MB, ruta Windows,
-error por tamaño/origen, timeout, limpieza del temporal y lectura por formato.
-Validar contrato real desde navegador junto a build/lint/tests frontend.
+Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 
-Cambiar límites o worker exige volver a ejecutar corpus grande y prueba de timeout.
-Cambiar extractor exige documento real sintético del formato y prueba de degradación corrupta.
-No confundir test Linux con validación Windows. Resultados y entorno en RESULTADOS.md.
+## Mapa de pruebas
+
+- `tests/msg_factory.py`: genera MSG CFB v4 sintéticos con asunto, remitente, cuerpo y un adjunto.
+- `test_messages.py`: rutas HTTP, limpieza de temporales, recuperación FAT y OLE, presupuestos, origen y host, adjuntos grandes, descarga.
+- `test_previews.py`: miniaturas de imágenes, DWG (PNG y BMP), DXF y Office; formatos rechazados; presupuesto; endpoint `preview=true`.
+- `test_file_metadata.py`: extractores por formato (imagen, PDF, Office, DXF, DWG) e integración segura con ExifTool simulado.
+- `test_worker.py`: timeout del hijo, plazo proporcional y diagnóstico seguro.
+- `test_encoding.py`: páginas de códigos ANSI.
+- `test_body_text.py`: HTML a texto sin scripts ni recursos remotos.
+- `test_health.py`: salud local sin estado.
+
+## Comandos
+
+Desde `backend/`:
+
+- `.venv/Scripts/python.exe -m pytest` (Linux: `.venv/bin/python`).
+- `.venv/Scripts/python.exe -m ruff check app tests`.
+- `.venv/Scripts/python.exe -m ruff format --check app tests`.
+
+## Cuándo ampliar
+
+- Formato nuevo: prueba válida y corrupta (QB-03).
+- Cambio en worker o límites: repetir timeout y MSG grande (QB-08).
+- Cambio de contrato: E2E del frontend (`npm run test:e2e`) con el backend reiniciado.
+- Refactorización: suite completa sin tocar aserciones (QB-07).
+
+## Revisión manual
+
+- Con un MSG real del usuario: sólo local, nunca se copia al repositorio; registrar resultados sin nombres ni contenido.
+- Confirmar que `temp_root` queda vacío tras análisis, descarga y vista previa.
