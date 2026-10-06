@@ -11,6 +11,7 @@ Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y
 ## Comportamiento
 
 - Cabecera: clip, "N datos adjuntos" y tamaño total; "Mostrar los N" / "Mostrar menos" si hay más de 6.
+- En la pestaña Mensaje se listan sólo los adjuntos no incrustados en el cuerpo; la pestaña Datos adjuntos muestra todos, sin plegado, con el título "Todos los datos adjuntos (N)" (ADR-13).
 - Orden visual: primero los adjuntos con miniatura, después el resto, conservando el orden original dentro de cada grupo. El índice que se envía a la API es siempre la posición original.
 - Con miniatura (`preview`): tarjeta con la imagen (16:10; `cover` para fotos, `contain` para miniaturas incrustadas), icono de tipo, nombre y "TIPO · tamaño".
 - Sin miniatura: chip con icono de tipo coloreado, nombre, tipo y tamaño.

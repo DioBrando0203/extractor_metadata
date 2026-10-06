@@ -84,3 +84,15 @@ Prevención: detener el proceso del puerto 8000 antes de `test:e2e` cuando cambi
 Fecha: 2026-10-06. Estado: resuelto.
 Causa: todos los estilos en `global.css`.
 Solución: un CSS por módulo de máximo 250 líneas (ADR-08, E-05).
+
+## B-12 format:check falla tras cambiar de rama en Windows
+
+Fecha: 2026-10-06. Estado: resuelto.
+Causa: Git con `core.autocrlf=true` entrega CRLF y Prettier exigía LF.
+Solución: `endOfLine: 'auto'` en `prettier.config.js`.
+
+## B-13 Escapes convertidos en caracteres reales al escribir código desde la shell
+
+Fecha: 2026-10-06. Estado: prevención para agentes.
+Síntoma: secuencias de escape de salto de línea, NUL o NBSP dentro de código generado con heredocs de shell terminaron como caracteres literales (strings rotos, lint de espacios irregulares).
+Prevención: escribir código con escapes usando el editor o un archivo de script, nunca dentro de heredocs; buscar caracteres de control con `grep -P` antes de compilar.

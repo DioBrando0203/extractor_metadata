@@ -10,7 +10,7 @@ Ver un adjunto de frente, a pantalla completa, sin descargarlo: imágenes, PDF, 
 
 ## Comportamiento
 
-- Se abre con "Ver <nombre>" en un `<dialog>` modal nativo a pantalla completa con fondo `--viewer-backdrop`.
+- Se abre con "Ver <nombre>" desde la lista de adjuntos o desde una imagen del cuerpo, en un `<dialog>` modal nativo a pantalla completa con fondo `--viewer-backdrop`.
 - Barra superior: icono de tipo, nombre, "TIPO · tamaño · i de N"; acciones Detalles (alterna), Descargar y Cerrar.
 - Flechas laterales y teclas ← → pasan al adjunto anterior o siguiente (circular). Esc cierra. Al cerrar, el foco vuelve al botón que abrió el visor.
 - Panel Detalles (320 px a la derecha; flotante bajo 960 px): Tipo, Tamaño y los metadatos del backend agrupados (sin repetir nombre ni tamaño).

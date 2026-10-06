@@ -8,35 +8,52 @@ import {
 import { Button } from '../../../components/ui/Button'
 import { formatBytes } from '../../../lib/formatters'
 import type { Attachment } from '../../../lib/types'
-import { useAttachmentFiles } from '../hooks/useAttachmentFiles'
+import type { AttachmentFiles } from '../hooks/useAttachmentFiles'
 import { FileChip, PreviewCard } from './AttachmentTiles'
 import type { Entry } from './AttachmentTiles'
-import { AttachmentViewer } from './AttachmentViewer'
 
-type Props = { attachments: Attachment[]; file: File }
+type Props = {
+  /** Lista completa del correo: el índice de cada adjunto es su posición aquí (la que usa la API). */
+  attachments: Attachment[]
+  /** Subconjunto a mostrar; por defecto todos. */
+  indices?: number[]
+  files: AttachmentFiles
+  onOpen: (index: number) => void
+  /** Plegar a partir de `COLLAPSED_COUNT`; la galería completa lo desactiva. */
+  collapsible?: boolean
+  heading?: string
+}
 
 /** Con más adjuntos que este número la lista se pliega para no empujar el cuerpo fuera de la vista. */
 const COLLAPSED_COUNT = 6
 
-export function AttachmentList({ attachments, file }: Props) {
+export function AttachmentList({
+  attachments,
+  indices,
+  files,
+  onOpen,
+  collapsible: canCollapse = true,
+  heading,
+}: Props) {
   const headingId = useId()
-  const files = useAttachmentFiles(file)
   const [downloading, setDownloading] = useState<ReadonlySet<number>>(new Set())
   const [failed, setFailed] = useState<number | null>(null)
   const [expanded, setExpanded] = useState(false)
-  const [viewing, setViewing] = useState<number | null>(null)
 
   // Las vistas previas primero, como en un lector de correo; el índice original se conserva para la API.
-  const entries: Entry[] = attachments.map((attachment, index) => ({ attachment, index }))
+  const shown = indices ?? attachments.map((_, index) => index)
+  const entries: Entry[] = shown.map((index) => ({ attachment: attachments[index], index }))
   const ordered = [
     ...entries.filter((entry) => entry.attachment.preview),
     ...entries.filter((e) => !e.attachment.preview),
   ]
-  const collapsible = ordered.length > COLLAPSED_COUNT
+  const collapsible = canCollapse && ordered.length > COLLAPSED_COUNT
   const visible = collapsible && !expanded ? ordered.slice(0, COLLAPSED_COUNT) : ordered
   const previews = visible.filter((entry) => entry.attachment.preview)
   const others = visible.filter((entry) => !entry.attachment.preview)
-  const knownSizes = attachments.map((item) => item.size_bytes).filter((size): size is number => size != null)
+  const knownSizes = entries
+    .map((entry) => entry.attachment.size_bytes)
+    .filter((size): size is number => size != null)
   const total = knownSizes.reduce((sum, size) => sum + size, 0)
 
   async function download({ attachment, index }: Entry) {
@@ -58,7 +75,7 @@ export function AttachmentList({ attachments, file }: Props) {
   const tileProps = (entry: Entry) => ({
     entry,
     busy: downloading.has(entry.index),
-    onOpen: () => setViewing(entry.index),
+    onOpen: () => onOpen(entry.index),
     onDownload: () => void download(entry),
   })
 
@@ -67,7 +84,7 @@ export function AttachmentList({ attachments, file }: Props) {
       <div className="attachments__head">
         <h2 id={headingId} className="attachments__title">
           <Attach16Regular aria-hidden="true" />
-          {attachments.length} {attachments.length === 1 ? 'dato adjunto' : 'datos adjuntos'}
+          {heading ?? `${entries.length} ${entries.length === 1 ? 'dato adjunto' : 'datos adjuntos'}`}
           {knownSizes.length > 0 && <span className="attachments__total"> ({formatBytes(total)})</span>}
         </h2>
         {collapsible && (
@@ -77,7 +94,7 @@ export function AttachmentList({ attachments, file }: Props) {
             aria-expanded={expanded}
             onClick={() => setExpanded((value) => !value)}
           >
-            {expanded ? 'Mostrar menos' : `Mostrar los ${attachments.length}`}
+            {expanded ? 'Mostrar menos' : `Mostrar los ${entries.length}`}
             {expanded ? (
               <ChevronUp16Regular aria-hidden="true" />
             ) : (
@@ -109,15 +126,6 @@ export function AttachmentList({ attachments, file }: Props) {
           <ErrorCircle16Regular aria-hidden="true" />
           No se pudo descargar “{attachments[failed]?.name}”. Inténtalo otra vez.
         </p>
-      )}
-      {viewing !== null && (
-        <AttachmentViewer
-          attachments={attachments}
-          index={viewing}
-          files={files}
-          onNavigate={setViewing}
-          onClose={() => setViewing(null)}
-        />
       )}
     </section>
   )

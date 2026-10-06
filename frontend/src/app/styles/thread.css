@@ -1,0 +1,104 @@
+/* Feature message-viewer: imágenes incrustadas en el cuerpo, pestañas del lector e historial citado. */
+
+.mail__card > .tabs {
+  margin: 0 var(--space-l) var(--space-m);
+}
+
+.inline-image {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: var(--space-s) 0;
+  overflow: hidden;
+  border: 1px solid var(--stroke-3);
+  border-radius: var(--radius-md);
+  cursor: zoom-in;
+  transition:
+    border-color var(--duration-faster) var(--curve-easy-ease),
+    box-shadow var(--duration-faster) var(--curve-easy-ease);
+}
+.inline-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.inline-image:hover {
+  border-color: var(--stroke-1-hover);
+  box-shadow: var(--shadow-4);
+}
+.inline-file {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s-nudge);
+  margin: var(--space-xs) 0;
+  padding: var(--space-xs) var(--space-s);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-md);
+  color: var(--brand-70);
+  font-size: var(--fs-200);
+  line-height: var(--lh-200);
+}
+.inline-file:hover {
+  background: var(--bg-1-hover);
+}
+.inline-missing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s-nudge);
+  margin: var(--space-xs) 0;
+  color: var(--fg-3);
+  font-size: var(--fs-200);
+  font-style: italic;
+}
+
+.thread {
+  margin-top: var(--space-xl);
+}
+.thread__list {
+  display: grid;
+  gap: var(--space-l);
+  margin-top: var(--space-l);
+}
+.quoted {
+  padding-top: var(--space-l);
+  border-top: 1px solid var(--stroke-2);
+}
+.quoted__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-m);
+  margin-bottom: var(--space-m);
+}
+.quoted__who {
+  flex: 1;
+  min-width: 0;
+}
+.quoted__from {
+  color: var(--fg-1);
+  overflow-wrap: anywhere;
+}
+.quoted__from strong {
+  font-weight: var(--fw-semibold);
+}
+.quoted__email {
+  margin-left: var(--space-s-nudge);
+  color: var(--fg-3);
+  font-size: var(--fs-200);
+}
+.quoted__field {
+  color: var(--fg-2);
+  font-size: var(--fs-200);
+  line-height: var(--lh-200);
+  overflow-wrap: anywhere;
+}
+.quoted__field span {
+  color: var(--fg-3);
+}
+.quoted__date {
+  flex: none;
+  max-width: 40%;
+  color: var(--fg-3);
+  font-size: var(--fs-200);
+  line-height: var(--lh-200);
+  text-align: right;
+}

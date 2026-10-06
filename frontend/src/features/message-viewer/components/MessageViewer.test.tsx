@@ -51,9 +51,13 @@ describe('MessageViewer', () => {
     expect(screen.getByText(/Persona 10/)).toBeInTheDocument()
   })
 
-  it('reduce bloques de líneas vacías del cuerpo sin alterar el texto', () => {
+  it('convierte bloques de líneas vacías en párrafos sin alterar el texto', () => {
     renderViewer()
-    expect(screen.getByText(/Contenido seguro/).textContent).toBe('Contenido seguro como texto.\n\nFirma')
+    const paragraphs = screen.getByRole('region', { name: 'Contenido del correo' }).querySelectorAll('p')
+    expect([...paragraphs].map((paragraph) => paragraph.textContent)).toEqual([
+      'Contenido seguro como texto.',
+      'Firma',
+    ])
   })
 
   it('usa el nombre del archivo cuando falta el asunto y lo indica', () => {
@@ -82,6 +86,62 @@ describe('MessageViewer', () => {
     expect(within(section).getAllByRole('button', { name: /^Descargar/ })).toHaveLength(6)
     fireEvent.click(within(section).getByRole('button', { name: 'Mostrar los 9' }))
     expect(within(section).getAllByRole('button', { name: /^Descargar/ })).toHaveLength(9)
+  })
+
+  it('coloca las imágenes incrustadas en su posición y reúne todo en la pestaña de adjuntos', () => {
+    const logo = { name: 'logo.png', content_id: 'logo@01', preview: 'data:image/png;base64,iVBORw0KGgo=' }
+    renderViewer({
+      body_preview: ['Hola equipo', '[cid:logo@01]', 'Saludos'].join('\n'),
+      attachments: [
+        { ...logo, size_bytes: 10, metadata: [], warnings: [] },
+        { name: 'plano.dwg', size_bytes: 20, metadata: [], warnings: [] },
+      ],
+    })
+    const body = screen.getByRole('region', { name: 'Contenido del correo' })
+    expect(within(body).getByRole('button', { name: 'Ver logo.png' })).toBeInTheDocument()
+    expect(body.textContent?.indexOf('Hola equipo')).toBeLessThan(body.textContent?.indexOf('Saludos') ?? 0)
+    expect(screen.getByRole('region', { name: /1 dato adjunto/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Datos adjuntos (2)' }))
+    expect(screen.getByRole('tab', { name: 'Datos adjuntos (2)' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getAllByRole('button', { name: /^Descargar/ })).toHaveLength(2)
+  })
+
+  it('sin imágenes incrustadas no muestra pestañas', () => {
+    renderViewer()
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+  })
+
+  it('pliega el historial citado e identifica a quién envió cada mensaje', () => {
+    renderViewer({
+      body_preview: [
+        'Gracias.',
+        '',
+        'From: Carlos Rojas <carlos@example.test>',
+        'Sent: Friday, October 2, 2026 6:10 PM',
+        'To: Ana',
+        'Subject: Planos',
+        '',
+        'Envío los planos.',
+      ].join('\n'),
+    })
+    expect(screen.queryByText('Envío los planos.')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar el mensaje anterior' }))
+    const quoted = screen.getByRole('article', { name: 'Mensaje de Carlos Rojas' })
+    expect(within(quoted).getByText('<carlos@example.test>')).toBeInTheDocument()
+    expect(within(quoted).getByText('Friday, October 2, 2026 6:10 PM')).toBeInTheDocument()
+    expect(within(quoted).getByText('Envío los planos.')).toBeInTheDocument()
+  })
+
+  it('deduce el asunto del mensaje citado cuando coincide con el nombre del archivo', () => {
+    renderViewer({
+      subject: null,
+      file_name: 'RE_ Planos _ rev3.msg',
+      body_preview: ['Ok', '', 'De: Carlos', 'Enviado: lunes', 'Asunto: Planos | rev3', '', 'Adjunto'].join(
+        '\n',
+      ),
+    })
+    expect(screen.getByRole('heading', { level: 1, name: 'RE: Planos | rev3' })).toBeInTheDocument()
+    expect(screen.getByText(/Asunto deducido del mensaje citado/)).toBeInTheDocument()
   })
 
   it('no muestra diagnosticos tecnicos en la vista principal', () => {

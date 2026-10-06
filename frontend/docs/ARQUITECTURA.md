@@ -10,7 +10,7 @@ src/
   app/App.tsx                            estado de vista, panel móvil, búsqueda; ReaderContent decide el lector
   app/styles/global.css                  índice de imports; un CSS por módulo (tokens, base, ui-*, layout, ...)
   components/layout/AppLayout.tsx        cabecera, barra de apps, workspace con huecos, volver móvil, overlay
-  components/ui/                         Button, SearchBox, Avatar, StatusAlert, EmptyState, Spinner
+  components/ui/                         Button, SearchBox, Tabs, Avatar, StatusAlert, EmptyState, Spinner
   features/ingestion/
     components/Dropzone.tsx              portada
     components/QueueList.tsx, QueueRow.tsx  bandeja y filas
@@ -20,8 +20,13 @@ src/
     hooks/useWindowFileDrop.ts           arrastre en toda la ventana
     lib/validation.ts, lib/search.ts     extensión .msg y filtro de la bandeja
   features/message-viewer/
-    components/MessageViewer.tsx         asunto, aviso parcial y tarjeta del mensaje
+    components/MessageViewer.tsx         composición: título, tarjeta, pestañas, adjuntos, cuerpo y visor
+    components/MessageTitle.tsx          asunto, origen del título y aviso de lectura parcial
+    components/SenderBlock.tsx           remitente, fecha y destinatarios
     components/RecipientList.tsx         Para/CC/CCO con plegado
+    components/MessageBody.tsx           mensaje actual e historial citado
+    components/InlineContent.tsx         párrafos con imágenes incrustadas en su posición
+    components/QuotedThread.tsx          mensajes anteriores plegables con su remitente
     components/MessageLoading.tsx        esqueleto
   features/attachments/
     components/AttachmentList.tsx        cabecera, plegado, descargas y apertura del visor
@@ -35,7 +40,8 @@ src/
   features/help/components/HelpPage.tsx  guía rápida
   lib/api.ts                             único punto HTTP y normalización
   lib/types.ts                           contrato normalizado
-  lib/mail.ts, lib/formatters.ts         utilidades puras
+  lib/mail.ts, lib/formatters.ts         utilidades puras (direcciones, título con asunto deducido, texto)
+  lib/thread.ts                          hilo citado, marcadores [cid:…] y asunto deducido verificado
 e2e/                                     Playwright: funcional (backend real) y visual (@visual)
 ```
 
@@ -43,7 +49,7 @@ e2e/                                     Playwright: funcional (backend real) y 
 
 - `app` importa todo.
 - `features/*` importan `components/*` y `lib/*`.
-- `features/message-viewer` compone `features/attachments/components/AttachmentList` (ADR-05). Nada más cruza features.
+- `features/message-viewer` compone la API pública de attachments: `AttachmentList`, `AttachmentViewer` y `useAttachmentFiles` (ADR-05). Nada más cruza features.
 - `components/*` no importan `features/*`, `lib/api.ts` ni `lib/types.ts`.
 - `lib/*` no importa React.
 - Sólo `lib/api.ts` usa `fetch`.
@@ -54,9 +60,10 @@ e2e/                                     Playwright: funcional (backend real) y 
 2. `useExtractionQueue` valida, encola y procesa de uno en uno con `lib/api.extractMessage`.
 3. `filterQueue` filtra la bandeja con el texto del buscador; la selección no cambia al filtrar.
 4. `ReaderContent` elige el contenido del lector (SPEC-01).
-5. `MessageViewer` muestra el correo; `AttachmentList` las miniaturas que trae la respuesta (`preview`).
-6. Abrir un adjunto monta `AttachmentViewer`; `viewerMode` decide cómo mostrarlo y `useAttachmentFiles` pide el binario (`fetchAttachment`, con `preview=true` para TIFF/EMF) una sola vez.
-7. Descargar reutiliza el binario en caché si existe; si no, lo pide y lo guarda con `saveBlob`.
+5. `MessageViewer` muestra el correo. `splitThread` separa el mensaje actual del historial y `parseInline` coloca cada `[cid:…]` como miniatura del adjunto con ese Content-ID o nombre.
+6. Si hay imágenes en posición aparecen las pestañas Mensaje (adjuntos restantes y cuerpo) y Datos adjuntos (galería completa); si no, la lista va sobre el cuerpo sin pestañas.
+7. `MessageViewer` es dueño de `useAttachmentFiles` y del visor: lo abren la lista y las imágenes del cuerpo. Abrir un adjunto monta `AttachmentViewer`; `viewerMode` decide cómo mostrarlo y `useAttachmentFiles` pide el binario (`fetchAttachment`, con `preview=true` para TIFF/EMF) una sola vez.
+8. Descargar reutiliza el binario en caché si existe; si no, lo pide y lo guarda con `saveBlob`.
 
 ## Estado
 

@@ -40,8 +40,25 @@ describe('groupRecipients', () => {
 
 describe('messageTitle y previewLine', () => {
   it('cae al nombre del archivo sin extensión cuando no hay asunto', () => {
-    expect(messageTitle('  ', 'RE_ Informe.MSG')).toEqual({ text: 'RE_ Informe', fromFileName: true })
-    expect(messageTitle('Hola', 'x.msg')).toEqual({ text: 'Hola', fromFileName: false })
+    expect(messageTitle('  ', 'RE_ Informe.MSG')).toEqual({ text: 'RE_ Informe', source: 'file' })
+    expect(messageTitle('Hola', 'x.msg')).toEqual({ text: 'Hola', source: 'subject' })
+  })
+
+  it('deduce el asunto del mensaje citado sólo si reproduce el nombre del archivo', () => {
+    const body = [
+      'Gracias.',
+      '',
+      'From: Carlos <c@example.test>',
+      'Sent: lunes',
+      'Subject: KMV-24 | Martin County',
+      '',
+      'Hola',
+    ].join('\n')
+    expect(messageTitle(null, 'RE_ KMV-24 _ Martin County.msg', body)).toEqual({
+      text: 'RE: KMV-24 | Martin County',
+      source: 'inferred',
+    })
+    expect(messageTitle(null, 'Otro nombre.msg', body)).toEqual({ text: 'Otro nombre', source: 'file' })
   })
 
   it('resume el cuerpo en una línea', () => {

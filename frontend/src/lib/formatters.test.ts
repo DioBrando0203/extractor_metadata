@@ -36,3 +36,8 @@ test('tidyText normaliza saltos y espacios sin cambiar el contenido', () => {
   expect(tidyText('Hola  \r\n\r\n\r\n\r\nequipo\t\n')).toBe('Hola\n\nequipo')
   expect(tidyText(null)).toBe('')
 })
+
+test('quita los <mailto:> que Outlook duplica tras cada dirección', () => {
+  expect(tidyText('Ana <ana@x.test <mailto:ana@x.test> >')).toBe('Ana <ana@x.test >')
+  expect(tidyText('ana@x.test <mailto:ana@x.test>')).toBe('ana@x.test')
+})

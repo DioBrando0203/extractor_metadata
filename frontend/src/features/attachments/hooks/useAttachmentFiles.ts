@@ -3,6 +3,7 @@ import { fetchAttachment, saveBlob } from '../../../lib/api'
 import type { Attachment, AttachmentFile } from '../../../lib/types'
 
 export type Variant = 'original' | 'preview'
+export type AttachmentFiles = ReturnType<typeof useAttachmentFiles>
 
 /**
  * Caché en memoria de los binarios pedidos mientras se lee un correo. Evita reenviar el MSG al volver a

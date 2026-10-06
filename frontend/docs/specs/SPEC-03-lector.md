@@ -11,24 +11,27 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 ## Anatomía (de arriba abajo)
 
 1. Barra de asunto: `h1` 20/28 semibold, fuera de la tarjeta, como en Outlook.
-2. Nota bajo el asunto si se usó el nombre del archivo: "Asunto no recuperado: se muestra el nombre del archivo."
-3. MessageBar de advertencia si `status=partial`: "Lectura parcial. Es posible que falten algunos datos de este correo; se muestra todo lo que se pudo leer."
+2. Nota de origen si el título no es el asunto real: "Asunto deducido del mensaje citado; coincide con el nombre del archivo." o "Asunto no recuperado: se muestra el nombre del archivo."
+3. MessageBar de advertencia si `status=partial`.
 4. Tarjeta del mensaje (blanca, radio 8, `--shadow-4`):
-   1. Remitente: avatar de 40 px, nombre semibold, `<correo>` en `--fg-3`, fecha a la derecha (`lun 05/10/2026, 20:13`).
-   2. Destinatarios Para, CC y CCO (12/16). Más de 8 se pliegan con "+N más" (nombre accesible "+N más, mostrar todos los destinatarios").
-   3. Datos adjuntos (SPEC-04).
-   4. Cuerpo: texto plano, fuente de lectura, 15 px, interlineado 1.5.
-   5. Nota si el cuerpo fue truncado.
-   6. Pie: nombre del archivo `.msg` y tamaño.
+   1. Remitente: avatar de 40 px, nombre semibold, `<correo>` en `--fg-3`, fecha a la derecha.
+   2. Destinatarios Para, CC y CCO; más de 8 se pliegan con "+N más".
+   3. Pestañas Mensaje y Datos adjuntos (N), sólo si alguna imagen está en su posición (ADR-13).
+   4. Datos adjuntos no incrustados (SPEC-04).
+   5. Cuerpo: párrafos de texto plano con espaciado compacto e imágenes incrustadas en su posición (botón "Ver <nombre>" que abre el visor); "Imagen incrustada no disponible" si el `cid` no tiene adjunto.
+   6. Historial: "Mostrar los N mensajes anteriores"; cada mensaje con avatar, remitente, correo, fecha, Para/CC (nombres; la lista completa al pasar el ratón), Asunto y su texto. Abierto por defecto si el correo no tiene texto propio.
+   7. Nota si el cuerpo fue truncado.
+   8. Pie: nombre del archivo `.msg` y tamaño.
 
 ## Reglas de datos
 
-- Título: asunto limpio o, si falta, nombre del archivo sin `.msg` (Outlook nombra así los MSG guardados).
+- Título: asunto real; si falta, asunto deducido y verificado (ADR-15); si no, nombre del archivo sin `.msg`.
 - Remitente: se separa nombre y correo de `Nombre <correo>`. Si falta: "Remitente desconocido" en cursiva y avatar genérico.
 - Fecha: `sent_at` o, si falta, `received_at`. Si no hay ninguna, no se muestra nada.
 - Destinatarios: si no hay, no se muestra la lista. Nunca "Sin destinatarios".
 - Separación de direcciones: `;` siempre separa; `,` sólo si el tramo ya tiene `@` o `>` (no parte "Pérez, Ana").
-- Cuerpo: `tidyText` unifica saltos de línea, quita espacios finales y reduce 3 o más saltos a 2. No altera palabras.
+- Cuerpo: `tidyText` unifica saltos de línea, quita espacios finales, reduce 3 o más saltos a 2 y elimina los `<mailto:…>` duplicados. No altera palabras.
+- Hilo: `splitThread` (ADR-14). Imágenes: `parseInline` y `findInlineAttachment`.
 - Sin cuerpo: "No se pudo recuperar el texto de este correo."
 - No se muestran `headers`, `properties` ni `warnings`.
 
@@ -66,3 +69,10 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 - Render seguro de HTML (requiere sanitizador evaluado; hoy prohibido por P-05).
 - Imágenes en línea del cuerpo (`cid:`); hoy aparecen como adjuntos.
 - Exportar o imprimir el correo.
+
+## Criterios añadidos (2026-10-06)
+
+- CA-08: imágenes incrustadas en posición y pestaña con todos los adjuntos. Prueba: `MessageViewer.test.tsx`.
+- CA-09: historial plegado que identifica al remitente de cada mensaje. Prueba: `MessageViewer.test.tsx`, `lib/thread.test.ts`.
+- CA-10: asunto deducido sólo si reproduce el nombre del archivo. Prueba: `MessageViewer.test.tsx`, `lib/thread.test.ts`, `lib/mail.test.ts`.
+- CA-11: los `<mailto:…>` duplicados no aparecen en el texto ni en los remitentes citados. Prueba: `lib/formatters.test.ts`.

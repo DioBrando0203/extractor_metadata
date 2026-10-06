@@ -34,7 +34,7 @@ Consecuencias: cada descarga vuelve a subir el MSG al servicio local; aceptable 
 
 Fecha: 2026-10-05. Estado: vigente.
 Contexto: la regla general prohíbe que una feature importe detalles de otra.
-Decisión: excepción única y explícita: `MessageViewer` importa el componente público `AttachmentList`. No importa su `lib` ni estado interno.
+Decisión: excepción única y explícita: `MessageViewer` importa la API pública de attachments (`AttachmentList`, `AttachmentViewer`, `useAttachmentFiles`). No importa su `lib` ni estado interno. Actualizada el 2026-10-06: el visor sube al lector para abrirse también desde las imágenes del cuerpo.
 Consecuencias: si otra feature necesita adjuntos, extraer a componente compartido antes de duplicar.
 
 ## ADR-06 Arrastre a nivel de ventana
@@ -85,3 +85,24 @@ Fecha: 2026-10-06. Estado: vigente.
 Contexto: con muchos MSG abiertos hace falta encontrarlos como en Outlook.
 Decisión: buscador en la cabecera que filtra en memoria con `filterQueue` (sin tildes ni mayúsculas, todas las palabras).
 Consecuencias: sin índices ni almacenamiento; el costo es lineal y suficiente para una sesión local.
+
+## ADR-13 Imágenes en su posición y pestaña de adjuntos
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: las imágenes incrustadas aparecían sólo en un apartado, sin el orden del correo.
+Decisión: el cuerpo coloca cada `[cid:…]` como miniatura del adjunto (Content-ID o nombre). Cuando eso ocurre, el lector muestra pestañas: Mensaje (adjuntos no incrustados y cuerpo) y Datos adjuntos (galería completa como antes). Sin imágenes en posición no hay pestañas.
+Consecuencias: la lectura se parece a Outlook sin perder la galería; no se renderiza HTML.
+
+## ADR-14 Historial citado estructurado
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: las respuestas traen el hilo completo como texto, difícil de seguir.
+Decisión: `splitThread` detecta bloques De/Enviado/Para/CC/Asunto (español e inglés, con separadores de Outlook) y `QuotedThread` los muestra plegados, con avatar, nombre y fecha por mensaje. Se limpian los `<mailto:…>` duplicados.
+Consecuencias: un bloque que no llega a "Asunto" en 10 líneas no se trata como cita, para evitar falsos positivos con "De:" dentro del texto.
+
+## ADR-15 Asunto deducido sólo si se verifica
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: si el MSG pierde el asunto, el nombre del archivo es una pista pero con caracteres sustituidos (`:` y `|` pasan a `_`).
+Decisión: se toma el asunto del primer mensaje citado y sus variantes con RE/RV/FW; sólo se acepta si, saneado como lo hace Outlook, reproduce exactamente el nombre del archivo. Se avisa "Asunto deducido…".
+Consecuencias: nunca se inventa un asunto; si no coincide, se muestra el nombre del archivo con su aviso.

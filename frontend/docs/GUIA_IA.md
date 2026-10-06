@@ -30,6 +30,7 @@ Protocolo obligatorio para cualquier IA que modifique el frontend. Si algo de es
 
 ## Prohibiciones
 
+- No escribir código con secuencias de escape dentro de heredocs de shell: se convierten en caracteres reales (B-13 del frontend). Usar el editor o un archivo de script.
 - No usar `dangerouslySetInnerHTML` ni renderizar HTML del correo. Cuerpo siempre como texto plano.
 - No guardar archivos ni resultados en localStorage, sessionStorage, IndexedDB, cookies o servidor.
 - No añadir analítica, fuentes remotas, CDNs ni peticiones fuera de `lib/api.ts`.

@@ -116,6 +116,12 @@
   overflow-wrap: anywhere;
   tab-size: 4;
 }
+.mail__text p {
+  margin: 0 0 var(--space-s);
+}
+.mail__text p:last-child {
+  margin-bottom: 0;
+}
 .mail__empty {
   color: var(--fg-3);
   font-style: italic;

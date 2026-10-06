@@ -40,8 +40,13 @@ Regla: la UI nunca recibe JSON crudo (P-02).
 
 ## Funciones puras
 
-Dónde: `lib/mail.ts`, `lib/formatters.ts`, `features/*/lib`.
+Dónde: `lib/mail.ts`, `lib/formatters.ts`, `lib/thread.ts` (parser del hilo y de `[cid:…]`), `features/*/lib`.
 Qué: sin React ni efectos; se prueban sin DOM.
+
+## Estado elevado al dueño común
+
+Dónde: `MessageViewer` posee `useAttachmentFiles` y el adjunto abierto; la lista y las imágenes del cuerpo sólo llaman `onOpen(index)`.
+Cuándo: dos ramas del árbol necesitan disparar el mismo componente (el visor).
 
 ## Reinicio por clave
 

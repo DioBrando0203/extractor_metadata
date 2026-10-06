@@ -17,6 +17,8 @@ export interface Attachment {
   /** Miniatura como data URI de imagen; `embedded` si la guardó el propio archivo (DWG, DXF, Office). */
   preview?: string | null
   preview_source?: PreviewSource | null
+  /** Content-ID con el que el cuerpo marca la posición de la imagen como `[cid:…]`. */
+  content_id?: string | null
 }
 
 export interface AttachmentFile {

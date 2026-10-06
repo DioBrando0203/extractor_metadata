@@ -1,10 +1,13 @@
+import { useState } from 'react'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Attachment } from '../../../lib/types'
 
 const mocks = vi.hoisted(() => ({ fetchAttachment: vi.fn(), saveBlob: vi.fn() }))
 vi.mock('../../../lib/api', () => mocks)
+import { useAttachmentFiles } from '../hooks/useAttachmentFiles'
 import { AttachmentList } from './AttachmentList'
+import { AttachmentViewer } from './AttachmentViewer'
 
 const PIXEL = 'data:image/png;base64,iVBORw0KGgo='
 const file = new File(['msg'], 'correo.msg')
@@ -15,6 +18,26 @@ const attachment = (name: string, extra: Partial<Attachment> = {}): Attachment =
   warnings: [],
   ...extra,
 })
+
+/** Compone lista y visor igual que `MessageViewer`, que es quien decide qué adjunto se ve. */
+function Harness({ attachments }: { attachments: Attachment[] }) {
+  const files = useAttachmentFiles(file)
+  const [viewing, setViewing] = useState<number | null>(null)
+  return (
+    <>
+      <AttachmentList attachments={attachments} files={files} onOpen={setViewing} />
+      {viewing !== null && (
+        <AttachmentViewer
+          attachments={attachments}
+          index={viewing}
+          files={files}
+          onNavigate={setViewing}
+          onClose={() => setViewing(null)}
+        />
+      )}
+    </>
+  )
+}
 
 describe('AttachmentList', () => {
   beforeEach(() => {
@@ -31,8 +54,7 @@ describe('AttachmentList', () => {
 
   it('muestra la miniatura de las imágenes y un chip para los demás archivos', () => {
     render(
-      <AttachmentList
-        file={file}
+      <Harness
         attachments={[
           attachment('plano.dwg'),
           attachment('foto.png', { preview: PIXEL, preview_source: 'image' }),
@@ -47,8 +69,7 @@ describe('AttachmentList', () => {
 
   it('abre el visor con la imagen, navega al siguiente adjunto y se cierra devolviendo el foco', async () => {
     render(
-      <AttachmentList
-        file={file}
+      <Harness
         attachments={[
           attachment('foto.png', { preview: PIXEL, preview_source: 'image' }),
           attachment('plano.dwg', { preview: PIXEL, preview_source: 'embedded' }),
@@ -73,8 +94,7 @@ describe('AttachmentList', () => {
 
   it('sin vista previa ofrece descargar y muestra los detalles del archivo', async () => {
     render(
-      <AttachmentList
-        file={file}
+      <Harness
         attachments={[
           attachment('plano.dwg', {
             metadata: [{ group: 'AutoCAD', label: 'Versión de formato', value: 'DWG 2018 (formato)' }],

@@ -22,6 +22,7 @@ type ApiAttachment = {
   warnings?: unknown
   preview?: unknown
   preview_source?: unknown
+  content_id?: unknown
 }
 
 // Sólo imágenes rasterizadas en base64: nunca SVG ni HTML como miniatura.
@@ -70,6 +71,7 @@ function attachmentList(value: unknown): Attachment[] {
       metadata: items(attachment.metadata, 'Adjunto'),
       warnings: warningList(attachment.warnings),
       ...previewFields(attachment),
+      content_id: text(attachment.content_id).trim() || null,
     }
   })
 }

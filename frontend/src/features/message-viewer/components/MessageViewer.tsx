@@ -1,87 +1,92 @@
-import { useId } from 'react'
-import { DocumentText16Regular, Warning20Filled } from '@fluentui/react-icons'
-import { Avatar } from '../../../components/ui/Avatar'
+import { useId, useMemo, useState } from 'react'
+import { DocumentText16Regular } from '@fluentui/react-icons'
+import { Tabs } from '../../../components/ui/Tabs'
 import { AttachmentList } from '../../attachments/components/AttachmentList'
-import { formatBytes, formatMailDate, tidyText } from '../../../lib/formatters'
-import { groupRecipients, messageTitle, parseAddress } from '../../../lib/mail'
+import { AttachmentViewer } from '../../attachments/components/AttachmentViewer'
+import { useAttachmentFiles } from '../../attachments/hooks/useAttachmentFiles'
+import { formatBytes, tidyText } from '../../../lib/formatters'
+import { messageTitle } from '../../../lib/mail'
+import { inlineAttachmentIndices } from '../../../lib/thread'
 import type { Message } from '../../../lib/types'
-import { RecipientList } from './RecipientList'
+import { MessageBody } from './MessageBody'
+import { MessageTitle } from './MessageTitle'
+import { SenderBlock } from './SenderBlock'
 
 type Props = { message: Message; file: File }
+type Tab = 'message' | 'attachments'
 
 /**
- * Panel de lectura con la estructura de un cliente de correo: el asunto arriba y, debajo, la tarjeta del
- * mensaje con remitente, destinatarios, fecha, adjuntos y cuerpo.
+ * Panel de lectura con la estructura de Outlook: asunto y, debajo, la tarjeta del mensaje. Si el cuerpo
+ * coloca imágenes en su posición, la pestaña "Datos adjuntos" reúne además todos los archivos.
  */
 export function MessageViewer({ message, file }: Props) {
   const titleId = useId()
-  const title = messageTitle(message.subject, message.file_name)
-  const sender = message.sender ? parseAddress(message.sender) : null
-  const recipients = groupRecipients(message.recipients)
-  const dateValue = message.sent_at ?? message.received_at
-  const date = formatMailDate(dateValue)
+  const panelId = useId()
+  const files = useAttachmentFiles(file)
+  const [tab, setTab] = useState<Tab>('message')
+  const [viewing, setViewing] = useState<number | null>(null)
+  const { attachments } = message
   const body = tidyText(message.body_preview)
+  const title = messageTitle(message.subject, message.file_name, body)
+  const inline = useMemo(() => inlineAttachmentIndices(body, attachments), [body, attachments])
+  const wellIndices = attachments.map((_, index) => index).filter((index) => !inline.has(index))
+  const tabbed = inline.size > 0
+  const showGallery = tabbed && tab === 'attachments'
 
   return (
     <article className="mail" aria-labelledby={titleId}>
-      <header className="mail__subject-bar">
-        <h1 id={titleId} className="mail__subject">
-          {title.text}
-        </h1>
-        {title.fromFileName && (
-          <p className="mail__subject-note">Asunto no recuperado: se muestra el nombre del archivo.</p>
-        )}
-      </header>
-      {message.status === 'partial' && (
-        <p className="mail__infobar">
-          <Warning20Filled className="mail__infobar-icon" aria-hidden="true" />
-          <span>
-            <strong>Lectura parcial.</strong> Es posible que falten algunos datos de este correo; se muestra
-            todo lo que se pudo leer.
-          </span>
-        </p>
-      )}
+      <MessageTitle
+        id={titleId}
+        text={title.text}
+        source={title.source}
+        partial={message.status === 'partial'}
+      />
       <div className="mail__card">
-        <div className={`mail__sender ${recipients.length ? '' : 'mail__sender--compact'}`}>
-          <Avatar name={sender?.name} />
-          <div className="mail__sender-body">
-            <div className="mail__sender-top">
-              <p className="mail__from">
-                {sender ? (
-                  <>
-                    <strong>{sender.name}</strong>
-                    {sender.email && sender.email !== sender.name && (
-                      <span className="mail__email">&lt;{sender.email}&gt;</span>
-                    )}
-                  </>
-                ) : (
-                  <strong className="is-missing">Remitente desconocido</strong>
-                )}
-              </p>
-              {date && dateValue && (
-                <time className="mail__date" dateTime={dateValue}>
-                  {date}
-                </time>
-              )}
-            </div>
-            {recipients.length > 0 && <RecipientList groups={recipients} />}
-          </div>
-        </div>
-
-        {message.attachments.length > 0 && <AttachmentList attachments={message.attachments} file={file} />}
-
-        <section className="mail__body" aria-label="Contenido del correo">
-          {body ? (
-            // Siempre texto plano: el HTML del correo nunca se inyecta en la página.
-            <pre className="mail__text">{body}</pre>
+        <SenderBlock message={message} />
+        {tabbed && (
+          <Tabs
+            label="Vista del correo"
+            panelId={panelId}
+            selected={tab}
+            onSelect={(id) => setTab(id as Tab)}
+            tabs={[
+              { id: 'message', label: 'Mensaje' },
+              { id: 'attachments', label: `Datos adjuntos (${attachments.length})` },
+            ]}
+          />
+        )}
+        <div
+          id={tabbed ? panelId : undefined}
+          role={tabbed ? 'tabpanel' : undefined}
+          aria-labelledby={tabbed ? `${panelId}-${tab}` : undefined}
+        >
+          {showGallery ? (
+            <AttachmentList
+              attachments={attachments}
+              files={files}
+              onOpen={setViewing}
+              collapsible={false}
+              heading={`Todos los datos adjuntos (${attachments.length})`}
+            />
           ) : (
-            <p className="mail__empty">No se pudo recuperar el texto de este correo.</p>
+            <>
+              {wellIndices.length > 0 && (
+                <AttachmentList
+                  attachments={attachments}
+                  indices={wellIndices}
+                  files={files}
+                  onOpen={setViewing}
+                />
+              )}
+              <MessageBody
+                text={body}
+                truncated={message.body_truncated}
+                attachments={attachments}
+                onOpenAttachment={setViewing}
+              />
+            </>
           )}
-          {message.body_truncated && (
-            <p className="mail__note">El mensaje es muy largo: se muestra sólo la primera parte.</p>
-          )}
-        </section>
-
+        </div>
         <footer className="mail__foot">
           <DocumentText16Regular aria-hidden="true" />
           <span className="mail__foot-name">{message.file_name}</span>
@@ -89,6 +94,15 @@ export function MessageViewer({ message, file }: Props) {
           <span>{formatBytes(message.file_size_bytes)}</span>
         </footer>
       </div>
+      {viewing !== null && (
+        <AttachmentViewer
+          attachments={attachments}
+          index={viewing}
+          files={files}
+          onNavigate={setViewing}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </article>
   )
 }

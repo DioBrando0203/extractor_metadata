@@ -1,3 +1,5 @@
+import { inferSubject, splitThread } from './thread'
+
 /**
  * Utilidades de presentación para direcciones y textos de correo.
  * Son funciones puras: no conocen la API ni el estado de la cola, sólo transforman texto para mostrarlo.
@@ -93,16 +95,23 @@ export function fileStem(fileName: string): string {
   return fileName.replace(/\.msg$/i, '')
 }
 
+export type TitleSource = 'subject' | 'inferred' | 'file'
+
 /**
- * Título visible del correo. Outlook nombra los `.msg` guardados con el asunto, así que el nombre del
- * archivo es el mejor sustituto cuando el asunto no se recuperó; `fromFileName` permite avisarlo.
+ * Título visible del correo, en orden de confianza: el asunto real; si falta, el asunto del mensaje
+ * citado cuando coincide exactamente con el nombre del archivo (Outlook nombra así los `.msg`
+ * guardados); y si no, el nombre del archivo. `source` permite avisar al usuario.
  */
 export function messageTitle(
   subject: string | null | undefined,
   fileName: string,
-): { text: string; fromFileName: boolean } {
+  body?: string | null,
+): { text: string; source: TitleSource } {
   const clean = subject?.trim()
-  return clean ? { text: clean, fromFileName: false } : { text: fileStem(fileName), fromFileName: true }
+  if (clean) return { text: clean, source: 'subject' }
+  const stem = fileStem(fileName)
+  const inferred = body ? inferSubject(stem, splitThread(body).quoted) : null
+  return inferred ? { text: inferred, source: 'inferred' } : { text: stem, source: 'file' }
 }
 
 /** Primera parte del cuerpo en una sola línea, para la vista previa de la bandeja. */

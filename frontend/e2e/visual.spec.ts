@@ -75,6 +75,11 @@ for (const viewport of WIDTHS) {
     await open(page, FILES)
     await page.getByRole('heading', { name: /Revisión de planos/ }).waitFor()
     await capture(page, '02-correo')
+    await page.getByRole('button', { name: /mensajes anteriores/ }).click()
+    await capture(page, '02b-historial')
+    await page.getByRole('tab', { name: /Datos adjuntos/ }).click()
+    await capture(page, '02c-galeria')
+    await page.getByRole('tab', { name: 'Mensaje' }).click()
 
     await page.getByRole('button', { name: 'Ver Foto obra frontal.png' }).click()
     await page.getByRole('dialog').getByRole('img').waitFor()

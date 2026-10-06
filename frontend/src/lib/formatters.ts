@@ -54,9 +54,17 @@ export function formatListDate(value?: string | null, now: Date = new Date()): s
  */
 export function tidyText(value?: string | null): string {
   if (!value) return ''
-  return value
+  return stripMailto(value)
     .replace(/\r\n?/g, '\n')
     .replace(/[ \t\u00a0]+$/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
+}
+
+/**
+ * Quita los `<mailto:\u2026>` que Outlook a\u00f1ade tras cada direcci\u00f3n al pasar HTML a texto
+ * (`ana@x.com <mailto:ana@x.com>`). La direcci\u00f3n visible se conserva.
+ */
+export function stripMailto(value: string): string {
+  return value.replace(/\s*<mailto:[^<>\s]+>/gi, '')
 }

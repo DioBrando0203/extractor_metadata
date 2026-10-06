@@ -149,6 +149,17 @@
     display: block;
     margin-left: 0;
   }
+  .quoted__head {
+    flex-wrap: wrap;
+  }
+  .quoted__date {
+    max-width: none;
+    padding-left: calc(32px + var(--space-m));
+    text-align: left;
+  }
+  .mail__card > .tabs {
+    margin: 0 var(--space-s) var(--space-m);
+  }
   .dropzone {
     padding: var(--space-xxl) var(--space-l);
   }

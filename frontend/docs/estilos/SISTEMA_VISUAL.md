@@ -66,6 +66,10 @@ Base: Fluent 2, sistema de diseño público de Microsoft (repositorio `microsoft
 - Spinner: anillo con arco de marca; versión `inverted` para el visor.
 - Chip: 18 de alto, borde interior del color del estado.
 - Skeleton: bloques `--skeleton` con brillo; reproduce la anatomía real.
+- Tabs: TabList de Fluent; texto 14/20, seleccionada en semibold con indicador de marca de 3 px; hover con indicador gris.
+- Imagen incrustada: tamaño natural hasta el ancho del cuerpo, borde `--stroke-3`, radio 4, cursor lupa; hover con `--shadow-4`.
+- Mensaje citado: borde superior `--stroke-2`; avatar de 32, nombre semibold, correo y campos 12/16 en `--fg-3`, fecha a la derecha (debajo en móvil).
+- Párrafos del cuerpo: separación `--space-s` en lugar de una línea en blanco.
 
 ## Iconografía
 

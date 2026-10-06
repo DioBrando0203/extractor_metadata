@@ -74,7 +74,9 @@ function MessageSummary({ message, fileName }: { message: Message; fileName: str
           )}
         </span>
         <span className="mail-item__line">
-          <span className="mail-item__subject">{messageTitle(message.subject, fileName).text}</span>
+          <span className="mail-item__subject">
+            {messageTitle(message.subject, fileName, message.body_preview).text}
+          </span>
           {date && <span className="mail-item__date">{date}</span>}
         </span>
         <span className="mail-item__line">
