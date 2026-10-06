@@ -1,55 +1,94 @@
+import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
-import { FileSearch, HelpCircle, Inbox, ShieldCheck } from 'lucide-react'
+import { ChevronLeft, CircleHelp, Inbox, MailSearch, ShieldCheck } from 'lucide-react'
 import { Button } from '../ui/Button'
+
+export type View = 'analysis' | 'help'
+export type Pane = 'list' | 'reader'
+
 type Props = {
   children: ReactNode
-  activeView: 'analysis' | 'help'
-  onViewChange: (view: 'analysis' | 'help') => void
-  sidebar: ReactNode
+  activeView: View
+  onViewChange: (view: View) => void
+  /** Panel de lista. Si falta, el lector ocupa todo el ancho disponible. */
+  list?: ReactNode
+  /** Panel visible en pantallas angostas, donde lista y lector no caben juntos. */
+  pane: Pane
+  /** Acción "volver a la lista" que sólo se muestra en pantallas angostas. */
+  back?: { label: string; onClick: () => void }
+  /** Cambia cuando el contenido del lector es otro; devuelve el scroll al inicio. */
+  contentKey?: string
+  overlay?: ReactNode
 }
-export function AppLayout({ children, activeView, onViewChange, sidebar }: Props) {
+
+const NAVIGATION: { view: View; label: string; icon: typeof Inbox }[] = [
+  { view: 'analysis', label: 'Bandeja', icon: Inbox },
+  { view: 'help', label: 'Ayuda', icon: CircleHelp },
+]
+
+export function AppLayout({
+  children,
+  activeView,
+  onViewChange,
+  list,
+  pane,
+  back,
+  contentKey,
+  overlay,
+}: Props) {
+  const reader = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (reader.current) reader.current.scrollTop = 0
+  }, [contentKey])
+
   return (
-    <main className="app-shell">
+    <div className="app-shell">
+      <a className="skip-link" href="#reader">
+        Saltar al contenido
+      </a>
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">
-            <FileSearch size={20} />
+          <span className="brand__mark" aria-hidden="true">
+            <MailSearch size={18} />
           </span>
-          <span>
-            Inspector <b>MSG</b>
+          <span className="brand__name">
+            Inspector <strong>MSG</strong>
           </span>
         </div>
-        <div className="local-badge">
-          <ShieldCheck size={16} /> Sesión local · sin cuenta
-        </div>
+        <p className="topbar__badge" title="Sin cuenta, sin nube y sin historial">
+          <ShieldCheck size={15} aria-hidden="true" />
+          <span className="topbar__badge-text">Sesión local · sin cuenta</span>
+        </p>
       </header>
-      <div className="workspace">
+      <div className={`workspace ${list ? 'workspace--with-list' : ''}`} data-pane={pane}>
         <nav className="rail" aria-label="Navegación principal">
-          <Button
-            variant="ghost"
-            className={`rail-item ${activeView === 'analysis' ? 'is-active' : ''}`}
-            aria-current={activeView === 'analysis' ? 'page' : undefined}
-            onClick={() => onViewChange('analysis')}
-          >
-            <Inbox size={20} />
-            <span>Análisis</span>
-          </Button>
-          <Button
-            variant="ghost"
-            className={`rail-item ${activeView === 'help' ? 'is-active' : ''}`}
-            aria-current={activeView === 'help' ? 'page' : undefined}
-            onClick={() => onViewChange('help')}
-          >
-            <HelpCircle size={20} />
-            <span>Ayuda</span>
-          </Button>
+          {NAVIGATION.map(({ view, label, icon: Icon }) => (
+            <button
+              key={view}
+              type="button"
+              className="rail__item"
+              aria-current={activeView === view ? 'page' : undefined}
+              onClick={() => onViewChange(view)}
+            >
+              <Icon size={20} aria-hidden="true" />
+              <span>{label}</span>
+            </button>
+          ))}
         </nav>
-        {sidebar}
-        <section className="reader" aria-live="polite">
+        {list}
+        <main id="reader" ref={reader} className="reader" tabIndex={-1}>
+          {back && (
+            <div className="reader__back">
+              <Button variant="ghost" size="sm" onClick={back.onClick}>
+                <ChevronLeft size={16} aria-hidden="true" /> {back.label}
+              </Button>
+            </div>
+          )}
           {children}
-        </section>
+        </main>
       </div>
-      <footer>Los archivos y resultados permanecen sólo en la memoria de esta sesión.</footer>
-    </main>
+      {overlay}
+    </div>
   )
 }

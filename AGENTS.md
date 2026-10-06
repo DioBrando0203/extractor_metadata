@@ -2,6 +2,7 @@
 
 Antes de modificar, leer este archivo y la arquitectura del lado afectado:
 - `backend/docs/ARQUITECTURA.md`
+- `frontend/docs/README.md` y `frontend/docs/GUIA_IA.md`: índice, protocolo SDD y definición de terminado del frontend.
 - `frontend/docs/ARQUITECTURA.md`
 - `backend/docs/REQUERIMIENTOS.md`: alcance, cobertura y pendientes reales.
 

@@ -1,64 +1,59 @@
-import { useRef, useState } from 'react'
-import { FileUp, ShieldCheck } from 'lucide-react'
+import { FileWarning, FolderOpen, Lock, Paperclip, ShieldCheck, Upload } from 'lucide-react'
 import { Button } from '../../../components/ui/Button'
-import { StatusAlert } from '../../../components/ui/StatusAlert'
 
-type Props = { busy: boolean; errors: string[]; onFiles: (files: File[]) => void }
-export function Dropzone({ busy, errors, onFiles }: Props) {
-  const input = useRef<HTMLInputElement>(null)
-  const [dragging, setDragging] = useState(false)
-  function accept(files: FileList | null) {
-    if (files?.length) onFiles(Array.from(files))
-  }
+type Props = {
+  /** Hay archivos arrastrándose sobre la ventana; el destino real es toda la ventana. */
+  active: boolean
+  onBrowse: () => void
+}
+
+const FEATURES = [
+  { icon: Lock, title: 'Local', text: 'Se procesa en este equipo; nada se sube a internet.' },
+  { icon: Paperclip, title: 'Adjuntos', text: 'Descarga PDF, Office, imágenes, planos y más.' },
+  {
+    icon: FileWarning,
+    title: 'Lectura parcial',
+    text: 'Si el archivo está dañado, ves lo que siga legible.',
+  },
+]
+
+export function Dropzone({ active, onBrowse }: Props) {
   return (
-    <div className="empty-reader">
-      <div className="eyebrow">
-        <ShieldCheck size={16} /> Privado · sin cuenta · sin base de datos
-      </div>
-      <h1>Lee lo que Outlook no pudo</h1>
-      <p>
-        Arrastra un archivo <b>.msg</b> o selecciónalo. Verás el mensaje, sus adjuntos y los metadatos
-        disponibles en una sola vista.
+    <section className="landing" aria-labelledby="landing-title">
+      <p className="eyebrow">
+        <ShieldCheck size={15} aria-hidden="true" /> Privado · sin cuenta · sin base de datos
       </p>
-      <div
-        className={`dropzone ${dragging ? 'dragging' : ''}`}
-        onDragOver={(event) => {
-          event.preventDefault()
-          setDragging(true)
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(event) => {
-          event.preventDefault()
-          setDragging(false)
-          accept(event.dataTransfer.files)
-        }}
-      >
-        <FileUp size={38} />
-        <strong>{busy ? 'La cola se está procesando' : 'Suelta tus archivos MSG aquí'}</strong>
-        <span>Puedes elegir uno o varios archivos</span>
-        <Button onClick={() => input.current?.click()}>Buscar archivos</Button>
-        <input
-          ref={input}
-          type="file"
-          multiple
-          accept=".msg,application/vnd.ms-outlook"
-          onChange={(event) => {
-            accept(event.target.files)
-            event.target.value = ''
-          }}
-          hidden
-        />
+      <h1 id="landing-title" className="landing__title">
+        Lee lo que Outlook no pudo
+      </h1>
+      <p className="landing__lead">
+        Abre un archivo <b>.msg</b>, aunque esté dañado, para leer el correo y descargar sus adjuntos sin
+        salir de tu equipo.
+      </p>
+      <div className={`dropzone ${active ? 'is-active' : ''}`}>
+        <span className="dropzone__icon" aria-hidden="true">
+          <Upload size={24} />
+        </span>
+        <p className="dropzone__title">
+          {active ? 'Suelta los archivos para abrirlos' : 'Arrastra tus archivos .msg aquí'}
+        </p>
+        <p className="dropzone__or">o</p>
+        <Button onClick={onBrowse}>
+          <FolderOpen size={16} aria-hidden="true" /> Elegir archivos
+        </Button>
+        <p className="dropzone__hint">
+          Puedes abrir varios a la vez. Los archivos grandes tardan más, pero no se rechazan por su peso.
+        </p>
       </div>
-      {errors.map((error) => (
-        <StatusAlert key={error} tone="error" title="No se pudo analizar un archivo.">
-          {error} Si sospechas de una ruta o nombre problemático, cópialo a una carpeta corta y renómbralo
-          antes de reintentar.
-        </StatusAlert>
-      ))}
-      <small className="hint">
-        El análisis se hace localmente. Los archivos grandes pueden tardar más, pero no se rechazan por su
-        peso.
-      </small>
-    </div>
+      <ul className="landing__features">
+        {FEATURES.map(({ icon: Icon, title, text }) => (
+          <li key={title}>
+            <Icon size={18} aria-hidden="true" />
+            <strong>{title}</strong>
+            <span>{text}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }

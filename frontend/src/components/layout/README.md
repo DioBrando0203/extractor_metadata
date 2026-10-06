@@ -1,4 +1,6 @@
 # Componentes de layout
 
-`AppLayout.tsx` contiene barra superior, navegación, espacio de bandeja, lector y pie de la aplicación.
-Se reutiliza entre análisis y ayuda, sin conocer archivos MSG ni llamadas HTTP; recibe los paneles como props.
+`AppLayout.tsx`: barra superior, rail de navegación, columna de bandeja opcional, lector (`main#reader`), botón volver para móvil y overlay. Comportamiento en SPEC-01.
+
+- No conoce MSG ni la API; recibe la bandeja, el contenido y el overlay como props.
+- `pane` decide qué panel se ve bajo 860 px; `contentKey` reinicia el scroll del lector.

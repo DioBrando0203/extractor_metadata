@@ -28,8 +28,7 @@ test('un correo legible permite descargar su adjunto', async ({ page }) => {
   })
   await expect(page.getByRole('heading', { name: /Mensaje de prueba/ })).toBeVisible({ timeout: 20_000 })
   await expect(page.getByText('Observaciones del extractor')).toHaveCount(0)
-  await expect(page.getByRole('tab', { name: /Metadatos/ })).toHaveCount(0)
-  await page.getByRole('tab', { name: /Adjuntos/ }).click()
+  await expect(page.getByRole('tab')).toHaveCount(0)
   const downloadPromise = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Descargar' }).click()
   const download = await downloadPromise
@@ -50,8 +49,13 @@ for (const viewportWidth of [320, 390]) {
       buffer: fixture(),
     })
     await expect(page.getByRole('heading', { name: /Mensaje de prueba/ })).toBeVisible({ timeout: 20_000 })
-    await page.getByRole('tab', { name: /Adjuntos/ }).click()
     await expect(page.getByRole('button', { name: 'Descargar' })).toBeVisible()
+    // Maestro-detalle: volver a la bandeja y reabrir el correo desde la lista.
+    await page.getByRole('button', { name: /^Bandeja \(1\)/ }).click()
+    await expect(page.getByRole('complementary', { name: 'Bandeja de correos' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Mensaje de prueba/ })).toBeHidden()
+    await page.getByRole('button', { name: /Mensaje de prueba/ }).click()
+    await expect(page.getByRole('heading', { name: /Mensaje de prueba/ })).toBeVisible()
     const width = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,
