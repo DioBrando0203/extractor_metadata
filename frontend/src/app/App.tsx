@@ -22,7 +22,7 @@ function Help() {
           Arrastra uno o varios archivos con extensión <b>.msg</b> o selecciónalos desde tu equipo.
         </li>
         <li>La bandeja los procesa en orden para que un error no bloquee los demás.</li>
-        <li>Selecciona cualquier resultado para revisar encabezados, cuerpo, adjuntos y metadatos.</li>
+        <li>Selecciona cualquier resultado para leer el correo y descargar sus archivos.</li>
         <li>
           Si falla, usa <b>Reintentar</b>. Para errores de ruta o nombre, copia el archivo a una carpeta corta
           y renómbralo.
@@ -34,9 +34,8 @@ function Help() {
       </StatusAlert>
       <h2>Qué significa “parcial”</h2>
       <p>
-        Se recuperó información, pero alguno de los campos, el cuerpo o un adjunto no pudo leerse
-        completamente. Revisa las observaciones y exporta el informe JSON si necesitas compartir el
-        diagnóstico técnico.
+        Se recuperó una parte del correo. Aun así puedes leer lo disponible y descargar los archivos que
+        aparezcan en Adjuntos.
       </p>
     </div>
   )
@@ -66,7 +65,7 @@ function FailedMessage({
         El resto de archivos en la cola seguirá procesándose.
         {retryable
           ? ' Puedes reintentar este archivo sin volver a cargarlo.'
-          : ' Selecciona un MSG de hasta 100 MB para continuar.'}
+          : ' Selecciona un MSG para continuar.'}
       </p>
       <div className="action-row">
         <Button onClick={onRetry} disabled={!retryable}>
@@ -83,7 +82,7 @@ function ProcessingMessage({ name, extracting }: { name: string; extracting: boo
   return (
     <div className="selection-prompt">
       <FilePlus2 className={extracting ? 'spin' : ''} size={34} />
-      <h1>{extracting ? 'Extrayendo metadatos' : 'En espera de análisis'}</h1>
+      <h1>{extracting ? 'Leyendo el correo' : 'En espera de análisis'}</h1>
       <p>
         “{name}”{' '}
         {extracting ? 'se está procesando.' : 'se procesará cuando terminen los archivos anteriores.'}
@@ -133,7 +132,7 @@ export function App() {
       ) : !items.length ? (
         <Dropzone busy={false} errors={errors} onFiles={addFiles} />
       ) : selected?.message ? (
-        <MessageViewer message={selected.message} onChoose={choose} />
+        <MessageViewer message={selected.message} file={selected.file} onChoose={choose} />
       ) : selected?.status === 'error' ? (
         <FailedMessage
           name={selected.file.name}

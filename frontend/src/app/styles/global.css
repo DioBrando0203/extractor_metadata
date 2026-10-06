@@ -549,17 +549,12 @@ button:focus-visible,
   border: 1px solid #dfe8f1;
   border-radius: 8px;
 }
-.attachment summary {
+.attachment__row {
   display: grid;
   grid-template-columns: 36px 1fr auto;
   align-items: center;
   gap: 9px;
   padding: 12px;
-  cursor: pointer;
-  list-style: none;
-}
-.attachment summary::-webkit-details-marker {
-  display: none;
 }
 .attachment-icon {
   display: grid;
@@ -570,15 +565,15 @@ button:focus-visible,
   border-radius: 6px;
   background: #e9f5fd;
 }
-.attachment summary strong,
-.attachment summary small {
+.attachment__row strong,
+.attachment__row small {
   display: block;
 }
-.attachment summary strong {
+.attachment__row strong {
   color: #2e4359;
   font-size: 13px;
 }
-.attachment summary small,
+.attachment__row small,
 .metadata-count {
   margin-top: 2px;
   color: var(--muted);
@@ -609,6 +604,19 @@ button:focus-visible,
 }
 .attachment__detail .metadata-table {
   width: 100%;
+}
+.attachment__download {
+  min-width: 110px;
+}
+.attachment__error,
+.content-note {
+  margin: 0 12px 10px;
+  color: #9b3b37;
+  font-size: 13px;
+}
+.content-note {
+  margin: 0 0 10px;
+  color: var(--muted);
 }
 .failed-reader,
 .selection-prompt {
@@ -704,8 +712,12 @@ footer {
   .tabs {
     gap: 14px;
   }
-  .attachment summary {
+  .attachment__row {
     grid-template-columns: 36px 1fr;
+  }
+  .attachment__download {
+    grid-column: 2;
+    justify-self: start;
   }
   .metadata-count {
     display: none;

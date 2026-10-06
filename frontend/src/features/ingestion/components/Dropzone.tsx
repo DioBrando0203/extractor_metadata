@@ -56,8 +56,8 @@ export function Dropzone({ busy, errors, onFiles }: Props) {
         </StatusAlert>
       ))}
       <small className="hint">
-        Límite de la sesión: 100 MB por MSG. Los adjuntos mayores de 10 MB se señalan, pero se intentan
-        procesar.
+        El análisis se hace localmente. Los archivos grandes pueden tardar más, pero no se rechazan por su
+        peso.
       </small>
     </div>
   )

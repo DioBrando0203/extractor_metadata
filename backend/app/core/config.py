@@ -6,15 +6,12 @@ from tempfile import gettempdir
 @dataclass(frozen=True)
 class Settings:
     app_name: str = "Extractor local de MSG"
-    max_upload_bytes: int = 100 * 1024 * 1024
-    max_attachments: int = 200
-    max_attachment_bytes: int = 50 * 1024 * 1024
-    max_total_attachment_bytes: int = 150 * 1024 * 1024
     max_body_chars: int = 100_000
     max_property_chars: int = 8_000
     max_properties: int = 1_000
     max_total_metadata_chars: int = 3_000_000
     extraction_timeout_seconds: int = 90
+    minimum_processing_bytes_per_second: int = 4 * 1024 * 1024
     max_worker_memory_bytes: int = 1024 * 1024 * 1024
     max_concurrent_extractions: int = 2
     temp_root: Path = Path(gettempdir()) / "msg-metadata-extractor"

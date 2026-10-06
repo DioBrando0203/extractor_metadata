@@ -18,18 +18,26 @@ const message = {
   warnings: ['Un campo no fue recuperado'],
 }
 
+const file = new File(['correo de prueba'], 'correo.msg', { type: 'application/vnd.ms-outlook' })
+
 describe('MessageViewer', () => {
-  it('expone pestañas accesibles y cambia a encabezados', () => {
-    render(<MessageViewer message={message} onChoose={vi.fn()} />)
-    fireEvent.click(screen.getByRole('tab', { name: 'Encabezados' }))
-    expect(screen.getByRole('tabpanel')).toHaveTextContent('Message-ID')
-    expect(screen.getByRole('tab', { name: 'Encabezados' })).toHaveAttribute('aria-selected', 'true')
+  it('expone pestanas accesibles y cambia al cuerpo', () => {
+    render(<MessageViewer message={message} file={file} onChoose={vi.fn()} />)
+    fireEvent.click(screen.getByRole('tab', { name: 'Cuerpo' }))
+    expect(screen.getByRole('tabpanel')).toHaveTextContent('Contenido seguro como texto.')
+    expect(screen.getByRole('tab', { name: 'Cuerpo' })).toHaveAttribute('aria-selected', 'true')
   })
 
-  it('permite solicitar un nuevo análisis', () => {
+  it('permite solicitar un nuevo analisis', () => {
     const onChoose = vi.fn()
-    render(<MessageViewer message={message} onChoose={onChoose} />)
-    fireEvent.click(screen.getByRole('button', { name: /nuevo análisis/i }))
+    render(<MessageViewer message={message} file={file} onChoose={onChoose} />)
+    fireEvent.click(screen.getByRole('button', { name: /nuevo analisis/i }))
     expect(onChoose).toHaveBeenCalledOnce()
+  })
+
+  it('no muestra diagnosticos tecnicos en la vista principal', () => {
+    render(<MessageViewer message={message} file={file} onChoose={vi.fn()} />)
+    expect(screen.queryByText(/observaciones del extractor/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: /metadatos/i })).not.toBeInTheDocument()
   })
 })

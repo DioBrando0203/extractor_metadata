@@ -1,22 +1,16 @@
 # Resultados de calidad
 
-Registro: 2026-10-05 18:21:49 -05:00 (America/Lima).
+Registro: 2026-10-05 20:13:35 -05:00 (America/Lima).
 
-| Comprobación                          | Resultado                                                                         |
-| ------------------------------------- | --------------------------------------------------------------------------------- |
-| npm run build                         | Compilación TypeScript estricta y build Vite correctos.                           |
-| npm run lint                          | ESLint correcto.                                                                  |
-| npm test                              | 8 pruebas aprobadas en 4 archivos.                                                |
-| npm run format:check                  | Prettier correcto.                                                                |
-| npm audit y npm audit --omit=dev      | 0 vulnerabilidades reportadas.                                                    |
-| E2E ayuda/cola/inspección/exportación | 4 pruebas aprobadas: inicial/ayuda, cola real corrupto+válido y móvil 320/390 px. |
-| E2E arranque unificado                | Prueba adicional del build servido por FastAPI y carga en el mismo origen.        |
-| Contraste visual                      | Texto secundario #52677d: 5.84:1 sobre blanco; rutas largas quiebran en móvil.    |
-| Revisión visual                       | Capturas desktop y móvil inspeccionadas durante la sesión.                        |
+| Comprobacion       | Resultado                                                                                 |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| `npm run build`    | TypeScript y build Vite correctos.                                                        |
+| `npm run lint`     | ESLint correcto.                                                                          |
+| `npm test`         | 9 pruebas aprobadas.                                                                      |
+| `npm run test:e2e` | 5 pruebas aprobadas.                                                                      |
+| Descarga visible   | Playwright carga un MSG sintetico, pulsa Descargar y verifica bytes y nombre `plano.dwg`. |
+| Vista simple       | E2E confirma que no aparecen `Observaciones del extractor` ni pestana Metadatos.          |
+| Movil              | E2E a 320 y 390 px confirma boton Descargar visible y sin desborde horizontal.            |
+| Mismo origen       | E2E confirma el build servido por FastAPI y extraccion local.                             |
 
-Entorno: Node v24.21.0 (nvm), Chromium Playwright. Dependencias exactas en package-lock.json.
-Backend real en 127.0.0.1:8000, Vite en 127.0.0.1:5173 durante E2E.
-Fixtures generados desde backend/tests/msg_factory.py, sin correos privados.
-Los screenshots se generan en test-results/ (ignorado); no se guardan resultados de usuarios.
-La revisión de contraste no constituye una auditoría completa de accesibilidad con tecnología asistiva.
-Windows todavía necesita verificación nativa.
+Entorno: Windows, Node v24.21.0, Chromium Playwright instalado localmente. Los fixtures se generan desde `backend/tests/msg_factory.py`; no contienen correos privados. Las capturas y descargas de prueba viven en directorios ignorados.

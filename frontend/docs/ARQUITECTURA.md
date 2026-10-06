@@ -2,62 +2,52 @@
 
 ## Objetivo
 
-Una UI local, responsive y accesible para elegir/arrastrar un MSG y explicar claramente lo recuperado, lo parcial y lo ilegible. No guarda archivos ni requiere cuenta.
+Interfaz local y responsive para abrir un correo MSG como un lector de correo normal: ver quien lo envio, leer el mensaje y descargar sus archivos. La pantalla principal usa lenguaje cotidiano y no muestra avisos sobre FAT, OLE, parser, propiedades crudas ni metadata tecnica.
 
-## Árbol y responsabilidad
+## Estructura
 
 ```text
 src/
-  app/                 composición global y estilos globales
-  components/ui/       componentes realmente reutilizables y sin dominio
+  app/                 composicion y estilos globales
+  components/ui/       controles reutilizables
   components/layout/   estructura compartida
-  features/
-    ingestion/         dropzone y validación de carga
-    message-viewer/    lectura y pestañas del MSG
-    attachments/       lista desplegable y metadata de adjuntos
-  lib/                 contrato API, formateadores y tipos
+  features/ingestion/  seleccion, cola y validacion de MSG
+  features/message-viewer/ lector del correo
+  features/attachments/ lista y descarga de adjuntos
+  lib/                 contrato API, tipos y formateadores
 ```
 
-Una página o `App` compone features: no incluye reglas de negocio de extracción. Los componentes específicos permanecen dentro de su feature; sólo se suben a `components/ui` cuando dos dominios los usan sin conocimiento del MSG.
+## Flujo de usuario
 
-## Flujo y contrato
+1. `Dropzone` permite arrastrar o elegir MSG.
+2. `useExtractionQueue` los analiza uno por uno y conserva archivo y resultado solo en memoria.
+3. `MessageViewer` muestra tres pestanas: Resumen, Cuerpo y Adjuntos.
+4. `AttachmentList` muestra cada archivo disponible con un boton Descargar.
+5. Al descargar, `lib/api.ts` envia de nuevo el MSG que el navegador ya tiene en memoria y el indice del adjunto a `POST /api/messages/attachment`.
+6. El navegador recibe el binario y comienza la descarga; no se guardan IDs ni resultados en el servidor.
 
-`Dropzone` acepta múltiples archivos y `useExtractionQueue` los ejecuta secuencialmente: un fallo individual no detiene la cola. `lib/api.ts` envía cada archivo como `multipart/form-data` a `POST /api/messages/extract`, normaliza tanto el contrato anterior como los nuevos campos (`status`, `body_truncated`, `headers`) y conserva todo sólo en memoria. `QueueList` permite seleccionar resultados, reintentar errores y limpiar la sesión; limpiar elimina las referencias a los archivos incluso si una petición previa termina después.
+Reenviar el archivo para una descarga es deliberado: mantiene el backend sin almacenamiento persistente entre acciones.
 
-`MessageViewer` presenta asunto, remitente, cuerpo textual, avisos, encabezados, propiedades y adjuntos. Sus pestañas usan `tablist`/`tabpanel`, roving tabindex y flechas/Home/End. La exportación crea y descarga un JSON local con el resultado normalizado. `Help` explica el flujo y los diagnósticos sin remitir a contenido externo.
+## Interaccion y accesibilidad
 
-El cuerpo se muestra como texto (`pre`), nunca con `dangerouslySetInnerHTML`. La API no entrega binarios ni rutas reales.
+Las pestanas usan `tablist` y `tabpanel`, teclado con flechas, Home y End. Las acciones se expresan como botones, los estados de carga se anuncian y los mensajes de error son breves y accionables. En movil la bandeja se compacta sin ocultar las acciones principales.
 
-## Diseño responsive y accesibilidad
+El cuerpo se renderiza como texto en `pre`; nunca se usa `dangerouslySetInnerHTML`. Las referencias a archivos se eliminan al limpiar la sesion. No usar localStorage, IndexedDB ni analitica.
 
-En escritorio hay rail, lista y lector. Bajo 780px, la bandeja pasa a una lista horizontal superior para conservar selección y reintentos; la navegación se compacta. Toda acción es botón, los estados se anuncian con `aria-live` y el foco es visible. Mantener contraste AA.
+## Archivos clave
+
+- `app/App.tsx`: compone seleccion, cola, lector y ayuda.
+- `features/message-viewer/components/MessageViewer.tsx`: resumen humano, cuerpo y adjuntos; no renderiza diagnostico tecnico.
+- `features/attachments/components/AttachmentList.tsx`: boton de descarga por adjunto y estado puntual.
+- `lib/api.ts`: carga multipart, normalizacion de respuesta y descarga del binario temporal.
+- `features/ingestion/hooks/useExtractionQueue.ts`: cola secuencial y limpieza de referencias.
 
 ## Comandos
 
-`npm run dev`, `npm run build`, `npm run lint`, `npm test`, `npm run test:e2e`, `npm run format:check`.
+```powershell
+npm run build
+npm run lint
+npm test
+```
 
-## Mapa de archivos de continuidad
-
-- `main.tsx`: monta App en StrictMode e importa el único stylesheet global.
-- `app/App.tsx`: compone análisis/ayuda, selector múltiple, lector y estados pendiente/error.
-- `components/layout/AppLayout.tsx`: layout compartido de las dos vistas.
-- `components/ui/Button.tsx`, `MetadataTable.tsx`, `StatusAlert.tsx`: controles sin lógica de extracción.
-- `features/ingestion/components/Dropzone.tsx`: selección/drag; `QueueList.tsx`: bandeja, reintento/limpieza.
-- `features/ingestion/hooks/useExtractionQueue.ts`: única cola secuencial; refs sincrónicas y estado React.
-- `features/ingestion/lib/validation.ts`: extensión y límite 100 MB antes de enviar; errores no reintentables.
-- `features/message-viewer/components/MessageViewer.tsx`: resumen humano, cuerpo, headers, raw metadata y exportación.
-- `features/attachments/components/AttachmentList.tsx`: detalles y avisos por adjunto.
-- `lib/api.ts`: FormData, errores y normalización del contrato; `types.ts`: tipos compartidos.
-- `lib/formatters.ts`: tamaños legibles B/KB/MB y fechas tolerantes a datos inválidos.
-- `vite-env.d.ts`, `vite.config.ts`, `tsconfig.json`: tipos de entorno, build y pruebas.
-- `src/test/setup.ts`, `*.test.ts(x)`: Vitest/RTL. `e2e/`: Playwright con API real y MSG sintético.
-
-En desarrollo la API por defecto es `http://127.0.0.1:8000/api`; en build es `/api` en el mismo origen.
-La opción `VITE_API_URL` se reserva para otro backend local. Las versiones exactas y sus dependencias
-se fijan en package.json/package-lock.json. Node LTS mediante nvm, instalado en esta sesión.
-El arranque unificado se hace con `python3 iniciar.py` desde la raíz (Windows: `py iniciar.py`).
-
-El resumen evita mostrar todos los streams binarios; Metadatos conserva la lista técnica completa
-dentro de los límites publicados del backend. Limpiar libera resultados/referencias de la sesión,
-pero una solicitud ya enviada puede terminar su limpieza en el backend antes de 90 segundos.
-No usar localStorage, IndexedDB ni analítica. El cuerpo nunca se inyecta como HTML.
+En desarrollo usa `http://127.0.0.1:8000/api` por defecto. El build servido por el backend usa `/api` en el mismo origen.

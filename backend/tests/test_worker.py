@@ -24,6 +24,19 @@ def test_timeout_terminates_worker_and_returns_diagnostic(tmp_path, monkeypatch)
     assert time.monotonic() - start < 5
 
 
+def test_timeout_scales_with_file_size(monkeypatch):
+    monkeypatch.setattr(
+        worker,
+        "settings",
+        replace(
+            worker.settings,
+            extraction_timeout_seconds=1,
+            minimum_processing_bytes_per_second=10,
+        ),
+    )
+    assert worker._timeout_for_size(101) == 11
+
+
 def test_failed_worker_has_safe_diagnostic(tmp_path):
     path = tmp_path / "broken.msg"
     path.write_bytes(b"broken")

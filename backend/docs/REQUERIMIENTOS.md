@@ -1,45 +1,31 @@
-# Requisitos originales y evaluación
+# Requerimientos y cobertura
 
-El requisito principal es un inspector local sencillo de MSG que Outlook/extensiones no logran leer.
-Separar frontend y backend, sin login, BD, registro de usuarios ni servidor remoto. Archivos originales
-inalterados. Procesar nombres/rutas problemáticas, archivos corruptos y adjuntos de más de 10 MB;
-mostrar metadata organizada con estética de lector de correo y mejoras responsive.
+## Prioridad de uso
+
+La aplicacion esta pensada primero para una persona que no conoce formatos MSG, OLE, FAT ni metadata. Debe poder elegir un correo, leer su asunto, remitente, contenido y descargar los archivos que encuentre. Los detalles de diagnostico permanecen internos y no son parte de la vista principal.
 
 ## Criterios verificables
 
-| Requisito | Implementación / verificación |
+| Requisito | Cobertura actual |
 |---|---|
-| Local y sin almacenamiento persistente | API loopback, temporales con contexto y borrado, estado React en memoria. |
-| Linux y Windows | `pathlib`, `tempfile`, proceso `spawn`, lanzador Python y `.bat`. Windows requiere prueba nativa adicional. |
-| Carga arrastrar/elegir múltiples MSG | Cola de frontend por archivo y un endpoint multipart. |
-| Vista estilo correo | Remitente, asunto, cuerpo, encabezados, propiedades y adjuntos separados. |
-| Nombre/ruta problemáticos | Copia temporal `input.msg`, nombre original sólo presentación, diagnóstico Windows. |
-| Corrupción | Validación CFB/OLE, recuperación parcial de texto, errores individuales. |
-| Más de 10 MB | Carga 100 MB por MSG, lectura real probada con adjunto sintético 11 MB. |
-| Metadata extensa | Texto/propiedades acotados con truncado explícito; binarios fuera del JSON. |
-| Imagen/PDF/Office/CAD | Extractores por formato, base genérica para todos, advertencias de cobertura. |
-| React modular y componentes compartidos | `features/` + `components/ui` + tokens Tailwind globales. |
-| API con framework y rutas separadas | FastAPI, modelos Pydantic, servicios, worker y middleware. |
-| Documentación de continuidad | `AGENTS.md`, arquitecturas, reglas y bitácoras en ambos lados. |
-| Calidad | Corpus MSG sintético, pruebas extractores/HTTP/frontend y comprobación en navegador. |
+| Aplicacion local | Loopback, sin cuenta, base de datos, nube, telemetria ni historial. |
+| Privacidad | Estado en memoria del navegador; temporales efimeros del backend. |
+| Original intacto | Solo se analiza una copia temporal; no se escribe sobre el MSG elegido. |
+| Correo legible | Asunto, remitente, destinatarios, fecha y cuerpo de texto cuando los streams existen. |
+| Adjuntos descargables | Cada adjunto legible se entrega bajo demanda como descarga temporal, incluidos imagenes, PDF, Word y Excel. |
+| Sin limite fijo de peso | MSG y adjuntos se copian/procesan por bloques; el timeout aumenta con el tamano. |
+| Lectura parcial | Si una parte esta danada, se conserva lo que siga legible; PNG/PDF completos fuera de enlaces OLE se validan y se ofrecen como recuperados, sin afirmar reparar el archivo. |
+| Formatos | Imagenes, PDF, Office OOXML, DXF y firma basica DWG; otros conservan nombre y bytes si el stream es legible. |
+| Seguridad | Sin macros ni HTML activo; host y Origin externos rechazados. |
+| Pruebas | MSG y adjuntos sinteticos; nunca se agrega un correo privado al repositorio. |
 
-## Interpretación de límites
+## Limites honestos
 
-“Cualquier archivo” significa aceptar un adjunto sin bloquear el resto del MSG, obtener propiedades
-genéricas y usar un extractor especializado cuando existe. No garantiza recuperar bytes destruidos
-ni interpretar formatos propietarios. DWG muestra firma y versión; DXF incluye propiedades con ezdxf.
-ExifTool amplía formatos que figuran en su lista oficial; DWG no figura como soporte de lectura.
+No es posible recuperar datos que ya no estan presentes en el archivo. Un adjunto puede mostrarse y descargarse aunque no sea posible obtener todos sus detalles. DWG solo tiene reconocimiento basico; no se promete interpretacion profunda. Un corte de energia o terminacion forzada puede impedir la limpieza normal de temporales del sistema.
 
-El navegador no informa la ruta original; una advertencia de nombre no puede diagnosticar esa ruta.
-La copia de nombre corto evita trasladar limitaciones de ruta al parser, sin renombrar el original.
+## Pendientes fuera del alcance actual
 
-La API usa temporales únicamente durante el análisis. El navegador también puede usar su caché o
-temporales internos al elegir archivos; la aplicación no crea biblioteca ni historial persistente.
-La descarga explícita de un informe es una acción del usuario y crea un archivo donde él elija.
-
-## Pendientes fuera de la cobertura inicial
-
-- Vista/propiedades profundas de DWG con herramienta ODA o equivalente, tras evaluar licencia.
-- Expandir adjuntos MSG anidados y objetos OLE de aplicaciones externas.
-- Empaquetado instalable para Windows y pruebas nativas Windows.
-- Corpus real autorizado de MSG dañados: las pruebas actuales no prueban toda corrupción posible.
+- Adjuntos MSG anidados y objetos OLE embebidos.
+- Lectura profunda de DWG con una herramienta evaluada y licenciada.
+- Corpus autorizado de corrupciones reales, sin incorporar correos privados.
+- Empaquetado instalable para Windows.

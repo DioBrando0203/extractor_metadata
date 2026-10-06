@@ -1,8 +1,7 @@
-"""Restringe cargas antes del parser multipart y acepta páginas de origen local."""
+"""Restringe el origen de llamadas a la aplicación local."""
 
-from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.core.config import settings
 
@@ -22,27 +21,4 @@ class LocalUploadMiddleware:
                 {"detail": "Origen no autorizado para el servicio local."}, status_code=403
             )(scope, receive, send)
             return
-        limit = settings.max_upload_bytes + 1024 * 1024  # margen para encabezados multipart
-        try:
-            declared_length = int(headers.get(b"content-length", b"0"))
-        except ValueError:
-            await JSONResponse({"detail": "Tamaño de solicitud inválido."}, status_code=400)(
-                scope, receive, send
-            )
-            return
-        if declared_length > limit:
-            await JSONResponse(
-                {"detail": "El MSG supera el límite local de 100 MB."}, status_code=413
-            )(scope, receive, send)
-            return
-        received = 0
-
-        async def limited_receive() -> Message:
-            nonlocal received
-            message = await receive()
-            received += len(message.get("body", b""))
-            if received > limit:
-                raise HTTPException(413, detail="El MSG supera el límite local de 100 MB.")
-            return message
-
-        await self.app(scope, limited_receive, send)
+        await self.app(scope, receive, send)

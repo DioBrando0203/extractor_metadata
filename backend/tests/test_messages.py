@@ -1,4 +1,5 @@
 import io
+import struct
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
@@ -8,7 +9,6 @@ from fastapi.testclient import TestClient
 from msg_factory import build_cfb, make_msg
 
 from app.api.routes import messages
-from app.core import middleware
 from app.core.errors import ExtractionError
 from app.main import app
 from app.models.schemas import MessageMetadata, MetadataItem
@@ -36,6 +36,37 @@ def test_actual_msg_extraction_and_cleanup(client):
     assert len(data["message"]["properties"]) > 5
 
 
+def test_attachment_can_be_downloaded_and_is_cleaned_up(client):
+    payload = b"%PDF-1.4\ncontenido de prueba\n%%EOF"
+    response = client.post(
+        "/api/messages/attachment",
+        data={"attachment_index": "0"},
+        files={"file": ("correo.msg", make_msg(attachment=payload, filename="informe.pdf"))},
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.content == payload
+    assert response.headers["content-type"].startswith("application/pdf")
+    assert "informe.pdf" in response.headers["content-disposition"]
+
+
+def test_recovers_complete_raw_png_and_pdf_when_ole_links_are_missing(tmp_path):
+    from PIL import Image
+
+    image = io.BytesIO()
+    Image.new("RGBA", (4, 3), "green").save(image, format="PNG")
+    pdf = b"%PDF-1.4\ncontenido recuperable\n%%EOF"
+    path = tmp_path / "parcial.msg"
+    path.write_bytes(b"cabecera" + image.getvalue() + b"relleno" + pdf)
+
+    candidates = message_extractor._raw_attachment_candidates(path, set())
+
+    assert [(item.name, item.content_type, item.size) for item in candidates] == [
+        ("imagen-recuperado-1.png", "image/png", len(image.getvalue())),
+        ("documento-recuperado-1.pdf", "application/pdf", len(pdf)),
+    ]
+
+
 def test_reject_wrong_extension(client):
     response = client.post("/api/messages/extract", files={"file": ("fake.pdf", b"no msg")})
     assert response.status_code == 415
@@ -54,9 +85,14 @@ def test_generic_ole_is_not_msg(tmp_path):
         extract_msg_file(path, path.name, path.stat().st_size)
 
 
-def test_recover_text_when_primary_parser_fails(tmp_path, monkeypatch):
+def test_recover_text_and_attachments_when_primary_parser_fails(tmp_path, monkeypatch):
     path = tmp_path / "recuperar.msg"
-    path.write_bytes(make_msg())
+    path.write_bytes(
+        make_msg(
+            attachment=b"\x89PNG\r\n\x1a\n" + b"\0" * 32,
+            filename="foto.png",
+        )
+    )
 
     def fail(*args, **kwargs):
         raise ValueError("parser roto")
@@ -66,6 +102,8 @@ def test_recover_text_when_primary_parser_fails(tmp_path, monkeypatch):
     assert result.status == "partial"
     assert result.subject == "Mensaje de prueba — áéíóú"
     assert "recuperaron" in " ".join(result.warnings)
+    assert result.attachments[0].name == "foto.png"
+    assert result.attachments[0].content_type == "image/png"
 
 
 def test_large_msg_and_attachment_are_processed(client):
@@ -97,12 +135,6 @@ def test_truncated_body_is_explicit(tmp_path):
     assert message.body_truncated is True
     assert len(message.body_preview) == 100_000
     assert len(message.model_dump_json()) < 200_000
-
-
-def test_upload_limit_and_cleanup(client, monkeypatch):
-    monkeypatch.setattr(messages, "settings", replace(messages.settings, max_upload_bytes=10))
-    response = client.post("/api/messages/extract", files={"file": ("grande.msg", b"x" * 11)})
-    assert response.status_code == 413
 
 
 def test_foreign_origin_cannot_upload(client):
@@ -138,17 +170,6 @@ def test_health_does_not_block_during_extraction(client, monkeypatch):
         finally:
             finish.set()
         assert upload.result(timeout=3).status_code == 200
-
-
-def test_multipart_limit_applies_without_content_length(client, monkeypatch):
-    monkeypatch.setattr(middleware, "settings", replace(middleware.settings, max_upload_bytes=1))
-    chunk = b'--boundary\r\nContent-Disposition: form-data; name="file"; filename="x.msg"\r\n\r\n'
-    response = client.post(
-        "/api/messages/extract",
-        content=iter([chunk, b"a" * (1024 * 1024 + 20)]),
-        headers={"Content-Type": "multipart/form-data; boundary=boundary"},
-    )
-    assert response.status_code == 413
 
 
 def test_metadata_budget_is_explicit(monkeypatch):
@@ -223,13 +244,31 @@ def test_broken_optional_ole_stream_does_not_discard_readable_message(tmp_path, 
     assert any("Stream OLE ilegible" in warning for warning in result.warnings)
 
 
-def test_attachment_size_is_checked_before_loading_payload(tmp_path, monkeypatch):
-    path = tmp_path / "limite.msg"
+def test_attachment_is_not_omitted_by_a_fixed_size_limit(tmp_path):
+    path = tmp_path / "sin-limite.msg"
     path.write_bytes(make_msg(attachment=b"AC1032" + b"0" * 100))
-    monkeypatch.setattr(
-        message_extractor, "settings", replace(message_extractor.settings, max_attachment_bytes=10)
-    )
     result = extract_msg_file(path, path.name, path.stat().st_size)
     assert result.attachments[0].size_bytes == 106
     assert result.attachments[0].name == "plano.dwg"
-    assert "antes de cargarlo" in result.attachments[0].warnings[0]
+    assert result.attachments[0].content_type == "application/acad"
+    assert any(item.label == "Firma DWG" for item in result.attachments[0].metadata)
+
+
+def test_detects_recoverable_truncated_fat_header(tmp_path):
+    sector_size = 512
+    free = 0xFFFFFFFF
+    fat = 0xFFFFFFFD
+    data = bytearray(sector_size * 338)
+    data[:8] = bytes.fromhex("D0CF11E0A1B11AE1")
+    struct.pack_into("<HHHHH", data, 24, 0x003E, 3, 0xFFFE, 9, 6)
+    struct.pack_into("<IIIIIIIII", data, 40, 0, 1, 1, 0, 4096, free - 1, 0, free - 1, 0)
+    struct.pack_into("<109I", data, 76, 0, *([free] * 108))
+    for sector, markers in ((0, (0, 108)), (108, (125,)), (253, (80,)), (336, ())):
+        values = [free] * 128
+        for marker in markers:
+            values[marker] = fat
+        struct.pack_into("<128I", data, sector_size + sector * sector_size, *values)
+    path = tmp_path / "fat-incompleta.msg"
+    path.write_bytes(data)
+
+    assert message_extractor._recover_fat_sectors(path) == [0, 108, 253, 336]

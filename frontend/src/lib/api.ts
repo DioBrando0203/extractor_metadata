@@ -96,3 +96,30 @@ export async function extractMessage(file: File): Promise<ExtractionResponse> {
     processed_locally: payload.processed_locally !== false,
   }
 }
+
+function filenameFromDisposition(value: string | null, fallback: string): string {
+  const encoded = value?.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
+  if (encoded) return decodeURIComponent(encoded)
+  return value?.match(/filename="?([^";]+)"?/i)?.[1] || fallback
+}
+
+export async function downloadAttachment(file: File, attachmentIndex: number, fallbackName: string) {
+  const data = new FormData()
+  data.append('file', file)
+  data.append('attachment_index', String(attachmentIndex))
+  let response: Response
+  try {
+    response = await fetch(`${API_URL}/messages/attachment`, { method: 'POST', body: data })
+  } catch {
+    throw new Error('No se pudo preparar la descarga. Inténtalo otra vez.')
+  }
+  if (!response.ok) throw new Error('No se pudo preparar la descarga. Inténtalo otra vez.')
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filenameFromDisposition(response.headers.get('content-disposition'), fallbackName)
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
