@@ -44,12 +44,14 @@ app/
     ole_reader.py              OleMetadata: propiedades MAPI, adjuntos y página de códigos
     attachment_entries.py      OleAttachment: nombre, tamaño, Content-ID, método de adjunto (0x3705) y dirección de una referencia
     attachments.py             adjuntos desde el parser o desde OLE; correo adjunto, enlace u objeto OLE según el método (AttachmentSources)
-    embedded.py                correo adjunto a MSG propio en el temporal y lectura con el mismo flujo (EmbeddedBudget)
+    embedded.py                AttachedMessages: correo adjunto en carpeta OLE, .msg o .eml adjunto; copia a MSG propio en el temporal
+    eml.py                     EML con la biblioteca estándar: read_eml (contrato MessageMetadata) y EmlSource (descargas)
+    nesting.py                 EmbeddedBudget (profundidad y cantidad) y open_nested, comunes a MSG y EML
     raw_recovery.py            PNG/PDF completos fuera de enlaces OLE; búsqueda de firmas por bloques
     raw_body.py                cuerpo HTML desde un RTF comprimido suelto (CRC y coherencia con el texto)
     inline_images.py           posición de imágenes reconstruida por medidas cuando falta el Content-ID
     fat_recovery.py            DIFAT truncada reparada en copia temporal
-    download.py                copia un adjunto, o un correo adjunto como .msg, al temporal; recorre message_path
+    download.py                copia un adjunto, o un correo adjunto como .msg, al temporal; recorre message_path por MSG y EML
     limits.py                  presupuesto de miniaturas y metadatos, único para el correo y sus correos adjuntos
     names.py                   avisos y nombres seguros
     text.py                    valores a texto acotado
@@ -75,14 +77,14 @@ app/
 6. En ambas estrategias, los campos del sobre vacíos se completan con `Envelope.complete_with`: primero propiedades MAPI alternativas, luego encabezados de transporte (`007D`), que viven en sectores normales y resisten daños del mini stream.
 7. Cuerpo: texto plano; si no marca imágenes incrustadas pero el HTML sí, se usa el HTML convertido, que conserva cada `<img src="cid:…">` como marcador `[cid:…]` en su posición.
 8. Si el parser falló y el cuerpo legible no marca imágenes, se busca el RTF comprimido suelto (`LZFu`), se valida su CRC y que su texto coincida con el cuerpo legible, y se usa su HTML. Después `assign_by_size` asigna Content-ID a adjuntos sin él sólo si sus píxeles coinciden exactamente con las medidas declaradas en el HTML o si son el único candidato con la misma proporción; quedan marcados `content_id_inferred`.
-9. Cada adjunto se clasifica antes de leer bytes según su método (`attachment_entries`, `without_bytes`). Correo adjunto (5): `open_embedded_message` lo copia con `write_embedded_message` a `<temporal>/<nombre>-<n>.msg`, lo lee con este mismo flujo (`_read_message`) y borra la copia; `EmbeddedBudget` limita profundidad (`max_embedded_depth`) y cantidad (`max_embedded_messages`) y comparte el plazo de miniaturas. Referencia (2, 3, 4, 7): `kind=link` con su dirección. Objeto OLE (6): aviso. El resto pasa por `attachment_from_payload`: metadatos por formato y miniatura si queda presupuesto de tiempo.
+9. Cada adjunto se clasifica antes de leer bytes según su método (`attachment_entries`, `without_bytes`). Correo adjunto (5): `AttachedMessages.from_storage` lo copia con `write_embedded_message` a `<temporal>/<nombre>-<n>.msg`, lo lee con este mismo flujo (`_read_message`) y borra la copia. Un archivo adjunto que es un MSG (firma CFB con streams MAPI) o un `.eml` con encabezados de correo pasa por `AttachedMessages.from_file`: el MSG se escribe al temporal y se lee igual; el EML se lee con `eml.read_eml`. `EmbeddedBudget` (`nesting`) limita profundidad (`max_embedded_depth`) y cantidad (`max_embedded_messages`) y comparte el plazo de miniaturas. Referencia (2, 3, 4, 7): `kind=link` con su dirección. Objeto OLE (6): aviso. El resto pasa por `attachment_from_payload`: metadatos por formato y miniatura si queda presupuesto de tiempo.
 10. `limit_response` acota una sola vez toda la respuesta, incluidos los correos adjuntos: miniaturas (`max_total_preview_chars`) y metadatos (`max_total_metadata_chars`).
 11. El hijo envía JSON; el padre valida con Pydantic y borra el temporal.
 
 ## Flujo de adjunto
 
 1. `POST /api/messages/attachment` recibe `file`, `attachment_index` y opcionales `preview` y `message_path` (`"2/0"`), agrupados en `AttachmentRequest`.
-2. `run_attachment_extraction` ejecuta `_attachment_worker`: `extract_attachment_file` copia cada correo adjunto de `message_path` a `download-*/embedded-<nivel>.msg` y después el adjunto a `download-*/attachment.bin`. Un correo adjunto se entrega como `.msg` (`application/vnd.ms-outlook`); un enlace no tiene bytes y responde `UNREADABLE_ATTACHMENT`.
+2. `run_attachment_extraction` ejecuta `_attachment_worker`: `extract_attachment_file` recorre `message_path` con `_MsgSource` (carpeta OLE o `.msg` adjunto, copiados a `download-*/embedded-<nivel>.msg`) o `EmlSource` (partes del EML en el orden del análisis) y después copia el adjunto a `download-*/attachment.bin`. Un correo adjunto se entrega como `.msg` (`application/vnd.ms-outlook`); un enlace no tiene bytes y responde `UNREADABLE_ATTACHMENT`.
 3. Con `preview=true`, `write_large_preview` lo sustituye por un JPEG de hasta 2048 px o responde `NO_PREVIEW`.
 4. `FileResponse` entrega el archivo y una tarea de fondo borra el directorio al terminar la transmisión.
 
@@ -92,7 +94,7 @@ app/
 - `AttachmentMetadata.preview`: data URI JPEG de hasta 480 px o `null`.
 - `AttachmentMetadata.preview_source`: `image` (el adjunto es imagen) o `embedded` (miniatura guardada por DWG, DXF u Office).
 - `AttachmentMetadata.content_id`: Content-ID sin `<>`; el cuerpo lo referencia como `[cid:…]`.
-- `AttachmentMetadata.kind`: `file` (trae bytes), `message` (correo adjunto, leído en `message`, del mismo tipo `MessageMetadata`) o `link` (en la nube o en una ruta; dirección en `link`, sin bytes).
+- `AttachmentMetadata.kind`: `file` (trae bytes), `message` (correo adjunto MSG o EML, leído en `message`, del mismo tipo `MessageMetadata`) o `link` (en la nube o en una ruta; dirección en `link`, sin bytes).
 - Índice de adjunto: posición en `attachments` del correo que lo contiene (OLE primero, luego recuperados). Dentro de un correo adjunto se añade `message_path` con las posiciones de cada correo adjunto que hay que abrir.
 
 ## Seguridad y recursos

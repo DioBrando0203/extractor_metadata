@@ -16,7 +16,7 @@ Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y
 - Con miniatura (`preview`): tarjeta con la imagen (16:10; `cover` para fotos, `contain` para miniaturas incrustadas), icono de tipo, nombre y "TIPO · tamaño".
 - Sin miniatura: chip con icono de tipo coloreado, nombre, tipo y tamaño.
 - Toda tarjeta o chip es un botón "Ver <nombre>" que abre el visor (SPEC-05). Un correo adjunto legible es "Abrir <nombre>" y se abre en el lector (SPEC-03).
-- Correo adjunto (`kind: 'message'`): icono de correo y "Correo · tamaño", aunque su asunto parezca tener extensión; se descarga como `.msg`.
+- Correo adjunto (`kind: 'message'`): icono de correo y "Correo · tamaño", aunque su asunto parezca tener extensión; se descarga como vino (`.msg` o `.eml`).
 - Enlace (`kind: 'link'`): icono del tipo de archivo, "TIPO · Enlace web" o "TIPO · Carpeta compartida" y sin botón de descarga, porque sus bytes no viajan en el correo.
 - Cada adjunto tiene un botón "Descargar <nombre>": siempre visible en chips y en táctil; en tarjetas aparece al pasar el ratón o al enfocar.
 - Descarga: spinner en el botón mientras se prepara; se pueden descargar varios a la vez; el binario se reutiliza si ya se pidió para el visor.

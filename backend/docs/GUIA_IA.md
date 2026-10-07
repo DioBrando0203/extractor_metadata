@@ -45,7 +45,7 @@ Protocolo obligatorio para cualquier IA que modifique `backend/`. Si contradice 
 - Ruta HTTP nueva o parámetro: `app/api/routes/`. Sólo coordina: validar, copiar a temporal, llamar al worker, responder.
 - Ejecución aislada, plazos y respuesta JSON del hijo: `app/services/worker.py`.
 - Lectura del contenedor MSG: `app/services/msg/` (ver mapa en `msg/__init__.py`).
-- Cómo viaja un adjunto (método MAPI, referencia, correo adjunto): `msg/attachment_entries.py`; abrir correos adjuntos: `msg/embedded.py` (ADR-B13).
+- Cómo viaja un adjunto (método MAPI, referencia, correo adjunto): `msg/attachment_entries.py`; abrir correos adjuntos: `msg/embedded.py` (carpeta OLE y .msg adjunto, ADR-B13) y `msg/eml.py` (.eml, ADR-B15); presupuesto común en `msg/nesting.py`.
 - Metadatos de un formato nuevo: módulo en `app/services/metadata/` y registro en `extractor.py` (Strategy).
 - Miniaturas: `app/services/previews/` (`embedded.py` localiza, `render.py` convierte).
 - Contrato JSON: `app/models/schemas.py`.

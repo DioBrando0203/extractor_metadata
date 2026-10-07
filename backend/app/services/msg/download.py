@@ -1,9 +1,11 @@
 """Materializa un único adjunto en un temporal de la solicitud para entregarlo como descarga.
 
 ``message_path`` recorre correos adjuntos: ``(2, 0)`` es el adjunto 0 del correo adjunto 0 del
-correo adjunto en la posición 2. Cada nivel se copia a un MSG propio junto a ``destination``.
+correo adjunto en la posición 2. Cada nivel es un MSG (``_MsgSource``, copiado junto a
+``destination``) o un EML (``eml.EmlSource``); ambos entregan sus adjuntos en el orden del análisis.
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import olefile
@@ -13,11 +15,12 @@ from app.services.msg.attachment_entries import ATTACHMENT_DATA_STREAM, attachme
 from app.services.msg.embedded import (
     MESSAGE_CONTENT_TYPE,
     is_embedded_message,
-    message_filename,
+    is_msg_payload,
     write_embedded_message,
 )
+from app.services.msg.eml import EmlSource, looks_like_eml, parse_eml
 from app.services.msg.fat_recovery import recovered_ole_path
-from app.services.msg.names import download_filename
+from app.services.msg.names import download_filename, message_filename
 from app.services.msg.ole_reader import read_ole_metadata
 from app.services.msg.raw_recovery import ole_attachment_digests, raw_attachment_candidates
 
@@ -34,43 +37,74 @@ def extract_attachment_file(
     """
     if attachment_index < 0 or not olefile.isOleFile(str(path)):
         raise _not_found()
-    for level, index in enumerate(message_path):
-        path = _enter_message(path, index, destination.with_name(f"embedded-{level}.msg"))
-    with recovered_ole_path(path) as (read_path, recovery_warnings):
-        names = read_ole_metadata(read_path).attachments
-        try:
-            with olefile.OleFileIO(str(read_path)) as container:
-                directories = attachment_directories(container.listdir())
-            if attachment_index < len(directories):
-                directory = directories[attachment_index]
-                entry = names.get(directory)
-                name = entry.name if entry else f"adjunto-{attachment_index + 1}"
-                return _copy_ole_attachment(
-                    read_path, directory, name, attachment_index, destination
-                )
-            raw_index = attachment_index - len(directories)
-            return _copy_raw_attachment(read_path, raw_index, bool(recovery_warnings), destination)
-        except ExtractionError:
-            raise
-        except Exception as error:
-            raise ExtractionError(
-                "No fue posible preparar el adjunto para descargar.", code="UNREADABLE_ATTACHMENT"
-            ) from error
+    source: _MsgSource | EmlSource = _MsgSource(path)
+    try:
+        for level, index in enumerate(message_path):
+            source = source.enter(index, destination.with_name(f"embedded-{level}.msg"))
+        return source.extract(attachment_index, destination)
+    except ExtractionError:
+        raise
+    except Exception as error:
+        raise ExtractionError(
+            "No fue posible preparar el adjunto para descargar.", code="UNREADABLE_ATTACHMENT"
+        ) from error
 
 
 def _not_found() -> ExtractionError:
     return ExtractionError("No se encontró el adjunto solicitado.", code="ATTACHMENT_NOT_FOUND")
 
 
-def _enter_message(path: Path, index: int, target: Path) -> Path:
-    """Copia el correo adjunto ``index`` de ``path`` a ``target`` y devuelve su ruta."""
-    with recovered_ole_path(path) as (read_path, _):
-        with olefile.OleFileIO(str(read_path)) as container:
-            directories = attachment_directories(container.listdir())
-        if not 0 <= index < len(directories):
+@dataclass(frozen=True)
+class _MsgSource:
+    """Un MSG en disco visto como contenedor de adjuntos."""
+
+    path: Path
+
+    def enter(self, index: int, target: Path) -> "_MsgSource | EmlSource":
+        """Abre el correo adjunto ``index``: carpeta OLE, ``.msg`` o ``.eml`` adjunto."""
+        with recovered_ole_path(self.path) as (read_path, _):
+            directory, name = _directory_at(read_path, index)
+            with olefile.OleFileIO(str(read_path)) as container:
+                stored = is_embedded_message(container, directory)
+                payload = None if stored else _read_data(container, directory)
+            if stored:
+                write_embedded_message(read_path, directory, target)
+                return _MsgSource(target)
+        if payload is not None and is_msg_payload(payload):
+            target.write_bytes(payload)
+            return _MsgSource(target)
+        message = parse_eml(payload) if payload is not None and looks_like_eml(name) else None
+        if message is None:
             raise _not_found()
-        write_embedded_message(read_path, directories[index], target)
-    return target
+        return EmlSource(message)
+
+    def extract(self, index: int, destination: Path) -> tuple[str, str]:
+        with recovered_ole_path(self.path) as (read_path, recovery_warnings):
+            with olefile.OleFileIO(str(read_path)) as container:
+                directories = attachment_directories(container.listdir())
+            if index < len(directories):
+                directory, name = _directory_at(read_path, index)
+                return _copy_ole_attachment(read_path, directory, name, index, destination)
+            raw_index = index - len(directories)
+            return _copy_raw_attachment(read_path, raw_index, bool(recovery_warnings), destination)
+
+
+def _directory_at(path: Path, index: int) -> tuple[str, str]:
+    """Carpeta OLE del adjunto ``index`` y su nombre, como en el análisis."""
+    with olefile.OleFileIO(str(path)) as container:
+        directories = attachment_directories(container.listdir())
+    if not 0 <= index < len(directories):
+        raise _not_found()
+    entry = read_ole_metadata(path).attachments.get(directories[index])
+    return directories[index], entry.name if entry else f"adjunto-{index + 1}"
+
+
+def _read_data(container: olefile.OleFileIO, directory: str) -> bytes | None:
+    stream_path = [directory, ATTACHMENT_DATA_STREAM]
+    if not container.exists(stream_path):
+        return None
+    with container.openstream(stream_path) as stream:
+        return stream.read()
 
 
 def _copy_ole_attachment(

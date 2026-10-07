@@ -10,7 +10,6 @@ dentro de un presupuesto compartido; ``limit_response`` acota una sola vez la re
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from functools import partial
 from pathlib import Path
 
 import extract_msg
@@ -25,12 +24,13 @@ from app.services.msg.attachments import (
     extract_ole_attachments,
     extract_parsed_attachments,
 )
-from app.services.msg.embedded import EmbeddedBudget, open_embedded_message
+from app.services.msg.embedded import AttachedMessages
 from app.services.msg.envelope import Envelope, envelope_from_headers, envelope_from_properties
 from app.services.msg.fat_recovery import recovered_ole_path
 from app.services.msg.inline_images import assign_by_size
 from app.services.msg.limits import limit_response
 from app.services.msg.names import filename_warnings
+from app.services.msg.nesting import EmbeddedBudget
 from app.services.msg.ole_reader import OleMetadata, read_ole_metadata
 from app.services.msg.parsed_fields import (
     read_body,
@@ -76,10 +76,8 @@ class _ReadContext:
 
     def sources(self) -> AttachmentSources:
         """Datos de adjuntos y cómo abrir un correo adjunto con este mismo flujo."""
-        open_message = partial(
-            open_embedded_message, self.path, budget=self.budget, read=_read_message
-        )
-        return AttachmentSources(self.ole.attachments, self.deadline, open_message)
+        messages = AttachedMessages(self.path, self.budget, _read_message)
+        return AttachmentSources(self.ole.attachments, self.deadline, messages)
 
     def fallback_envelope(self) -> list[Envelope]:
         """Respaldos en orden de confianza: propiedades MAPI y luego encabezados de transporte."""

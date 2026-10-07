@@ -120,7 +120,7 @@ describe('MessageReader', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Cotización de acero' })).toBeInTheDocument()
   })
 
-  it('un correo adjunto que no se pudo leer sólo se ofrece para descargar como .msg', async () => {
+  it('un correo adjunto que no se pudo leer sólo se ofrece para descargar', async () => {
     const broken = mail('Reenvío', {
       attachments: [attachment('Correo dañado', { kind: 'message', message: null, warnings: ['ilegible'] })],
     })
@@ -129,7 +129,7 @@ describe('MessageReader', () => {
     const dialog = screen.getByRole('dialog', { name: 'Correo dañado' })
 
     expect(within(dialog).queryByRole('button', { name: 'Abrir correo' })).not.toBeInTheDocument()
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Descargar .msg' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Descargar correo' }))
     await waitFor(() => expect(mocks.saveBlob).toHaveBeenCalled())
     expect(mocks.fetchAttachment).toHaveBeenCalledWith(file, 0, 'Correo dañado', {
       preview: false,

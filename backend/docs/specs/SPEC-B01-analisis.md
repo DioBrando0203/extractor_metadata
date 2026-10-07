@@ -2,7 +2,7 @@
 
 Estado: implementada
 Código: `api/routes/messages.py` (`extract_message`), `services/worker.py`, `services/msg/`
-Relacionadas: SPEC-B02, ADR-B01, ADR-B03, ADR-B07, ADR-B13, ADR-B14
+Relacionadas: SPEC-B02, ADR-B01, ADR-B03, ADR-B07, ADR-B13, ADR-B14, ADR-B15
 
 ## Objetivo
 
@@ -21,7 +21,7 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 9. Completar asunto, remitente, destinatarios y fecha vacíos con propiedades MAPI alternativas (`0E1D`, `003D`, `0070`, `0042`, `5D01`, `5D02`, `0065`) y después con los encabezados de transporte.
 10. Cuerpo con marcadores `[cid:…]` en la posición de cada imagen incrustada.
 11. Cada adjunto: metadatos por formato, Content-ID y miniatura si queda presupuesto de tiempo.
-12. Correo adjunto (método 5): se lee como un correo propio con este mismo flujo y queda en `attachments[i].message` (`kind=message`); hasta `max_embedded_depth` niveles y `max_embedded_messages` correos por análisis. Fuera del presupuesto o ilegible: `kind=message` sin `message` y con aviso. Sin nombre propio, toma su asunto.
+12. Correo adjunto (método 5): se lee como un correo propio con este mismo flujo y queda en `attachments[i].message` (`kind=message`); hasta `max_embedded_depth` niveles y `max_embedded_messages` correos por análisis. Fuera del presupuesto o ilegible: `kind=message` sin `message` y con aviso. Sin nombre propio, toma su asunto. Igual para un archivo adjunto que es un MSG (firma CFB con streams MAPI) o un `.eml` con De, Asunto o Fecha: queda `kind=message` y se descarga tal cual.
 13. Adjunto por referencia (métodos 2, 3, 4 y 7: OneDrive, SharePoint o una ruta): `kind=link` con su dirección en `link`, sin bytes ni advertencia; sin dirección legible, con aviso.
 14. Acotar la respuesta una sola vez, incluidos los correos adjuntos: miniaturas hasta `max_total_preview_chars`, metadatos hasta `max_total_metadata_chars`.
 15. `status = partial` si hay cualquier advertencia en ese correo; un correo adjunto parcial no vuelve parcial al contenedor.
@@ -50,3 +50,5 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-19: con el parser caído, el correo adjunto se abre igual; un stream dañado dentro de él lo marca parcial. Prueba: `test_embedded.py::test_attached_message_is_opened_when_the_parser_fails`, `::test_damaged_stream_inside_the_attached_message_is_reported`.
 - CA-20: un adjunto en la nube o en una ruta se informa como enlace con su dirección. Prueba: `test_embedded.py::test_cloud_attachment_is_a_link_without_bytes`, `::test_reference_to_a_network_path_and_reference_without_address`.
 - CA-21: un solo presupuesto de miniaturas para el correo y sus correos adjuntos. Prueba: `test_embedded.py::test_one_preview_budget_covers_attached_messages`.
+- CA-22: un `.eml` adjunto se lee con sobre decodificado, destinatarios, fecha, cuerpo con su imagen en posición, adjuntos y otro correo dentro. Prueba: `test_eml.py::test_eml_attachment_is_read_like_an_email`.
+- CA-23: un `.msg` adjunto con sus bytes se lee como correo; un `.doc` (CFB sin streams MAPI) o un `.eml` sin encabezados siguen siendo archivos. Prueba: `test_eml.py::test_msg_attached_as_a_file_is_read_and_its_attachments_download`, `::test_files_that_only_look_like_messages_stay_files`.

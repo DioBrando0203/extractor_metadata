@@ -1,8 +1,8 @@
 """Enumeración de adjuntos desde el parser MSG o directamente desde el árbol OLE.
 
 Antes de leer bytes se mira cómo viaja cada adjunto (``attachment_entries``): un correo adjunto se
-abre con la función que aporta ``reader``, una referencia a la nube o a una ruta se informa como
-enlace y el resto se lee como archivo.
+abre con el ``MessageOpener`` que aporta ``reader``, una referencia a la nube o a una ruta se
+informa como enlace y el resto se lee como archivo (que también puede ser un ``.msg`` o ``.eml``).
 """
 
 import mimetypes
@@ -11,6 +11,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
+from typing import Protocol
 
 import olefile
 
@@ -39,6 +40,14 @@ _GENERIC_EXTENSIONS = {
 }
 
 
+class MessageOpener(Protocol):
+    """Abre correos adjuntos (``embedded.AttachedMessages``); invertido para evitar ciclos."""
+
+    def from_storage(self, directory: str, info: OleAttachment) -> AttachmentMetadata: ...
+
+    def from_file(self, attachment: AttachmentMetadata, payload: bytes) -> AttachmentMetadata: ...
+
+
 @dataclass(frozen=True)
 class AttachmentSources:
     """Lo que la lectura de adjuntos necesita además del correo (Parameter Object)."""
@@ -47,8 +56,8 @@ class AttachmentSources:
     info: dict[str, OleAttachment]
     #: Plazo para metadatos externos y miniaturas.
     deadline: float
-    #: Abre el correo adjunto de una carpeta; lo aporta ``reader``, que sabe leer un MSG.
-    open_message: Callable[[str, OleAttachment], AttachmentMetadata]
+    #: Abre correos adjuntos; lo aporta ``reader``, que sabe leer un MSG.
+    messages: MessageOpener
 
     def describe(self, directory: str, position: int) -> OleAttachment:
         return self.info.get(directory) or OleAttachment(f"adjunto-{position}", 0)
@@ -120,7 +129,7 @@ def without_bytes(
     if info.has_data:
         return None
     if info.is_message:
-        return sources.open_message(directory, info)
+        return sources.messages.from_storage(directory, info)
     if info.is_reference:
         return link_attachment(info)
     if info.has_storage:
@@ -171,9 +180,10 @@ def _parsed_file(
         if not isinstance(payload, bytes):
             return AttachmentMetadata(name=name, warnings=[_NO_FILE])
         content_id = normalize_content_id(clean_text(read_attribute(attachment, "cid", warnings)))
-        return attachment_from_payload(
+        result = attachment_from_payload(
             name, payload, sources.deadline, content_id=content_id or info.content_id
         )
+        return sources.messages.from_file(result, payload)
     except Exception:
         return AttachmentMetadata(name=name, size_bytes=info.size or None, warnings=[_UNREADABLE])
 
@@ -188,7 +198,7 @@ def extract_ole_attachments(path: Path, sources: AttachmentSources) -> list[Atta
                 info = sources.describe(directory, index)
                 attachments.append(
                     without_bytes(directory, info, sources)
-                    or _ole_file(container, directory, info, sources.deadline)
+                    or _ole_file(container, directory, info, sources)
                 )
     except Exception:
         return attachments
@@ -196,7 +206,7 @@ def extract_ole_attachments(path: Path, sources: AttachmentSources) -> list[Atta
 
 
 def _ole_file(
-    container: olefile.OleFileIO, directory: str, info: OleAttachment, deadline: float
+    container: olefile.OleFileIO, directory: str, info: OleAttachment, sources: AttachmentSources
 ) -> AttachmentMetadata:
     stream_path = [directory, ATTACHMENT_DATA_STREAM]
     try:
@@ -204,9 +214,10 @@ def _ole_file(
             raise OSError("stream de adjunto ausente")
         with container.openstream(stream_path) as stream:
             payload = stream.read()
-        return attachment_from_payload(
-            info.name, payload, deadline, recovered=True, content_id=info.content_id
+        result = attachment_from_payload(
+            info.name, payload, sources.deadline, recovered=True, content_id=info.content_id
         )
+        return sources.messages.from_file(result, payload)
     except Exception:
         return AttachmentMetadata(
             name=info.name, size_bytes=info.size or None, warnings=[_UNREADABLE]

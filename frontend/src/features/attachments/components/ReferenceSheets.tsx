@@ -60,7 +60,7 @@ export function MessageSheet({ attachment, onOpen, onDownload }: MessageSheetPro
           </Button>
         )}
         <Button variant={readable ? 'secondary' : 'primary'} onClick={onDownload}>
-          <ArrowDownload20Regular aria-hidden="true" /> Descargar .msg
+          <ArrowDownload20Regular aria-hidden="true" /> Descargar correo
         </Button>
       </div>
     </div>

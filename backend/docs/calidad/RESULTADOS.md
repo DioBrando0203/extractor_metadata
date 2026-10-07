@@ -5,13 +5,14 @@ Entorno: Windows 11, Python 3.12.10 en `.venv`.
 
 ## Comandos
 
-- `python -m pytest`: 91 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
+- `python -m pytest`: 95 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
 - `python -m ruff check app tests`: aprobado.
-- `python -m ruff format --check app tests`: 51 archivos con formato correcto.
+- `python -m ruff format --check app tests`: 54 archivos con formato correcto.
 
 ## Verificaciones destacadas
 
 - Correos adjuntos: lectura con el mismo flujo (parser y respaldo OLE), tres niveles, límites de profundidad y cantidad, stream dañado marcado como parcial, descarga como `.msg` legible y de adjuntos internos con `message_path`; el temporal queda vacío.
+- EML y MSG adjuntos como archivo: sobre, cuerpo con imagen en posición, correo dentro del EML, descargas por `message_path` dentro del EML y del `.msg`; un `.doc` y un `.eml` sin encabezados siguen como archivos.
 - Adjuntos por referencia: URL de SharePoint, ruta de red y referencia sin dirección; sin descarga vacía.
 - Integración: E2E del frontend (7) con el backend iniciado con el código actual.
 

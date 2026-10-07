@@ -99,3 +99,10 @@ Fecha: 2026-10-06. Estado: vigente.
 Contexto: los adjuntos de OneDrive o SharePoint (método 7) y los que apuntan a una ruta (2, 3, 4) no traen bytes; el correo sólo guarda la dirección (`0x370D` o `0x3708`). Antes se informaban como "anidado" o "ilegible".
 Decisión: devolverlos como `kind=link` con la dirección como texto, sin advertencia porque no es un daño. El backend nunca abre la dirección (RQ-01). La interfaz decide cómo ofrecerla.
 Consecuencias: no hay miniatura ni descarga; el usuario abre el enlace con su navegador y sus credenciales, fuera de esta aplicación.
+
+## ADR-B15 EML y MSG adjuntos como archivo
+
+Fecha: 2026-10-06. Estado: vigente. Amplía ADR-B13.
+Contexto: otros clientes de correo adjuntan un reenvío como `.eml` o adjuntan un `.msg` de disco con sus bytes (método 1); antes se veían como archivos sin leer.
+Decisión: un adjunto con firma CFB y streams MAPI se escribe al temporal y se lee con el mismo flujo del MSG. Un `.eml` con De, Asunto o Fecha se lee con `email` de la biblioteca estándar (`policy.default`, sin red), con el mismo contrato y las mismas reglas de cuerpo (HTML a texto con `[cid:…]`). El presupuesto pasa a `nesting.py` para que MSG y EML lo compartan; `attachments` recibe el abridor como `MessageOpener` (Protocol) y no importa a `embedded` ni a `eml`. La descarga recorre `message_path` con `_MsgSource` y `EmlSource`, que enumeran las partes en el mismo orden que el análisis.
+Consecuencias: el `.eml` se detecta por extensión y encabezados; uno sin extensión queda como archivo. Un MSG dentro de un EML como archivo no se abre (raro). Sin dependencias nuevas.

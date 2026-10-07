@@ -15,6 +15,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_body_text.py`: HTML a texto sin scripts ni recursos remotos.
 - `test_health.py`: salud local sin estado.
 - `test_embedded.py`: correos adjuntos (lectura, anidamiento, límites, parser caído, stream dañado, descarga como `.msg` y con `message_path`) y adjuntos por referencia (nube, ruta, sin dirección).
+- `test_eml.py`: `.eml` adjunto (sobre, cuerpo con imagen en posición, adjuntos, correo dentro), descargas por `message_path` dentro del EML, `.msg` adjunto como archivo y archivos que sólo lo parecen.
 - `test_config.py`: listas de Host y Origin desde el entorno (modo LAN, ADR-B12) y valores de loopback por defecto.
 
 ## Comandos

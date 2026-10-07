@@ -9,7 +9,7 @@ from msg_factory import attached_message, build_cfb, message_streams, reference_
 from app.api.routes import messages
 from app.main import app
 from app.models.schemas import AttachmentMetadata, MessageMetadata
-from app.services.msg import embedded, extract_msg_file, limits, reader
+from app.services.msg import embedded, extract_msg_file, limits, nesting, reader
 
 PDF = b"%PDF-1.4\ncontenido del correo interno\n%%EOF"
 FIRST = "__attach_version1.0_#00000000"
@@ -135,7 +135,7 @@ def test_message_inside_a_message_inside_a_message(tmp_path):
 
 
 def test_nesting_stops_at_the_depth_limit(tmp_path, monkeypatch):
-    monkeypatch.setattr(embedded, "settings", replace(embedded.settings, max_embedded_depth=1))
+    monkeypatch.setattr(nesting, "settings", replace(nesting.settings, max_embedded_depth=1))
     deepest = message_streams(subject="Nivel 2")
     middle = message_streams(subject="Nivel 1", extra_streams=attached_message(FIRST, deepest))
     result = _extract(
@@ -152,7 +152,7 @@ def test_nesting_stops_at_the_depth_limit(tmp_path, monkeypatch):
 
 
 def test_attached_messages_are_limited_per_analysis(tmp_path, monkeypatch):
-    monkeypatch.setattr(embedded, "settings", replace(embedded.settings, max_embedded_messages=1))
+    monkeypatch.setattr(nesting, "settings", replace(nesting.settings, max_embedded_messages=1))
     streams = attached_message(FIRST, message_streams(subject="Primero"))
     streams.update(attached_message(SECOND, message_streams(subject="Segundo")))
     result = _extract(tmp_path, build_cfb(message_streams(extra_streams=streams)))

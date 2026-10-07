@@ -34,9 +34,9 @@ Cada pendiente se cita por su ID. Al tomar uno: crear o actualizar la spec corre
 
 ### PEN-01 Correos adjuntos dentro del correo
 
-Prioridad: alta. Alcance: backend y frontend. Estado: parcial (MSG adjunto terminado el 2026-10-06; EML adjunto pendiente).
+Prioridad: alta. Alcance: backend y frontend. Estado: terminada (2026-10-06).
 Hecho: correo adjunto (método 5) leído con el mismo flujo, hasta 3 niveles y 20 correos por análisis; navegación con "Volver"; descargas internas con `message_path`; descarga del correo adjunto como `.msg` (ADR-B13, ADR-18).
-Falta: un `.eml` adjunto como archivo (`message/rfc822`) sigue siendo un adjunto de texto; leerlo con `email` de la biblioteca estándar y mostrarlo igual.
+Hecho también: `.eml` adjunto (biblioteca estándar) y `.msg` adjunto como archivo, con sus correos internos y descargas (ADR-B15).
 Situación original: un MSG o EML reenviado "como adjunto" aparece como "Adjunto MSG anidado u objeto embebido: no se expande"; no se puede leer.
 Hacer: analizar el mensaje interno con el mismo flujo (límite de profundidad y de tiempo) y mostrarlo en el lector como un correo propio, con navegación de vuelta al correo contenedor.
 Terminado cuando: un MSG sintético con otro MSG adjunto muestra remitente, asunto, texto y adjuntos descargables del interno; prueba de profundidad máxima.

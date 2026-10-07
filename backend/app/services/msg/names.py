@@ -41,3 +41,8 @@ def download_filename(name: str, index: int, header: bytes) -> tuple[str, str]:
         if header.startswith(signature):
             return f"{filename}{extension}", detected_type
     return filename, "application/octet-stream"
+
+
+def message_filename(name: str, extension: str = ".msg") -> str:
+    """Nombre de un correo adjunto como archivo: su nombre o asunto con la extensión del formato."""
+    return name if name.lower().endswith(extension) else f"{name}{extension}"

@@ -43,3 +43,4 @@ Que cualquier adjunto se pueda descargar con sus bytes exactos y que imágenes, 
 - CA-09: un correo adjunto se descarga como `.msg` que vuelve a leerse completo. Prueba: `test_embedded.py::test_attached_message_downloads_as_a_readable_msg`.
 - CA-10: `message_path` mal formado, demasiado profundo o que no lleva a un correo adjunto se rechaza. Prueba: `test_embedded.py::test_invalid_message_path_is_rejected`, `::test_message_path_must_point_to_an_attached_message`.
 - CA-11: un enlace no ofrece descarga vacía. Prueba: `test_embedded.py::test_cloud_attachment_is_a_link_without_bytes`.
+- CA-12: `message_path` entra en un `.eml` adjunto, en el correo que contiene y en un `.msg` adjunto; un índice que no es un correo responde 422. Prueba: `test_eml.py::test_attachments_inside_an_eml_download_through_the_message_path`, `::test_msg_attached_as_a_file_is_read_and_its_attachments_download`.

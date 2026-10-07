@@ -73,3 +73,10 @@ Estado: terminada (backend; frontend en su bitácora)
 Cambios: `msg/attachment_entries.py` (método de adjunto 0x3705, dirección 0x370D/0x3708, nombre con respaldo 3001/3704); `msg/embedded.py` (correo adjunto a MSG propio con `OleWriter`, `EmbeddedBudget`); `attachments.py` clasifica antes de leer bytes (`AttachmentSources`, `without_bytes`) y divide funciones largas; `reader.py` lee recursivamente y acota una sola vez; `limits.py` recorre correos adjuntos; `download.py` con `message_path` y descarga `.msg`; ruta `/attachment` con `message_path` y `AttachmentRequest` en el worker; contrato `kind`, `link`, `message`; fábrica de MSG con `message_streams`, `attached_message` y `reference_attachment`.
 Evidencia: pytest 91 aprobadas (16 nuevas en `test_embedded.py`); ruff check y format aprobados. Con el código anterior, 13 de las 16 nuevas fallan (las 3 restantes son rechazos de `message_path` que antes daban 422 por otro motivo).
 Notas: ADR-B13 y ADR-B14; SPEC-B01 CA-17 a CA-21; SPEC-B02 CA-08 a CA-11. EML adjunto sigue pendiente dentro de PEN-01.
+
+## 2026-10-06 23:20 -05:00 EML y MSG adjuntos como archivo (cierre de PEN-01)
+
+Estado: terminada
+Cambios: `msg/eml.py` (lectura con la biblioteca estándar y `EmlSource`), `msg/nesting.py` (presupuesto común y `open_nested`), `embedded.AttachedMessages` (carpeta OLE, `.msg` y `.eml` adjuntos), `attachments.MessageOpener` (Protocol) para no crear ciclos, `download.py` recorre `message_path` con `_MsgSource` y `EmlSource`, `names.message_filename`. Frontend: el visor ofrece "Descargar correo" en lugar de "Descargar .msg".
+Evidencia: pytest 95 aprobadas (4 nuevas en `test_eml.py`; 3 fallan con el código anterior, la cuarta es el caso negativo); ruff check y format aprobados; frontend 75 unitarias, lint, build y format:check aprobados.
+Notas: ADR-B15; SPEC-B01 CA-22 y CA-23; SPEC-B02 CA-12; PEN-01 terminada.

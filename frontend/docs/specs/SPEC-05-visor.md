@@ -24,7 +24,7 @@ Ver un adjunto de frente, a pantalla completa, sin descargarlo: imágenes, PDF, 
 - video: MP4, M4V, WEBM, OGV, MOV. `<video controls>`.
 - audio: MP3, WAV, OGG, M4A, AAC, FLAC. `<audio controls>` en una hoja.
 - embedded: DWG, DXF u Office con miniatura incrustada. La miniatura grande con la nota "Miniatura guardada dentro del archivo por el programa que lo creó…".
-- message: correo adjunto. Icono de correo, nombre, "Abrir correo" (si se pudo leer) y "Descargar .msg".
+- message: correo adjunto. Icono de correo, nombre, "Abrir correo" (si se pudo leer) y "Descargar correo" (`.msg` o `.eml`, como venga).
 - link: archivo en la nube o en una carpeta compartida. Explica que no viaja en el correo y muestra la dirección como texto seleccionable; si es http o https, "Abrir enlace" en otra pestaña (ADR-19). Sin Descargar en la barra.
 - none: icono grande, nombre, "No hay vista previa para este tipo de archivo." y Descargar.
 
@@ -44,7 +44,7 @@ Ver un adjunto de frente, a pantalla completa, sin descargarlo: imágenes, PDF, 
 - CA-05: el texto en Windows-1252 se lee con tildes. Prueba: `viewerMode.test.ts` (decodeText).
 - CA-06: el visor ocupa toda la pantalla sin desborde en 320 a 1920 px. Prueba: capturas `03-visor-imagen`, `04-visor-plano` y `04b-visor-enlace` de `test:visual`.
 - CA-07: un enlace web se abre en otra pestaña con `rel="noopener noreferrer"`; una ruta de red se muestra como texto, nunca como enlace. Prueba: `MessageReader.test.tsx`, `link.test.ts`.
-- CA-08: un correo adjunto se abre en el lector desde el visor o, si no se pudo leer, sólo se descarga como `.msg`. Prueba: `MessageReader.test.tsx`.
+- CA-08: un correo adjunto se abre en el lector desde el visor o, si no se pudo leer, sólo se descarga. Prueba: `MessageReader.test.tsx`.
 
 ## Seguridad
 

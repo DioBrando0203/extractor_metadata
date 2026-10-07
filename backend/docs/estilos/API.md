@@ -11,7 +11,7 @@
 
 - `GET /api/health`: `{"status": "ok", "storage": "none"}`.
 - `POST /api/messages/extract`: multipart `file` (.msg). Respuesta `ExtractionResponse { message, processed_locally }`.
-- `POST /api/messages/attachment`: multipart `file`, `attachment_index` (entero ≥ 0), `preview` (booleano, opcional) y `message_path` (opcional, posiciones de correos adjuntos separadas por `/`, p. ej. `2/0`, hasta `max_embedded_depth` niveles). Respuesta binaria con `Content-Disposition`. Con `preview=true`: `image/jpeg` de hasta 2048 px. Un adjunto `kind=message` se entrega como `.msg` con `application/vnd.ms-outlook`.
+- `POST /api/messages/attachment`: multipart `file`, `attachment_index` (entero ≥ 0), `preview` (booleano, opcional) y `message_path` (opcional, posiciones de correos adjuntos separadas por `/`, p. ej. `2/0`, hasta `max_embedded_depth` niveles). Respuesta binaria con `Content-Disposition`. Con `preview=true`: `image/jpeg` de hasta 2048 px. Un adjunto `kind=message` se entrega como `.msg` con `application/vnd.ms-outlook` o, si es un EML, como `.eml` con `message/rfc822`.
 
 ## MessageMetadata
 
@@ -35,7 +35,7 @@
 - `content_id`: Content-ID sin `<>` o `null`; enlaza el adjunto con su `[cid:…]` del cuerpo.
 - `content_id_inferred`: `true` si el Content-ID se reconstruyó por las medidas de la imagen (archivo dañado); la interfaz lo indica.
 - `kind`: `file` (por defecto), `message` o `link`.
-- `message`: `MessageMetadata` del correo adjunto o `null` (fuera del presupuesto o ilegible; entonces `warnings` dice por qué). Sólo con `kind=message`.
+- `message`: `MessageMetadata` del correo adjunto (carpeta OLE, `.msg` o `.eml` adjunto) o `null` (fuera del presupuesto o ilegible; entonces `warnings` dice por qué). Sólo con `kind=message`.
 - `link`: URL o ruta de red de un adjunto por referencia, como texto; el backend nunca la abre. `null` si no se pudo leer. Sólo con `kind=link`.
 
 ## Códigos de error
