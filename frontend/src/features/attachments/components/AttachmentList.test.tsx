@@ -3,7 +3,11 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Attachment } from '../../../lib/types'
 
-const mocks = vi.hoisted(() => ({ fetchAttachment: vi.fn(), saveBlob: vi.fn() }))
+const mocks = vi.hoisted(() => ({
+  fetchAttachment: vi.fn(),
+  fetchAllAttachments: vi.fn(),
+  saveBlob: vi.fn(),
+}))
 vi.mock('../../../lib/api', () => mocks)
 import { useAttachmentFiles } from '../hooks/useAttachmentFiles'
 import { AttachmentList } from './AttachmentList'
@@ -112,5 +116,34 @@ describe('AttachmentList', () => {
     expect(within(dialog).getByText('DWG 2018 (formato)')).toBeInTheDocument()
     fireEvent.click(within(dialog).getAllByRole('button', { name: /Descargar/ })[0])
     await waitFor(() => expect(mocks.saveBlob).toHaveBeenCalledOnce())
+  })
+
+  it('descarga todos los adjuntos en un ZIP y avisa si no se pudo', async () => {
+    mocks.fetchAllAttachments.mockResolvedValueOnce({
+      blob: new Blob(['zip']),
+      filename: 'correo - adjuntos.zip',
+    })
+    render(<Harness attachments={[attachment('acta.pdf'), attachment('plano.dwg')]} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Descargar todo' }))
+    await waitFor(() =>
+      expect(mocks.saveBlob).toHaveBeenCalledWith(expect.any(Blob), 'correo - adjuntos.zip'),
+    )
+    expect(mocks.fetchAllAttachments).toHaveBeenCalledWith(file, [])
+
+    mocks.fetchAllAttachments.mockRejectedValueOnce(new Error('falló'))
+    fireEvent.click(screen.getByRole('button', { name: 'Descargar todo' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudieron preparar los adjuntos')
+  })
+
+  it('no ofrece un ZIP con un solo archivo descargable', () => {
+    render(
+      <Harness
+        attachments={[
+          attachment('acta.pdf'),
+          attachment('Presupuesto.xlsx', { kind: 'link', link: 'https://x.test' }),
+        ]}
+      />,
+    )
+    expect(screen.queryByRole('button', { name: 'Descargar todo' })).not.toBeInTheDocument()
   })
 })

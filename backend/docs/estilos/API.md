@@ -13,6 +13,8 @@
 - `POST /api/messages/extract`: multipart `file` (.msg). Respuesta `ExtractionResponse { message, processed_locally }`.
 - `POST /api/messages/attachment`: multipart `file`, `attachment_index` (entero ≥ 0), `preview` (booleano, opcional) y `message_path` (opcional, posiciones de correos adjuntos separadas por `/`, p. ej. `2/0`, hasta `max_embedded_depth` niveles). Respuesta binaria con `Content-Disposition`. Con `preview=true`: `image/jpeg` de hasta 2048 px. Un adjunto `kind=message` se entrega como `.msg` con `application/vnd.ms-outlook` o, si es un EML, como `.eml` con `message/rfc822`.
 
+- `POST /api/messages/attachments`: multipart `file` y `message_path` opcional. Respuesta `application/zip` (`<nombre del MSG> - adjuntos.zip`) con los adjuntos que traen bytes en el orden del análisis; los enlaces se omiten y los nombres repetidos se numeran (`informe (2).pdf`). Sin nada descargable: 422 `ATTACHMENT_NOT_FOUND`.
+
 ## MessageMetadata
 
 - `file_name`, `file_size_bytes`.

@@ -39,6 +39,7 @@ src/
     components/AttachmentViewer.tsx      diálogo a pantalla completa, navegación y descarga
     components/AttachmentPreview.tsx     contenido según modo: imagen, PDF, texto, media, miniatura, sin vista
     components/AttachmentDetails.tsx     panel de propiedades del adjunto
+    components/DownloadAllButton.tsx     "Descargar todo" (ZIP) con su estado de descarga y error
     components/ReferenceSheets.tsx       hojas del visor para un enlace y para un correo adjunto
     components/FileTypeIcon.tsx          icono Fluent por tipo
     hooks/useAttachmentFiles.ts          caché de binarios y URLs blob
@@ -88,6 +89,7 @@ e2e/                                     Playwright: funcional (backend real) y 
 
 - `POST /api/messages/extract` → `{ message, processed_locally }`.
 - `POST /api/messages/attachment` con `file`, `attachment_index`, `preview` opcional y `message_path` opcional (`2/0`, desde `messagePath`) → binario.
+- `POST /api/messages/attachments` con `file` y `message_path` opcional → ZIP (`fetchAllAttachments`). Entre orígenes el navegador no expone `Content-Disposition`: el nombre se arma con el del MSG.
 - `Message.security`: `signed`, `opaque`, `encrypted`, `protected` o `null` (S/MIME; la firma no se verifica).
 - `Message.item`: reunión, cita, contacto o tarea (`ItemDetails`), o `null` en un correo.
 - `Attachment.kind`: `file`, `message` (con `message: Message`, ya leído) o `link` (con `link`, sin bytes).

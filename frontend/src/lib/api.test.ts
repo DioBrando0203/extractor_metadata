@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { extractMessage, fetchAttachment } from './api'
+import { extractMessage, fetchAllAttachments, fetchAttachment } from './api'
 
 describe('extractMessage', () => {
   afterEach(() => vi.unstubAllGlobals())
@@ -161,5 +161,19 @@ describe('correos S/MIME', () => {
     expect((await extractMessage(new File(['x'], 'a.msg'))).message.security).toBe('encrypted')
     vi.stubGlobal('fetch', respond('valid-signature'))
     expect((await extractMessage(new File(['x'], 'a.msg'))).message.security).toBeNull()
+  })
+})
+
+describe('descargar todo', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('pide el ZIP con la ruta del correo adjunto y lo nombra como el MSG', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(new Blob(['PK']), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const archive = await fetchAllAttachments(new File(['x'], 'Revisión de obra.msg'), [2])
+    const body = fetchMock.mock.calls[0][1]?.body as FormData
+    expect(fetchMock.mock.calls[0][0]).toContain('/messages/attachments')
+    expect(body.get('message_path')).toBe('2')
+    expect(archive.filename).toBe('Revisión de obra - adjuntos.zip')
   })
 })

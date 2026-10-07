@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { fetchAttachment, saveBlob } from '../../../lib/api'
+import { fetchAllAttachments, fetchAttachment, saveBlob } from '../../../lib/api'
 import type { Attachment, AttachmentFile } from '../../../lib/types'
 
 export type Variant = 'original' | 'preview'
@@ -66,5 +66,11 @@ export function useAttachmentFiles(file: File, messagePath: readonly number[] = 
     [load],
   )
 
-  return useMemo(() => ({ load, objectUrl, download }), [load, objectUrl, download])
+  /** Todos los adjuntos en un ZIP; no se guarda en caché porque se pide una sola vez. */
+  const downloadAll = useCallback(async () => {
+    const archive = await fetchAllAttachments(file, messagePath)
+    saveBlob(archive.blob, archive.filename)
+  }, [file, messagePath])
+
+  return useMemo(() => ({ load, objectUrl, download, downloadAll }), [load, objectUrl, download, downloadAll])
 }

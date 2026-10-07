@@ -28,7 +28,7 @@ Dependencias permitidas, siempre hacia abajo:
 ```text
 app/
   main.py                      API local y build del frontend en "/"
-  api/routes/messages.py       POST /extract y POST /attachment
+  api/routes/messages.py       POST /extract, POST /attachment y POST /attachments (ZIP); entrega común en _deliver
   api/routes/health.py         GET /health
   core/config.py               Settings inmutables: límites, presupuestos y Host/Origin (env_list)
   core/errors.py               ExtractionError con código seguro
@@ -58,7 +58,8 @@ app/
     raw_body.py                cuerpo HTML desde un RTF comprimido suelto (CRC y coherencia con el texto)
     inline_images.py           posición de imágenes reconstruida por medidas cuando falta el Content-ID
     fat_recovery.py            firma borrada y DIFAT truncada reparadas en copia temporal
-    download.py                copia un adjunto, o un correo adjunto como .msg, al temporal; recorre message_path por MSG y EML
+    archive.py                 todos los adjuntos descargables en un ZIP con las mismas fuentes que la descarga
+    download.py                open_source (MSG, EML, firmado o rescate, con count); copia un adjunto, o un correo adjunto como .msg, al temporal; recorre message_path por MSG y EML
     limits.py                  presupuesto de miniaturas y metadatos, único para el correo y sus correos adjuntos
     names.py                   avisos y nombres seguros
     text.py                    valores a texto acotado

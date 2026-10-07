@@ -68,6 +68,31 @@ export async function fetchAttachment(
   }
 }
 
+/** Todos los adjuntos descargables del correo (o correo adjunto) en un ZIP armado por el backend. */
+export async function fetchAllAttachments(
+  file: File,
+  messagePath: readonly number[] = [],
+): Promise<AttachmentFile> {
+  const data = new FormData()
+  data.append('file', file)
+  if (messagePath.length) data.append('message_path', messagePath.join('/'))
+  let response: Response
+  try {
+    response = await fetch(`${API_URL}/messages/attachments`, { method: 'POST', body: data })
+  } catch {
+    throw new Error('No se pudo conectar con el extractor local.')
+  }
+  if (!response.ok) throw new Error('No se pudieron preparar los adjuntos.')
+  return {
+    blob: await response.blob(),
+    // Entre orígenes (desarrollo, LAN) el navegador no deja leer Content-Disposition: mismo nombre que el backend.
+    filename: filenameFromDisposition(
+      response.headers.get('content-disposition'),
+      `${file.name.replace(/\.msg$/i, '')} - adjuntos.zip`,
+    ),
+  }
+}
+
 /** Inicia la descarga de un binario ya presente en memoria y libera la URL temporal. */
 export function saveBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)

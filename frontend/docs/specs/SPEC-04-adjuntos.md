@@ -10,7 +10,7 @@ Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y
 
 ## Comportamiento
 
-- Cabecera: clip, "N datos adjuntos" y tamaño total; "Mostrar los N" / "Mostrar menos" si hay más de 6.
+- Cabecera: clip, "N datos adjuntos" y tamaño total; "Descargar todo" (ZIP del backend, `DownloadAllButton`) si hay dos o más adjuntos que no son enlaces; "Mostrar los N" / "Mostrar menos" si hay más de 6.
 - En la pestaña Mensaje se listan sólo los adjuntos no incrustados en el cuerpo; la pestaña Datos adjuntos muestra todos, sin plegado, con el título "Todos los datos adjuntos (N)" (ADR-13).
 - Orden visual: primero los adjuntos con miniatura, después el resto, conservando el orden original dentro de cada grupo. El índice que se envía a la API es siempre la posición original.
 - Con miniatura (`preview`): tarjeta con la imagen (16:10; `cover` para fotos, `contain` para miniaturas incrustadas), icono de tipo, nombre y "TIPO · tamaño".
@@ -47,8 +47,8 @@ Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y
 - CA-06: a 320 px el botón de descarga es visible sin desborde. Prueba: `e2e/local-api.spec.ts` (móvil).
 - CA-07: un enlace muestra dónde vive y no ofrece descarga. Prueba: `MessageReader.test.tsx`, `fileKind.test.ts`, `link.test.ts`, `e2e/local-api.spec.ts`.
 - CA-08: un correo adjunto se etiqueta como Correo aunque su asunto tenga puntos. Prueba: `fileKind.test.ts`.
+- CA-09: "Descargar todo" baja un ZIP con el nombre del MSG, avisa si falla y no aparece con un solo archivo descargable. Prueba: `AttachmentList.test.tsx`, `lib/api.test.ts`, `e2e/local-api.spec.ts`.
 
 ## Pendientes
 
-- Descargar todos en un ZIP.
 - Ocultar imágenes en línea de firmas (`cid:`).

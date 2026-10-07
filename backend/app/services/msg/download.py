@@ -6,6 +6,7 @@ correo adjunto en la posición 2. Cada nivel es un MSG (``_MsgSource``, copiado 
 """
 
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 
 import olefile
@@ -39,22 +40,29 @@ def extract_attachment_file(
     """
     if attachment_index < 0:
         raise _not_found()
-    if not readable_container(path):
-        # Lectura de rescate (``rescue``): los únicos adjuntos son los archivos sueltos.
-        if message_path:
-            raise _not_found()
-        return _copy_raw_attachment(path, attachment_index, True, destination)
-    source: _MsgSource | EmlSource = _MsgSource(path)
     try:
-        for level, index in enumerate(message_path):
-            source = source.enter(index, destination.with_name(f"embedded-{level}.msg"))
-        return source.extract(attachment_index, destination)
+        return open_source(path, message_path, destination).extract(attachment_index, destination)
     except ExtractionError:
         raise
     except Exception as error:
         raise ExtractionError(
             "No fue posible preparar el adjunto para descargar.", code="UNREADABLE_ATTACHMENT"
         ) from error
+
+
+def open_source(
+    path: Path, message_path: tuple[int, ...], scratch: Path
+) -> "_MsgSource | EmlSource | _RescueSource":
+    """El correo (o correo adjunto) cuyos adjuntos se piden; las copias van junto a ``scratch``."""
+    if not readable_container(path):
+        # Lectura de rescate (``rescue``): los únicos adjuntos son los archivos sueltos.
+        if message_path:
+            raise _not_found()
+        return _RescueSource(path)
+    source: _MsgSource | EmlSource = _MsgSource(path)
+    for level, index in enumerate(message_path):
+        source = source.enter(index, scratch.with_name(f"embedded-{level}.msg"))
+    return source
 
 
 def _not_found() -> ExtractionError:
@@ -69,7 +77,7 @@ class _MsgSource:
 
     def enter(self, index: int, target: Path) -> "_MsgSource | EmlSource":
         """Abre el correo adjunto ``index``: carpeta OLE, ``.msg`` o ``.eml`` adjunto."""
-        if (signed := self._signed_content()) is not None:
+        if (signed := self._signed) is not None:
             return signed.enter(index, target)
         with recovered_ole_path(self.path) as (read_path, _):
             directory, name = _directory_at(read_path, index)
@@ -88,24 +96,54 @@ class _MsgSource:
         return EmlSource(message)
 
     def extract(self, index: int, destination: Path) -> tuple[str, str]:
-        if (signed := self._signed_content()) is not None:
+        if (signed := self._signed) is not None:
             return signed.extract(index, destination)
-        with recovered_ole_path(self.path) as (read_path, recovery_warnings):
+        with recovered_ole_path(self.path) as (read_path, _):
             with olefile.OleFileIO(str(read_path)) as container:
                 directories = attachment_directories(container.listdir())
             if index < len(directories):
                 directory, name = _directory_at(read_path, index)
                 return _copy_ole_attachment(read_path, directory, name, index, destination)
-            # Mismo criterio que el análisis: hay archivos sueltos si se reparó o el parser falla.
-            rescue = bool(recovery_warnings) or parser_fails(read_path)
-            return _copy_raw_attachment(read_path, index - len(directories), rescue, destination)
+            raw_index = index - len(directories)
+            return _copy_raw_attachment(read_path, raw_index, self._has_loose, destination)
 
-    def _signed_content(self) -> EmlSource | None:
+    def count(self) -> int:
+        """Cuántos adjuntos lista el análisis de este correo, en el mismo orden."""
+        if (signed := self._signed) is not None:
+            return signed.count()
+        with recovered_ole_path(self.path) as (read_path, _):
+            with olefile.OleFileIO(str(read_path)) as container:
+                total = len(attachment_directories(container.listdir()))
+            if self._has_loose:
+                total += len(loose_candidates(read_path))
+        return total
+
+    @cached_property
+    def _has_loose(self) -> bool:
+        """Mismo criterio que el análisis: hay archivos sueltos si se reparó o el parser falla."""
+        with recovered_ole_path(self.path) as (read_path, recovery_warnings):
+            return bool(recovery_warnings) or parser_fails(read_path)
+
+    @cached_property
+    def _signed(self) -> EmlSource | None:
         """Firmado en claro: sus adjuntos son los del contenido firmado, como en el análisis."""
         with recovered_ole_path(self.path) as (read_path, _):
             ole = read_ole_metadata(read_path)
             smime = smime_content(read_path, ole.recovered.get("001A"), ole.attachments)
         return EmlSource(smime.content) if smime and smime.content is not None else None
+
+
+@dataclass(frozen=True)
+class _RescueSource:
+    """Archivo sin cabecera legible: sus adjuntos son los archivos sueltos rescatados."""
+
+    path: Path
+
+    def extract(self, index: int, destination: Path) -> tuple[str, str]:
+        return _copy_raw_attachment(self.path, index, True, destination)
+
+    def count(self) -> int:
+        return len(loose_candidates(self.path))
 
 
 def _directory_at(path: Path, index: int) -> tuple[str, str]:

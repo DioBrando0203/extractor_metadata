@@ -20,6 +20,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_rescue.py`: firma borrada repuesta en copia; cabecera destruida con sobre, adjuntos y descarga por HTTP.
 - `test_item_details.py`: convocatoria, respuesta, contacto, tarea y correo sin elemento, con propiedades con nombre sintéticas.
 - `test_smime.py`: firmado en claro (contenido, adjuntos, descarga, parser caído), opaco, cifrado, con permisos IRM y correo normal.
+- `test_archive.py`: ZIP con todos los adjuntos (sin enlaces, nombres repetidos numerados, correo adjunto por `message_path`, sin nada descargable).
 - `test_config.py`: listas de Host y Origin desde el entorno (modo LAN, ADR-B12) y valores de loopback por defecto.
 
 ## Comandos

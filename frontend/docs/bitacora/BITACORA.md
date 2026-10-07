@@ -84,3 +84,10 @@ Estado: terminada
 Cambios: tipo `Security` y su normalización por lista cerrada; `SecurityNote` (línea de firmado en claro y `StatusAlert` desde una tabla para opaco, cifrado y permisos IRM) bajo el asunto; estilos `.mail__security` y `.mail__notice`; captura `07c-cifrado`.
 Evidencia: format:check, build y lint aprobados; 97 unitarias (6 nuevas); 9 E2E (correo firmado real: texto del contenido firmado y descarga de su PDF); 5 visuales, `07c-cifrado` revisada a 320 y 1024 px.
 Notas: ADR-22; SPEC-03 CA-20.
+
+## 2026-10-07 00:35 -05:00 Botón "Descargar todo" (PEN-11, parte)
+
+Estado: terminada
+Cambios: `fetchAllAttachments` en `lib/api.ts` (nombre de respaldo desde el MSG porque entre orígenes no se lee `Content-Disposition`), `useAttachmentFiles.downloadAll`, `DownloadAllButton` en la cabecera de adjuntos, `downloads.css`; las pruebas que contaban botones "Descargar …" excluyen "Descargar todo".
+Evidencia: format:check, build y lint aprobados; 100 unitarias; 10 E2E (ZIP real con 2 PDF y el correo adjunto, sin el enlace); 5 visuales, cabecera revisada a 390 px.
+Notas: SPEC-04 CA-09. El primer E2E falló porque el nombre llegaba como `adjuntos.zip` (CORS); corregido.

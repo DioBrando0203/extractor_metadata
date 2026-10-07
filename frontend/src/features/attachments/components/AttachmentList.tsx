@@ -10,6 +10,7 @@ import { formatBytes } from '../../../lib/formatters'
 import type { Attachment } from '../../../lib/types'
 import type { AttachmentFiles } from '../hooks/useAttachmentFiles'
 import { FileChip, PreviewCard } from './AttachmentTiles'
+import { DownloadAllButton } from './DownloadAllButton'
 import type { Entry } from './AttachmentTiles'
 
 type Props = {
@@ -55,6 +56,8 @@ export function AttachmentList({
     .map((entry) => entry.attachment.size_bytes)
     .filter((size): size is number => size != null)
   const total = knownSizes.reduce((sum, size) => sum + size, 0)
+  // Un ZIP vale la pena con dos o más archivos que traen bytes (un enlace no se descarga).
+  const zippable = attachments.filter((attachment) => attachment.kind !== 'link').length >= 2
 
   async function download({ attachment, index }: Entry) {
     setDownloading((current) => new Set(current).add(index))
@@ -87,21 +90,24 @@ export function AttachmentList({
           {heading ?? `${entries.length} ${entries.length === 1 ? 'dato adjunto' : 'datos adjuntos'}`}
           {knownSizes.length > 0 && <span className="attachments__total"> ({formatBytes(total)})</span>}
         </h2>
-        {collapsible && (
-          <Button
-            variant="subtle"
-            size="sm"
-            aria-expanded={expanded}
-            onClick={() => setExpanded((value) => !value)}
-          >
-            {expanded ? 'Mostrar menos' : `Mostrar los ${entries.length}`}
-            {expanded ? (
-              <ChevronUp16Regular aria-hidden="true" />
-            ) : (
-              <ChevronDown16Regular aria-hidden="true" />
-            )}
-          </Button>
-        )}
+        <div className="attachments__actions">
+          {zippable && <DownloadAllButton onDownloadAll={files.downloadAll} />}
+          {collapsible && (
+            <Button
+              variant="subtle"
+              size="sm"
+              aria-expanded={expanded}
+              onClick={() => setExpanded((value) => !value)}
+            >
+              {expanded ? 'Mostrar menos' : `Mostrar los ${entries.length}`}
+              {expanded ? (
+                <ChevronUp16Regular aria-hidden="true" />
+              ) : (
+                <ChevronDown16Regular aria-hidden="true" />
+              )}
+            </Button>
+          )}
+        </div>
       </div>
       {previews.length > 0 && (
         <ul className="attachments__previews">

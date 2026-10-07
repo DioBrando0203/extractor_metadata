@@ -1,0 +1,15 @@
+/* Feature attachments: acciones de la cabecera de adjuntos (Descargar todo y plegado). */
+
+.attachments__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+}
+.attachments__zip-error {
+  flex-basis: 100%;
+  color: var(--danger-fg);
+  font-size: var(--fs-200);
+  text-align: end;
+}

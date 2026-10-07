@@ -108,3 +108,10 @@ Estado: terminada
 Cambios: `msg/smime.py` (firmado en claro con su contenido MIME, opaco y cifrado por OID, IRM por `.rpmsg`); `ReadContext` sale de `reader` a `read_context.py` con los adjuntos del contenido firmado y el cuerpo S/MIME (sin los bytes del PKCS#7 que extract-msg tomaba como texto); descarga coherente en `_MsgSource`; `eml.read_parts` y `eml.body_text` públicos; contrato `security`.
 Evidencia: pytest 116 aprobadas (5 nuevas en `test_smime.py`; con el código anterior fallan); ruff check y format aprobados.
 Notas: ADR-B18; SPEC-B01 CA-33 y CA-34; RQ-15. La firma no se verifica (límite honesto).
+
+## 2026-10-07 00:35 -05:00 Descargar todos los adjuntos en un ZIP (PEN-11, parte)
+
+Estado: terminada
+Cambios: `msg/archive.py` (`extract_all_attachments`); `download.open_source` con fuentes que saben contarse (`_MsgSource`, `EmlSource`, `_RescueSource`) y caché de firmado y sueltos; worker `run_archive_extraction`; ruta `POST /api/messages/attachments` y entrega común `_deliver` para `/attachment` y `/attachments`.
+Evidencia: pytest 119 aprobadas (3 nuevas en `test_archive.py`); ruff check y format aprobados.
+Notas: SPEC-B02 CA-13. Los enlaces se omiten; nombres repetidos numerados.

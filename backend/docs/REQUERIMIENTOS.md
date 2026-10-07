@@ -120,6 +120,6 @@ Hecho: ADR-B12 (modo LAN opcional, riesgos y límites), RQ-01, CA-08, guía, arq
 ### PEN-11 Otros
 
 - Render completo de DWG con una herramienta evaluada y licenciada.
-- Descargar todos los adjuntos en un ZIP.
+- Descargar todos los adjuntos en un ZIP: terminado el 2026-10-07 (`POST /attachments`, botón "Descargar todo").
 - Empaquetado instalable para Windows.
 - EMF/WMF sin miniatura fuera de Windows (límite de Pillow).

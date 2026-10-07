@@ -119,6 +119,20 @@ def _attachment_worker(
     _respond(connection, task, _ATTACHMENT_FALLBACK)
 
 
+def _archive_worker(
+    connection: Connection, path: str, message_path: tuple[int, ...], destination: str, name: str
+) -> None:
+    def task() -> bytes:
+        from app.services.msg import extract_all_attachments
+
+        filename, content_type = extract_all_attachments(
+            Path(path), Path(destination), name, message_path
+        )
+        return json.dumps({"filename": filename, "content_type": content_type}).encode()
+
+    _respond(connection, task, _ATTACHMENT_FALLBACK)
+
+
 # Lado padre ---------------------------------------------------------------------------------------
 
 
@@ -154,6 +168,25 @@ def run_attachment_extraction(
             max_response_bytes=_ATTACHMENT_RESPONSE_BYTES,
             timeout_message=f"La preparación del adjunto excedió {timeout} segundos.",
             failure_message="No fue posible preparar el adjunto para descargar.",
+            failure_code="ATTACHMENT_FAILED",
+        )
+    )
+    return str(payload["filename"]), str(payload["content_type"])
+
+
+def run_archive_extraction(
+    path: Path, size: int, message_path: tuple[int, ...], destination: Path, name: str
+) -> tuple[str, str]:
+    """Todos los adjuntos en un ZIP, también en el proceso aislado."""
+    timeout = _timeout_for_size(size)
+    payload = _run_isolated(
+        _IsolatedJob(
+            target=_archive_worker,
+            args=(str(path), message_path, str(destination), name),
+            timeout=timeout,
+            max_response_bytes=_ATTACHMENT_RESPONSE_BYTES,
+            timeout_message=f"La preparación de los adjuntos excedió {timeout} segundos.",
+            failure_message="No fue posible preparar los adjuntos para descargar.",
             failure_code="ATTACHMENT_FAILED",
         )
     )

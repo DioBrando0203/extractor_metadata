@@ -121,6 +121,26 @@ test('un correo firmado muestra su contenido y sus adjuntos reales', async ({ pa
   expect((await readFile(downloadedPath!)).toString()).toContain('contrato firmado')
 })
 
+test('descargar todo entrega un ZIP con los adjuntos que traen bytes', async ({ page }) => {
+  await page.goto('/')
+  await page
+    .locator('input[type=file]')
+    .first()
+    .setInputFiles({
+      name: 'obra.msg',
+      mimeType: 'application/vnd.ms-outlook',
+      buffer: python('from test_archive import _mail; sys.stdout.buffer.write(_mail())'),
+    })
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Descargar todo' }).click({ timeout: 20_000 })
+  const download = await downloadPromise
+  expect(download.suggestedFilename()).toBe('obra - adjuntos.zip')
+  const zip = await readFile((await download.path())!)
+  expect(zip.subarray(0, 2).toString()).toBe('PK')
+  for (const name of ['informe.pdf', 'Informe (2).pdf', 'Pedido.msg']) expect(zip.includes(name)).toBe(true)
+  expect(zip.includes('Presupuesto.xlsx')).toBe(false)
+})
+
 test('un correo legible permite descargar su adjunto', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))

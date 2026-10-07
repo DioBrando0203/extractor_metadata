@@ -100,6 +100,9 @@ class EmlSource:
         destination.write_bytes(payload)
         return download_filename(name, index, payload[:32])
 
+    def count(self) -> int:
+        return len(attachment_parts(self.message))
+
     def _part(self, index: int) -> EmailMessage:
         parts = attachment_parts(self.message)
         if not 0 <= index < len(parts):

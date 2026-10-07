@@ -83,9 +83,9 @@ describe('MessageViewer', () => {
     }))
     renderViewer({ attachments })
     const section = screen.getByRole('region', { name: /9 datos adjuntos/ })
-    expect(within(section).getAllByRole('button', { name: /^Descargar/ })).toHaveLength(6)
+    expect(within(section).getAllByRole('button', { name: /^Descargar (?!todo$)/ })).toHaveLength(6)
     fireEvent.click(within(section).getByRole('button', { name: 'Mostrar los 9' }))
-    expect(within(section).getAllByRole('button', { name: /^Descargar/ })).toHaveLength(9)
+    expect(within(section).getAllByRole('button', { name: /^Descargar (?!todo$)/ })).toHaveLength(9)
   })
 
   it('coloca las imágenes incrustadas en su posición y reúne todo en la pestaña de adjuntos', () => {
@@ -103,7 +103,7 @@ describe('MessageViewer', () => {
     expect(screen.getByRole('region', { name: /1 dato adjunto/ })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('tab', { name: 'Datos adjuntos (2)' }))
     expect(screen.getByRole('tab', { name: 'Datos adjuntos (2)' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getAllByRole('button', { name: /^Descargar/ })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: /^Descargar (?!todo$)/ })).toHaveLength(2)
   })
 
   it('sin imágenes incrustadas no muestra pestañas', () => {
