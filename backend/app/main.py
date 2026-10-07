@@ -26,6 +26,9 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
+    # Entre orígenes (Vite en desarrollo o modo LAN) el navegador sólo deja leer el nombre de
+    # descarga si se expone; sin esto un correo adjunto se guardaría sin su extensión .msg.
+    expose_headers=["Content-Disposition"],
 )
 app.add_middleware(LocalUploadMiddleware)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.allowed_hosts))

@@ -4,7 +4,8 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 
 ## Mapa de pruebas
 
-- `tests/msg_factory.py`: genera MSG CFB v4 sintéticos con asunto, remitente, cuerpo y un adjunto.
+- `tests/msg_factory.py`: genera MSG CFB v4 sintéticos con asunto, remitente, cuerpo, un adjunto, clase de mensaje, propiedades con nombre, correos adjuntos y referencias.
+- `tests/generar_ejemplos.py`: escribe en una carpeta los 8 MSG de ejemplo de la guía del README para revisión manual (no es una prueba).
 - `test_messages.py`: rutas HTTP, limpieza de temporales, recuperación FAT y OLE, presupuestos, origen y host, adjuntos grandes, descarga.
 - `test_previews.py`: miniaturas de imágenes, DWG (PNG y BMP), DXF y Office; formatos rechazados; presupuesto; endpoint `preview=true`.
 - `test_inline_recovery.py`: RTF suelto (válido, corrupto, incoherente), etiquetas `<img>`, emparejamiento por tamaño y proporción, ambigüedad y MSG dañado completo.
@@ -20,7 +21,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_rescue.py`: firma borrada repuesta en copia; cabecera destruida con sobre, adjuntos y descarga por HTTP.
 - `test_item_details.py`: convocatoria, respuesta, contacto, tarea y correo sin elemento, con propiedades con nombre sintéticas.
 - `test_smime.py`: firmado en claro (contenido, adjuntos, descarga, parser caído), opaco, cifrado, con permisos IRM y correo normal.
-- `test_archive.py`: ZIP con todos los adjuntos (sin enlaces, nombres repetidos numerados, correo adjunto por `message_path`, sin nada descargable).
+- `test_archive.py`: ZIP con todos los adjuntos (sin enlaces, nombres repetidos numerados, correo adjunto por `message_path`, sin nada descargable) y nombre de descarga legible entre orígenes.
 - `test_config.py`: listas de Host y Origin desde el entorno (modo LAN, ADR-B12) y valores de loopback por defecto.
 
 ## Comandos

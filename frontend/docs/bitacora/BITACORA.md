@@ -91,3 +91,10 @@ Estado: terminada
 Cambios: `fetchAllAttachments` en `lib/api.ts` (nombre de respaldo desde el MSG porque entre orígenes no se lee `Content-Disposition`), `useAttachmentFiles.downloadAll`, `DownloadAllButton` en la cabecera de adjuntos, `downloads.css`; las pruebas que contaban botones "Descargar …" excluyen "Descargar todo".
 Evidencia: format:check, build y lint aprobados; 100 unitarias; 10 E2E (ZIP real con 2 PDF y el correo adjunto, sin el enlace); 5 visuales, cabecera revisada a 390 px.
 Notas: SPEC-04 CA-09. El primer E2E falló porque el nombre llegaba como `adjuntos.zip` (CORS); corregido.
+
+## 2026-10-07 00:50 -05:00 Bloqueos y guía actualizados
+
+Estado: terminada
+Cambios: bloqueos B-14 (nombre de descarga entre orígenes) y B-15 (pruebas que contaban botones por prefijo); B-13 con la recurrencia de escapes y saltos de línea en Windows.
+Evidencia: format:check y lint aprobados; 100 unitarias.
+Notas: los 8 correos de ejemplo para revisar la interfaz salen de `backend/tests/generar_ejemplos.py`.

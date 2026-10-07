@@ -88,3 +88,14 @@ def test_mail_with_only_links_has_nothing_to_zip(client):
 
     assert response.status_code == 422
     assert response.json()["detail"]["code"] == "ATTACHMENT_NOT_FOUND"
+
+
+def test_download_name_is_readable_from_another_origin(client):
+    response = client.post(
+        "/api/messages/attachments",
+        headers={"Origin": "http://127.0.0.1:5173"},
+        files={"file": ("obra.msg", _mail())},
+    )
+
+    assert response.status_code == 200, response.text
+    assert "content-disposition" in response.headers["access-control-expose-headers"].lower()

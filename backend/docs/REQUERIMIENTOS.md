@@ -36,6 +36,11 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 
 Cada pendiente se cita por su ID. Al tomar uno: crear o actualizar la spec correspondiente con sus criterios de aceptación y mover aquí su estado. Prioridad según frecuencia en correo corporativo y valor para el usuario.
 
+Resumen al 2026-10-07:
+- Terminadas: PEN-01, PEN-02, PEN-03, PEN-06, PEN-07, PEN-12, PEN-13.
+- Parciales: PEN-08 (falta decidir HTML saneado), PEN-11 (ZIP hecho; faltan DWG, instalador y EMF fuera de Windows).
+- Por hacer, en orden: PEN-10 (pruebas en Linux y corpus), PEN-04, PEN-05, PEN-14, PEN-09.
+
 ### PEN-01 Correos adjuntos dentro del correo
 
 Prioridad: alta. Alcance: backend y frontend. Estado: terminada (2026-10-06).
@@ -117,7 +122,22 @@ Prioridad: alta (coherencia). Alcance: proyecto. Estado: terminada (2026-10-06).
 Situación: el commit `07a9b11` permitió abrir la app desde otra PC configurando Host y Origin por entorno, pero RQ-01, guías y stack seguían diciendo "sólo loopback" y no había ADR.
 Hecho: ADR-B12 (modo LAN opcional, riesgos y límites), RQ-01, CA-08, guía, arquitectura, API y stack actualizados; `env_list` probado en `test_config.py`.
 
+### PEN-13 Nombre de descarga entre orígenes
+
+Prioridad: media. Alcance: backend. Estado: terminada (2026-10-07).
+Situación: con Vite en desarrollo o en modo LAN (orígenes distintos) el navegador no expone `Content-Disposition`; un correo adjunto se guardaba sin `.msg` y un ZIP con nombre genérico.
+Hecho: `expose_headers=["Content-Disposition"]` en CORS; el frontend arma además el nombre del ZIP desde el del MSG. Prueba: `test_archive.py::test_download_name_is_readable_from_another_origin`.
+
+### PEN-14 Mejoras menores detectadas
+
+Prioridad: baja. Alcance: frontend y proyecto. Estado: pendiente.
+- Un correo cifrado u opaco dice "No se pudo recuperar el texto de este correo"; debería decir que el texto está cifrado o protegido.
+- `MessageViewer.tsx` tiene 153 líneas (P-07 pide separar desde 150): extraer el conteo de coincidencias a un hook.
+- Comparación automática con el MSG real del usuario (sólo local, sin versionarlo) para repetir la verificación de PEN-03 en cada cambio de rescate.
+
 ### PEN-11 Otros
+
+Estado: parcial.
 
 - Render completo de DWG con una herramienta evaluada y licenciada.
 - Descargar todos los adjuntos en un ZIP: terminado el 2026-10-07 (`POST /attachments`, botón "Descargar todo").

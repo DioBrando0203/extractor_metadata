@@ -11,7 +11,7 @@ Antes de modificar, leer este archivo y la guía del lado afectado (metodología
 
 ## Requisitos permanentes
 
-Aplicación LOCAL Linux/Windows. Sin BD, login, usuarios registrados, nube ni telemetría.
+Aplicación LOCAL Linux/Windows; el acceso desde otras PCs de la red es opcional y explícito (ADR-B12). Sin BD, login, usuarios registrados, nube ni telemetría.
 El usuario arrastra o elige MSG; ve el correo como en Outlook, ve de frente imágenes, PDF y miniaturas de planos, consulta los detalles de cada adjunto y lo descarga.
 Archivos de sesión sólo en memoria del navegador y temporales efímeros del backend.
 Se elimina el temporal al finalizar, incluido error/timeout. Nunca modificar el original.
@@ -33,6 +33,8 @@ Commits y push directamente en `main`.
 Backend (desde backend): `.venv/bin/python -m pytest`, `.venv/bin/python -m ruff check app tests`, `ruff format --check`.
 Frontend (desde frontend): `npm run format:check`, `npm run build`, `npm run lint`, `npm test`, `npm run test:e2e`, `npm run test:visual`.
 Verificar flujo HTTP + navegador al cambiar contrato o carga, con el backend reiniciado. En Windows usar `.venv/Scripts/python.exe`.
+Correos de prueba sintéticos para revisar a mano: `backend/tests/generar_ejemplos.py <carpeta>`.
+No escribir código con escapes (`\n`, `\d`, `\u…`) desde heredocs de shell: usar el editor o un archivo de script (B-13).
 
 Los docs reducen el trabajo de orientación en futuras sesiones; no eliminan la necesidad de inspeccionar
 el código afectado ni el consumo de contexto de un agente.

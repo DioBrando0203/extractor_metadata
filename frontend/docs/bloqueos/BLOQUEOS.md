@@ -96,3 +96,19 @@ Solución: `endOfLine: 'auto'` en `prettier.config.js`.
 Fecha: 2026-10-06. Estado: prevención para agentes.
 Síntoma: secuencias de escape de salto de línea, NUL o NBSP dentro de código generado con heredocs de shell terminaron como caracteres literales (strings rotos, lint de espacios irregulares).
 Prevención: escribir código con escapes usando el editor o un archivo de script, nunca dentro de heredocs; buscar caracteres de control con `grep -P` antes de compilar.
+Recurrencia 2026-10-06/07: también pasó con `\d`, `\\` y `\r\n` dentro de textos Python generados desde la shell, y una herramienta de edición interpretó secuencias `\uXXXX`. Además, `read_text`/`write_text` en Windows traducen los saltos de línea: para reparar un archivo con CRLF usar `open(..., newline='')` y `chr()` para caracteres especiales.
+
+## B-14 Nombre de descarga perdido entre orígenes
+
+Fecha: 2026-10-07. Estado: resuelto.
+Síntoma: en desarrollo (Vite en 5173, backend en 8000) el ZIP se guardaba como `adjuntos.zip` y un correo adjunto sin `.msg`.
+Causa: entre orígenes el navegador no deja leer `Content-Disposition` si el servidor no lo expone.
+Solución: el backend lo expone (PEN-13) y `fetchAllAttachments` arma el nombre desde el MSG como respaldo.
+Prevención: E2E de "Descargar todo" en `e2e/local-api.spec.ts`.
+
+## B-15 Pruebas que contaban botones por prefijo
+
+Fecha: 2026-10-07. Estado: resuelto.
+Síntoma: al agregar "Descargar todo" fallaron pruebas que contaban los botones `/^Descargar/` de cada archivo.
+Solución: el patrón excluye ese botón (`/^Descargar (?!todo$)/`).
+Prevención: al agregar una acción, revisar las pruebas que buscan por prefijo de nombre accesible.

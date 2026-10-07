@@ -78,3 +78,19 @@ Síntoma: una imagen con candidato único por proporción no se ubicaba.
 Causa: las pasadas por tamaño exacto y por proporción se calculaban a la vez; una imagen ya emparejada seguía compitiendo.
 Solución: calcular cada pasada después de aplicar la anterior.
 Prevención: `test_inline_recovery.py::test_unique_aspect_ratio_after_exact_matches`.
+
+## B-14 Bytes del PKCS#7 como cuerpo de un correo cifrado
+
+Fecha: 2026-10-07. Estado: resuelto.
+Síntoma: un correo S/MIME cifrado u opaco mostraba caracteres sin sentido como texto.
+Causa: extract-msg desenvuelve el `smime.p7m` como si fuera MIME y devuelve sus bytes como cuerpo cuando falta el stream `1000`.
+Solución: `ReadContext.signed_body` sólo acepta el stream `1000` en correos opacos o cifrados (ADR-B18).
+Prevención: `test_smime.py::test_encrypted_and_opaque_signed_mail_are_reported_and_keep_the_p7m`.
+
+## B-15 El rescate perdía imágenes pequeñas del mini stream
+
+Fecha: 2026-10-06. Estado: resuelto.
+Síntoma: con el MSG real del usuario, el rescate ampliado dejó de mostrar 2 PNG de 375 y 318 bytes que antes aparecían.
+Causa: el mapa de sectores marcaba entero el mini stream como legible, aunque esos adjuntos habían perdido su entrada de directorio.
+Solución: dentro del mini stream sólo cuentan los mini sectores que reclama un stream alcanzable (`sector_map`).
+Prevención: `test_raw_recovery.py::test_small_loose_file_inside_the_mini_stream_is_found` y comparar con el MSG real antes de cerrar cambios de rescate (PEN-14).

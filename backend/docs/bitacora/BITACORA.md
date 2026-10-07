@@ -115,3 +115,10 @@ Estado: terminada
 Cambios: `msg/archive.py` (`extract_all_attachments`); `download.open_source` con fuentes que saben contarse (`_MsgSource`, `EmlSource`, `_RescueSource`) y caché de firmado y sueltos; worker `run_archive_extraction`; ruta `POST /api/messages/attachments` y entrega común `_deliver` para `/attachment` y `/attachments`.
 Evidencia: pytest 119 aprobadas (3 nuevas en `test_archive.py`); ruff check y format aprobados.
 Notas: SPEC-B02 CA-13. Los enlaces se omiten; nombres repetidos numerados.
+
+## 2026-10-07 00:50 -05:00 Documentación de cierre, nombre de descarga entre orígenes y ejemplos
+
+Estado: terminada
+Cambios: CORS expone `Content-Disposition` (PEN-13); `tests/generar_ejemplos.py` escribe los 8 MSG sintéticos de la guía; README principal con funciones nuevas, acceso por red servido desde el puerto 8000, correos de prueba y límites; resumen del backlog con PEN-13 y PEN-14; bloqueos B-14 y B-15; `AGENTS.md` con modo LAN opcional, ejemplos y B-13.
+Evidencia: pytest 120 aprobadas (la nueva de PEN-13 falla con el código anterior); ruff check y format aprobados; los 8 ejemplos se analizaron por HTTP contra el servidor en marcha. Modo LAN verificado en una PC con Windows: `/api/health` y análisis completo por la IP de red, interfaz servida en el puerto 8000 y regla de firewall de entrada vigente para el Python que escucha.
+Notas: falta probar en Linux (PEN-10) y desde otra PC física.
