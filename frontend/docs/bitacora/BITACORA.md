@@ -63,3 +63,10 @@ Estado: terminada
 Cambios: contrato `kind`, `link`, `message` en `lib/types.ts`; normalización separada en `lib/normalize.ts` (recursiva, con tope de niveles) y `lib/api.ts` sólo HTTP con `messagePath`; `MessageReader` con barra "Volver", foco en el asunto y vuelta al inicio del contenedor; `MessageViewer` abre correos adjuntos y pasa `messagePath` a `useAttachmentFiles`; `ReferenceSheets` (enlace y correo adjunto en el visor); `lib/link.ts`, `describeAttachment` y `attachmentMeta`; modos `message` y `link`; enlaces sin descarga; búsqueda dentro de correos adjuntos; paso nuevo en Ayuda. Corregido el E2E de portada que esperaba el título anterior al commit `07a9b11` ("Cargar MSG") y su SPEC-02.
 Evidencia: format:check, build y lint aprobados; 75 unitarias (17 nuevas); 7 E2E con el backend iniciado con el código actual; 5 visuales con capturas nuevas `04b-visor-enlace` y `04c-correo-adjunto`, revisadas a 320, 1024 y 1440 px.
 Notas: ADR-18 y ADR-19; SPEC-02 CA-09, SPEC-03 CA-14 a CA-16, SPEC-04 CA-07 y CA-08, SPEC-05 CA-07 y CA-08. En la primera captura a 320 px la barra "Volver" quedaba bajo la barra fija de la bandeja; se resolvió llevando al inicio el contenedor que se desplaza.
+
+## 2026-10-06 23:40 -05:00 Enlaces en el cuerpo (PEN-08, paso inmediato)
+
+Estado: terminada
+Cambios: `lib/links.ts` (`isWebLink`, `splitLinks`), `LinkedText` en message-viewer usado por `InlineContent` (texto actual e historial), estilo `.text-link`; `features/attachments/lib/link.ts` reutiliza `isWebLink`. Corregido el comentario de `stripMailto` que tenía escapes literales (`ñ`) por B-13.
+Evidencia: format:check, build y lint aprobados; 80 unitarias (5 nuevas en `links.test.ts` e `InlineContent.test.tsx`); 7 E2E con el backend iniciado con el código actual.
+Notas: ADR-20; SPEC-03 CA-17.

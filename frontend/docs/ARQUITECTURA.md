@@ -27,6 +27,7 @@ src/
     components/RecipientList.tsx         Para/CC/CCO con plegado
     components/MessageBody.tsx           mensaje actual e historial citado
     components/InlineContent.tsx         párrafos con imágenes incrustadas en su posición
+    components/LinkedText.tsx            texto con direcciones web como enlaces y búsqueda resaltada
     components/QuotedThread.tsx          mensajes anteriores plegables con su remitente
     components/MessageLoading.tsx        esqueleto
   features/attachments/
@@ -46,6 +47,7 @@ src/
   lib/mail.ts, lib/formatters.ts         utilidades puras (direcciones, título con asunto deducido, ruta de correos adjuntos, texto)
   lib/thread.ts                          hilo citado, marcadores [cid:…] y asunto deducido verificado
   lib/textSearch.ts                      búsqueda sin tildes con rangos sobre el texto original y fragmentos
+  lib/links.ts                           direcciones web: isWebLink (sólo http/https) y splitLinks
 e2e/                                     Playwright: funcional (backend real) y visual (@visual)
 ```
 
@@ -92,7 +94,7 @@ e2e/                                     Playwright: funcional (backend real) y 
 - Cuerpo del correo como texto en `<pre>`; adjuntos de texto en `<pre>` decodificados con `decodeText`. Nunca HTML.
 - PDF en `<iframe>` con URL `blob:` y tipo `application/pdf`: lo dibuja el visor del navegador (ADR-11).
 - SVG sólo en `<img>` (no ejecuta scripts). Miniaturas SVG rechazadas en la normalización.
-- Enlaces de adjuntos: sólo `http:` y `https:` se vuelven `<a target="_blank" rel="noopener noreferrer">`, abiertos por el usuario; la aplicación nunca los pide (ADR-19).
+- Enlaces de adjuntos y del cuerpo: sólo `http:` y `https:` se vuelven `<a target="_blank" rel="noopener noreferrer">` con la dirección visible como texto, abiertos por el usuario; la aplicación nunca los pide (ADR-19, ADR-20).
 - URLs `blob:` revocadas al desmontar o tras la descarga. Sin localStorage, IndexedDB, analítica ni recursos remotos.
 
 ## Archivos clave por tarea

@@ -52,3 +52,12 @@ button:not(:disabled) {
   color: var(--fg-3);
   font-style: italic;
 }
+/* Dirección web dentro del texto del correo (LinkedText): color de enlace de Fluent. */
+.text-link {
+  color: var(--brand-80);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.text-link:hover {
+  color: var(--brand-60);
+}

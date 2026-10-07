@@ -19,7 +19,7 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 7. Estrategia de respaldo: si el parser falla y hay asunto, cuerpo o remitente en OLE, devolver correo `partial` con adjuntos OLE.
 8. Con FAT reparada, añadir PNG/PDF completos encontrados fuera de los enlaces OLE.
 9. Completar asunto, remitente, destinatarios y fecha vacíos con propiedades MAPI alternativas (`0E1D`, `003D`, `0070`, `0042`, `5D01`, `5D02`, `0065`) y después con los encabezados de transporte.
-10. Cuerpo con marcadores `[cid:…]` en la posición de cada imagen incrustada.
+10. Cuerpo con marcadores `[cid:…]` en la posición de cada imagen incrustada; cada enlace `http`/`https` del HTML conserva su destino como `texto <url>`, salvo que el texto ya sea la dirección. Otros esquemas (`mailto:`, `javascript:`) no se agregan.
 11. Cada adjunto: metadatos por formato, Content-ID y miniatura si queda presupuesto de tiempo.
 12. Correo adjunto (método 5): se lee como un correo propio con este mismo flujo y queda en `attachments[i].message` (`kind=message`); hasta `max_embedded_depth` niveles y `max_embedded_messages` correos por análisis. Fuera del presupuesto o ilegible: `kind=message` sin `message` y con aviso. Sin nombre propio, toma su asunto. Igual para un archivo adjunto que es un MSG (firma CFB con streams MAPI) o un `.eml` con De, Asunto o Fecha: queda `kind=message` y se descarga tal cual.
 13. Adjunto por referencia (métodos 2, 3, 4 y 7: OneDrive, SharePoint o una ruta): `kind=link` con su dirección en `link`, sin bytes ni advertencia; sin dirección legible, con aviso.
@@ -52,3 +52,4 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-21: un solo presupuesto de miniaturas para el correo y sus correos adjuntos. Prueba: `test_embedded.py::test_one_preview_budget_covers_attached_messages`.
 - CA-22: un `.eml` adjunto se lee con sobre decodificado, destinatarios, fecha, cuerpo con su imagen en posición, adjuntos y otro correo dentro. Prueba: `test_eml.py::test_eml_attachment_is_read_like_an_email`.
 - CA-23: un `.msg` adjunto con sus bytes se lee como correo; un `.doc` (CFB sin streams MAPI) o un `.eml` sin encabezados siguen siendo archivos. Prueba: `test_eml.py::test_msg_attached_as_a_file_is_read_and_its_attachments_download`, `::test_files_that_only_look_like_messages_stay_files`.
+- CA-24: el destino real de un enlace queda visible en el texto; no se duplica si ya es el texto y no se agregan otros esquemas. Prueba: `test_body_text.py::test_links_keep_their_real_destination_visible`, `::test_linked_inline_image_keeps_marker_and_destination`.

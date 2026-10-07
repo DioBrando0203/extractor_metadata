@@ -12,7 +12,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_file_metadata.py`: extractores por formato (imagen, PDF, Office, DXF, DWG) e integración segura con ExifTool simulado.
 - `test_worker.py`: timeout del hijo, plazo proporcional y diagnóstico seguro.
 - `test_encoding.py`: páginas de códigos ANSI.
-- `test_body_text.py`: HTML a texto sin scripts ni recursos remotos.
+- `test_body_text.py`: HTML a texto sin scripts ni recursos remotos; destino visible de los enlaces web.
 - `test_health.py`: salud local sin estado.
 - `test_embedded.py`: correos adjuntos (lectura, anidamiento, límites, parser caído, stream dañado, descarga como `.msg` y con `message_path`) y adjuntos por referencia (nube, ruta, sin dirección).
 - `test_eml.py`: `.eml` adjunto (sobre, cuerpo con imagen en posición, adjuntos, correo dentro), descargas por `message_path` dentro del EML, `.msg` adjunto como archivo y archivos que sólo lo parecen.

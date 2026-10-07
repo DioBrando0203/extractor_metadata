@@ -134,3 +134,10 @@ Fecha: 2026-10-06. Estado: vigente.
 Contexto: un adjunto de OneDrive, SharePoint o una carpeta de red sólo trae su dirección, que es texto del correo y podría ser cualquier esquema.
 Decisión: `isWebLink` acepta sólo `http://` y `https://`; esa dirección se ofrece como "Abrir enlace" en otra pestaña con `noopener noreferrer`. Cualquier otra se muestra como texto seleccionable. Sin descarga ni miniatura.
 Consecuencias: la aplicación nunca pide la dirección (RQ-01); el usuario la abre con su navegador y su cuenta. Las rutas de red se copian a mano porque el navegador bloquea `file:` desde una página web.
+
+## ADR-20 Enlaces en el cuerpo de texto
+
+Fecha: 2026-10-06. Estado: vigente. Mantiene ADR-07 y aplica ADR-19.
+Contexto: el cuerpo es texto plano; el texto de Outlook y el HTML convertido (PEN-08) traen las direcciones como `texto <url>`, pero no se podían abrir.
+Decisión: `splitLinks` separa las direcciones `http`/`https` del texto sin alterar ningún carácter y `LinkedText` las muestra como `<a>` con esa misma dirección como contenido, en otra pestaña y con `noopener noreferrer`. No se interpreta HTML: un destino distinto del texto visible es imposible.
+Consecuencias: el usuario ve adónde lleva cada enlace antes de abrirlo. Un término de búsqueda que cruza el borde de un enlace no se resalta entero.

@@ -86,8 +86,9 @@ Terminado cuando: un MSG de reunión sintético muestra sus datos de agenda.
 
 ### PEN-08 Cuerpo con formato y enlaces
 
-Prioridad: baja (requiere decisión). Alcance: backend y frontend. Estado: pendiente.
-Situación: por seguridad el cuerpo se muestra como texto (ADR-07): se pierden tablas, negritas y la dirección real de los enlaces.
+Prioridad: baja (requiere decisión). Alcance: backend y frontend. Estado: parcial (paso inmediato terminado el 2026-10-06; HTML saneado pendiente de decisión).
+Hecho: el HTML a texto conserva el destino real de cada enlace web (`texto <url>`) y el lector muestra las direcciones http/https del texto como enlaces que se abren en otra pestaña (ADR-20 del frontend).
+Situación original: por seguridad el cuerpo se muestra como texto (ADR-07): se pierden tablas, negritas y la dirección real de los enlaces.
 Hacer: como paso inmediato, conservar la URL de cada enlace en el texto (`texto <url>`). Como paso mayor, evaluar HTML saneado en un iframe aislado sin recursos remotos; exige un ADR que reemplace ADR-07.
 Terminado cuando: los enlaces del HTML conservan su destino visible y, si se aprueba el ADR, el HTML se muestra sin ejecutar scripts ni cargar nada externo.
 

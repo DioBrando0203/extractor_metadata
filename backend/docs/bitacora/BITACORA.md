@@ -80,3 +80,10 @@ Estado: terminada
 Cambios: `msg/eml.py` (lectura con la biblioteca estándar y `EmlSource`), `msg/nesting.py` (presupuesto común y `open_nested`), `embedded.AttachedMessages` (carpeta OLE, `.msg` y `.eml` adjuntos), `attachments.MessageOpener` (Protocol) para no crear ciclos, `download.py` recorre `message_path` con `_MsgSource` y `EmlSource`, `names.message_filename`. Frontend: el visor ofrece "Descargar correo" en lugar de "Descargar .msg".
 Evidencia: pytest 95 aprobadas (4 nuevas en `test_eml.py`; 3 fallan con el código anterior, la cuarta es el caso negativo); ruff check y format aprobados; frontend 75 unitarias, lint, build y format:check aprobados.
 Notas: ADR-B15; SPEC-B01 CA-22 y CA-23; SPEC-B02 CA-12; PEN-01 terminada.
+
+## 2026-10-06 23:40 -05:00 Destino visible de los enlaces (PEN-08, paso inmediato)
+
+Estado: terminada
+Cambios: `body_text.py` conserva el destino de cada enlace http/https como `texto <url>` salvo que el texto ya sea la dirección; `mailto:` y `javascript:` no se agregan.
+Evidencia: pytest 97 aprobadas (2 nuevas en `test_body_text.py`, que fallan con el código anterior); ruff check y format aprobados.
+Notas: SPEC-B01 CA-24; PEN-08 queda parcial (HTML saneado pendiente de decisión). La coincidencia del RTF suelto con el texto plano mejora cuando éste empieza con un enlace.

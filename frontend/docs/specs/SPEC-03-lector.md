@@ -39,6 +39,7 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 - Destinatarios: si no hay, no se muestra la lista. Nunca "Sin destinatarios".
 - Separación de direcciones: `;` siempre separa; `,` sólo si el tramo ya tiene `@` o `>` (no parte "Pérez, Ana").
 - Cuerpo: `tidyText` unifica saltos de línea, quita espacios finales, reduce 3 o más saltos a 2 y elimina los `<mailto:…>` duplicados. No altera palabras.
+- Enlaces: las direcciones `http`/`https` del texto (actual e historial) se muestran como enlaces con `LinkedText`; el enlace es la dirección visible, se abre en otra pestaña con `rel="noopener noreferrer"` y la búsqueda se resalta también dentro (ADR-20).
 - Hilo: `splitThread` (ADR-14). Imágenes: `parseInline` y `findInlineAttachment`.
 - Sin cuerpo: "No se pudo recuperar el texto de este correo."
 - No se muestran `headers`, `properties` ni `warnings`.
@@ -90,3 +91,4 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 - CA-14: un correo adjunto se abre en el lector con su remitente y su texto, y "Volver" regresa al contenedor; el foco va al asunto en ambos casos. Prueba: `MessageReader.test.tsx`, `e2e/local-api.spec.ts`, capturas `04c-correo-adjunto`.
 - CA-15: un adjunto del correo adjunto se descarga con su ruta y sus bytes reales. Prueba: `MessageReader.test.tsx`, `e2e/local-api.spec.ts`.
 - CA-16: la ruta de correos adjuntos se corta donde no hay un correo leído. Prueba: `lib/mail.test.ts` (`messageTrail`).
+- CA-17: las direcciones web del cuerpo son enlaces seguros y el texto no cambia; otros esquemas quedan como texto. Prueba: `InlineContent.test.tsx`, `lib/links.test.ts`.

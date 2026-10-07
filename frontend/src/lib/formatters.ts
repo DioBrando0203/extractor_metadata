@@ -62,8 +62,8 @@ export function tidyText(value?: string | null): string {
 }
 
 /**
- * Quita los `<mailto:\u2026>` que Outlook a\u00f1ade tras cada direcci\u00f3n al pasar HTML a texto
- * (`ana@x.com <mailto:ana@x.com>`). La direcci\u00f3n visible se conserva.
+ * Quita los `<mailto:…>` que Outlook añade tras cada dirección al pasar HTML a texto
+ * (`ana@x.com <mailto:ana@x.com>`). La dirección visible se conserva.
  */
 export function stripMailto(value: string): string {
   return value.replace(/\s*<mailto:[^<>\s]+>/gi, '')

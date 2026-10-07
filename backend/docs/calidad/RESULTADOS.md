@@ -1,11 +1,11 @@
 # Resultados de calidad (backend)
 
-Última ejecución: 2026-10-06 23:00 -05:00 (America/Lima).
+Última ejecución: 2026-10-06 23:40 -05:00 (America/Lima).
 Entorno: Windows 11, Python 3.12.10 en `.venv`.
 
 ## Comandos
 
-- `python -m pytest`: 95 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
+- `python -m pytest`: 97 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
 - `python -m ruff check app tests`: aprobado.
 - `python -m ruff format --check app tests`: 54 archivos con formato correcto.
 

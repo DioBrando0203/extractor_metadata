@@ -1,13 +1,10 @@
-const WEB_LINK = /^https?:\/\/[^\s/]+\S*$/i
+import { isWebLink } from '../../../lib/links'
 
 /**
  * Adjuntos por referencia (`kind: 'link'`): el archivo vive en la nube o en una carpeta compartida y el
- * correo sólo guarda su dirección. Sólo http y https se ofrecen como enlace; una ruta de red o cualquier
- * otro esquema (`file:`, `javascript:`) se muestra como texto.
+ * correo sólo guarda su dirección. La regla de qué se abre como enlace está en `lib/links.ts`.
  */
-export function isWebLink(link: string | null | undefined): link is string {
-  return Boolean(link && WEB_LINK.test(link))
-}
+export { isWebLink }
 
 /** Dónde vive el archivo, en palabras del usuario. */
 export function linkPlace(link: string | null | undefined): string {

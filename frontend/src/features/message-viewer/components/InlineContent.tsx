@@ -1,8 +1,8 @@
 import { Image20Regular, ImageOff20Regular } from '@fluentui/react-icons'
-import { Highlight } from '../../../components/ui/Highlight'
 import { findInlineAttachment, parseInline } from '../../../lib/thread'
 import type { Attachment } from '../../../lib/types'
 import { useHighlightTerms } from '../highlight'
+import { LinkedText } from './LinkedText'
 
 type Props = { text: string; attachments: Attachment[]; onOpenAttachment: (index: number) => void }
 
@@ -11,7 +11,8 @@ const PARAGRAPH_BREAK = /\n{2,}/
 
 /**
  * Texto del correo con las imágenes incrustadas en su posición. El texto siempre se muestra como
- * texto plano; cada imagen es la miniatura del adjunto y abre el visor al pulsarla.
+ * texto plano (sus direcciones web, como enlaces); cada imagen es la miniatura del adjunto y abre el
+ * visor al pulsarla.
  */
 export function InlineContent({ text, attachments, onOpenAttachment }: Props) {
   return (
@@ -42,7 +43,7 @@ function Paragraphs({ text }: { text: string }) {
     <div className="mail__text">
       {text.split(PARAGRAPH_BREAK).map((paragraph, index) => (
         <p key={index}>
-          <Highlight text={paragraph} terms={terms} />
+          <LinkedText text={paragraph} terms={terms} />
         </p>
       ))}
     </div>

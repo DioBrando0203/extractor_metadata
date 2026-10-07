@@ -1,6 +1,6 @@
 # Resultados de calidad
 
-Última ejecución: 2026-10-06 23:00 -05:00 (America/Lima).
+Última ejecución: 2026-10-06 23:40 -05:00 (America/Lima).
 Entorno: Windows 11, Node v24.19.0, Chromium de Playwright, backend reiniciado con el código actual en 127.0.0.1:8000.
 
 ## Comandos
@@ -8,7 +8,7 @@ Entorno: Windows 11, Node v24.19.0, Chromium de Playwright, backend reiniciado c
 - `npm run format:check`: aprobado.
 - `npm run build`: aprobado (TypeScript y Vite).
 - `npm run lint`: aprobado, sin warnings.
-- `npm test`: 13 archivos, 75 pruebas aprobadas.
+- `npm test`: 15 archivos, 80 pruebas aprobadas.
 - `npm run test:e2e`: 7 pruebas aprobadas (backend iniciado por Playwright con el código actual).
 - `npm run test:visual`: 5 pruebas aprobadas (320, 390, 1024, 1440, 1920 px), sin desborde horizontal.
 - `npm audit`: 0 vulnerabilidades tras instalar `@fluentui/react-icons` y retirar `lucide-react`.
