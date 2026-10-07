@@ -12,8 +12,7 @@ Entorno: Windows 11, Python 3.12.10 en `.venv`.
 ## Verificaciones destacadas
 
 - Rescate ampliado (sintético): JPEG, GIF, DOCX y PDF sueltos; truncados rechazados; miniatura EXIF e imagen dentro de un DOCX no duplicadas; adjunto pequeño sin entrada en el mini stream rescatado; firma borrada repuesta en copia; cabecera destruida con sobre y adjunto descargado con bytes exactos.
-- MSG real del usuario (sólo local) antes y después de PEN-03: mismos 12 adjuntos (9 PNG y 1 PDF recuperados, con los mismos tamaños), mismo sobre y cuerpo; el PDF recuperado pasa de 2 635 579 a 2 635 581 bytes porque ahora conserva el `
-` final que sigue a `%%EOF` (los bytes siguientes son relleno). Análisis en 1,6 s.
+- MSG real del usuario (sólo local) antes y después de PEN-03: mismos 12 adjuntos (9 PNG y 1 PDF recuperados, con los mismos tamaños), mismo sobre y cuerpo; el PDF recuperado pasa de 2 635 579 a 2 635 581 bytes porque ahora conserva el fin de línea CRLF final que sigue a `%%EOF` (los bytes siguientes son relleno). Análisis en 1,6 s.
 
 - Correos adjuntos: lectura con el mismo flujo (parser y respaldo OLE), tres niveles, límites de profundidad y cantidad, stream dañado marcado como parcial, descarga como `.msg` legible y de adjuntos internos con `message_path`; el temporal queda vacío.
 - EML y MSG adjuntos como archivo: sobre, cuerpo con imagen en posición, correo dentro del EML, descargas por `message_path` dentro del EML y del `.msg`; un `.doc` y un `.eml` sin encabezados siguen como archivos.
