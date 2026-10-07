@@ -27,6 +27,9 @@ _ANALYSIS_FALLBACK = (
 _ATTACHMENT_FALLBACK = (
     b'{"error":"No fue posible preparar el adjunto para descargar.","code":"ATTACHMENT_FAILED"}'
 )
+_GEODATA_FALLBACK = (
+    b'{"error":"No fue posible convertir el archivo geografico.","code":"GEODATA_FAILED"}'
+)
 
 
 @dataclass(frozen=True)
@@ -133,6 +136,18 @@ def _archive_worker(
     _respond(connection, task, _ATTACHMENT_FALLBACK)
 
 
+def _geodata_worker(
+    connection: Connection, path: str, destination: str, filename: str, timeout: int
+) -> None:
+    def task() -> bytes:
+        from app.services.kmz import convert_to_archive
+
+        download_name = convert_to_archive(Path(path), Path(destination), filename, timeout)
+        return json.dumps({"filename": download_name}).encode()
+
+    _respond(connection, task, _GEODATA_FALLBACK)
+
+
 # Lado padre ---------------------------------------------------------------------------------------
 
 
@@ -191,6 +206,23 @@ def run_archive_extraction(
         )
     )
     return str(payload["filename"]), str(payload["content_type"])
+
+
+def run_geodata_conversion(path: Path, size: int, destination: Path, filename: str) -> str:
+    """Convierte KML/KMZ en un hijo y conserva los archivos sólo hasta la descarga."""
+    timeout = _timeout_for_size(size)
+    payload = _run_isolated(
+        _IsolatedJob(
+            target=_geodata_worker,
+            args=(str(path), str(destination), filename, timeout),
+            timeout=timeout,
+            max_response_bytes=_ATTACHMENT_RESPONSE_BYTES,
+            timeout_message=f"La conversión excedió {timeout} segundos.",
+            failure_message="No fue posible convertir el archivo geográfico.",
+            failure_code="GEODATA_FAILED",
+        )
+    )
+    return str(payload["filename"])
 
 
 def _run_isolated(job: _IsolatedJob) -> dict:

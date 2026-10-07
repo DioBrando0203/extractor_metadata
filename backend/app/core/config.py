@@ -25,6 +25,9 @@ class Settings:
     minimum_processing_bytes_per_second: int = 4 * 1024 * 1024
     max_worker_memory_bytes: int = 1024 * 1024 * 1024
     max_concurrent_extractions: int = 2
+    # KML/KMZ es un contenedor no confiable; limita carga, miembro extraído y ratio anti bomba.
+    max_geodata_bytes: int = 512 * 1024 * 1024
+    max_kmz_compression_ratio: int = 100
     # Correos adjuntos dentro de correos: un MSG anidado sin fin agotaría tiempo y memoria del hijo.
     max_embedded_depth: int = 3
     max_embedded_messages: int = 20

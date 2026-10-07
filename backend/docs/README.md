@@ -17,6 +17,7 @@ Fuente de verdad del servicio local que lee MSG. Metodología: desarrollo guiado
 - `REQUERIMIENTOS.md`: alcance, cobertura por formato, límites honestos y backlog priorizado (PEN-xx) con su estado.
 - `specs/SPEC-B01-analisis.md`: análisis de un MSG.
 - `specs/SPEC-B02-adjuntos.md`: descarga, miniaturas y vista previa grande.
+- `specs/SPEC-B03-geodata.md`: conversión local de KML/KMZ a GeoPackage.
 - `decisiones/ADR.md`: decisiones con contexto y consecuencias.
 - `reglas_programacion/REGLAS.md`: código limpio, tamaño de módulos, tipado, errores, seguridad.
 - `patrones/PATRONES.md`: patrones de diseño en uso, cuándo aplicarlos y antipatrones.

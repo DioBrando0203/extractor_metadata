@@ -11,6 +11,7 @@ Rangos en `pyproject.toml`; versiones verificadas en `requirements.lock`.
 - zipfile y xml.etree estándar: Office Open XML leyendo sólo `docProps`, con límites anti bomba ZIP.
 - ezdxf: versión, unidades y capas de DXF.
 - ExifTool opcional en PATH: metadatos adicionales, por stdin y con plazo.
+- GDAL opcional (`ogr2ogr`): conversión KML/KMZ a GeoPackage; se detecta por `APP_GDAL_BIN`, PATH u OSGeo4W en Windows (ADR-B19).
 - multiprocessing `spawn`: aislamiento igual en Linux y Windows; `resource` sólo en Linux.
 
 ## Desarrollo

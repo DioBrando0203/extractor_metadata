@@ -15,6 +15,8 @@
 
 - `POST /api/messages/attachments`: multipart `file` y `message_path` opcional. Respuesta `application/zip` (`<nombre del MSG> - adjuntos.zip`) con los adjuntos que traen bytes en el orden del análisis; los enlaces se omiten y los nombres repetidos se numeran (`informe (2).pdf`). Sin nada descargable: 422 `ATTACHMENT_NOT_FOUND`.
 
+- `POST /api/geodata/convert`: multipart `file` (`.kml` o `.kmz`). Respuesta `application/zip` con un GeoPackage generado por GDAL. Sin GDAL: 422 `GDAL_UNAVAILABLE`. El archivo sólo vive en un temporal durante la solicitud y descarga.
+
 ## MessageMetadata
 
 - `file_name`, `file_size_bytes`.
@@ -59,3 +61,5 @@
   - `WORKER_FAILED`, `EXTRACTION_FAILED`, `ATTACHMENT_FAILED`: el proceso aislado falló.
   - `ATTACHMENT_NOT_FOUND`, `UNREADABLE_ATTACHMENT`: índice inexistente, `message_path` que no lleva a un correo adjunto, adjunto ilegible o enlace sin bytes.
   - `NO_PREVIEW`: se pidió `preview=true` y el adjunto no tiene vista previa.
+  - `UNSUPPORTED_GEODATA`, `INVALID_KMZ`, `GEODATA_TOO_LARGE`: archivo geográfico no aceptable.
+  - `GDAL_UNAVAILABLE`, `GEODATA_TIMEOUT`, `GEODATA_FAILED`: GDAL no está disponible, excedió el plazo o no pudo convertir.

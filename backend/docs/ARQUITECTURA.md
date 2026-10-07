@@ -29,6 +29,7 @@ Dependencias permitidas, siempre hacia abajo:
 app/
   main.py                      API local y build del frontend en "/"
   api/routes/messages.py       POST /extract, POST /attachment y POST /attachments (ZIP); entrega común en _deliver
+  api/routes/geodata.py        POST /convert KML/KMZ a ZIP temporal con GeoPackage
   api/routes/health.py         GET /health
   core/config.py               Settings inmutables: límites, presupuestos y Host/Origin (env_list)
   core/errors.py               ExtractionError con código seguro
@@ -36,6 +37,7 @@ app/
   models/schemas.py            MessageMetadata, AttachmentMetadata, MetadataItem
   services/worker.py           _run_isolated: spawn, plazo, JSON, limpieza del hijo
   services/body_text.py        HTML a texto sin ejecutar ni resolver recursos
+  services/kmz/                extracción segura de KMZ y ejecución acotada de GDAL para GeoPackage
   services/msg/
     __init__.py                API: extract_msg_file, extract_attachment_file
     reader.py                  orquesta: parser MSG o recuperación OLE

@@ -143,3 +143,10 @@ Estado: terminada
 Cambios: "Estado del proyecto" en `REQUERIMIENTOS.md`, `AGENTS.md` y README principal.
 Evidencia: decisión del usuario; última verificación en `calidad/RESULTADOS.md` (124 pruebas en Windows y Linux, ruff aprobado).
 Notas: abiertos al cierre: PEN-05, PEN-09, PEN-14; parciales PEN-08 (decisión), PEN-10 (E2E en Linux y corpus) y PEN-11 (DWG, instalador, EMF fuera de Windows). La app no se abrió en el navegador en esta sesión; el único cambio visible es un aviso de texto nuevo.
+
+## 2026-10-07 10:09 -05:00 Endpoint geodatos KML/KMZ (PEN-15)
+
+Estado: parcial
+Cambios: `POST /api/geodata/convert`; paquete `services/kmz` para extraer KMZ con límites y llamar a GDAL dentro del hijo aislado; ZIP temporal de descarga; límites de geodatos, SPEC-B03, ADR-B19 y contrato API.
+Evidencia: `python -m pytest` con 123 aprobadas; `ruff check app tests` y `ruff format --check app tests` aprobados; nuevas pruebas para extensión, KMZ sin KML, GDAL ausente y limpieza; HTTP local tras reiniciar: KML sintético devuelve 422 `GDAL_UNAVAILABLE` y el temporal queda vacío.
+Notas: la VM no tiene GDAL, por eso una conversión real devuelve `GDAL_UNAVAILABLE`; falta migrar estilos QML e interfaz React.

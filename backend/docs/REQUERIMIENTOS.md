@@ -148,3 +148,11 @@ Estado: parcial.
 - Descargar todos los adjuntos en un ZIP: terminado el 2026-10-07 (`POST /attachments`, botón "Descargar todo").
 - Empaquetado instalable para Windows.
 - EMF/WMF sin miniatura fuera de Windows (límite de Pillow).
+
+### PEN-15 Conversor KML/KMZ como herramienta local
+
+Prioridad: baja. Alcance: backend y frontend. Estado: parcial.
+Situación: existe un prototipo Flask independiente que convierte KML/KMZ a GPKG con GDAL/OSGeo4W, pero no cumple la arquitectura, límites ni temporales efímeros de Inspector MSG.
+Hecho: `POST /api/geodata/convert` copia KML/KMZ a un temporal, controla el KMZ y llama a GDAL en proceso aislado; entrega un ZIP con el GPKG y se limpia al terminar.
+Hacer: migrar la corrección estructural y estilos QML; instalar y verificar GDAL en Linux y Windows; incorporar la herramienta al selector visual.
+Terminado cuando: KML y KMZ sintéticos devuelven GPKG y QML verificables en ambos sistemas, no quedan temporales y la UI permite cambiar de herramienta.
