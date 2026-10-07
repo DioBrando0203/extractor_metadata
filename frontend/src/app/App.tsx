@@ -1,12 +1,22 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
-import { Add20Regular, Delete20Regular, FolderOpen20Regular, MailRead24Regular } from '@fluentui/react-icons'
+import {
+  Add20Regular,
+  Delete20Regular,
+  FolderOpen20Regular,
+  MailInbox24Filled,
+  MailInbox24Regular,
+  MailRead24Regular,
+  Map24Filled,
+  Map24Regular,
+} from '@fluentui/react-icons'
 import { AppLayout } from '../components/layout/AppLayout'
 import type { Pane, View } from '../components/layout/AppLayout'
 import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { SearchBox } from '../components/ui/SearchBox'
 import { HelpPage } from '../features/help/components/HelpPage'
+import { GeodataConverter } from '../features/geodata/components/GeodataConverter'
 import { DropOverlay } from '../features/ingestion/components/DropOverlay'
 import { Dropzone } from '../features/ingestion/components/Dropzone'
 import { ExtractionFailed } from '../features/ingestion/components/ExtractionFailed'
@@ -18,13 +28,22 @@ import { searchTerms } from '../lib/textSearch'
 import { fileValidationError } from '../features/ingestion/lib/validation'
 import { MessageLoading } from '../features/message-viewer/components/MessageLoading'
 import { MessageReader } from '../features/message-viewer/components/MessageReader'
+import { ToolPicker } from '../features/tools/components/ToolPicker'
 import type { QueueItem } from '../lib/types'
 
 const MSG_ACCEPT = '.msg,application/vnd.ms-outlook'
+type Tool = 'inspector' | 'geodata'
+
+const TOOLS = [
+  { id: 'inspector', label: 'Inspector MSG', icon: MailInbox24Regular, activeIcon: MailInbox24Filled },
+  { id: 'geodata', label: 'KMZ/KML', icon: Map24Regular, activeIcon: Map24Filled },
+]
 
 export function App() {
   const { items, selectedId, setSelectedId, addFiles, retry, clear } = useExtractionQueue()
   const [activeView, setActiveView] = useState<View>('analysis')
+  const [activeTool, setActiveTool] = useState<Tool>('inspector')
+  const [showTools, setShowTools] = useState(false)
   const [pane, setPane] = useState<Pane>('reader')
   const [query, setQuery] = useState('')
   const input = useRef<HTMLInputElement>(null)
@@ -60,6 +79,10 @@ export function App() {
     setActiveView(view)
     setPane(view === 'analysis' ? 'list' : 'reader')
   }
+  const chooseTool = (tool: Tool) => {
+    setActiveTool(tool)
+    setShowTools(false)
+  }
   const clearSession = () => {
     clear()
     setQuery('')
@@ -83,10 +106,18 @@ export function App() {
       <AppLayout
         activeView={activeView}
         onViewChange={changeView}
-        pane={activeView === 'help' || !hasItems || pane === 'reader' ? 'reader' : 'list'}
-        contentKey={`${activeView}:${selectedId ?? ''}`}
+        navigation={showTools ? TOOLS : undefined}
+        activeNavigation={showTools ? activeTool : undefined}
+        onNavigationChange={showTools ? (id) => chooseTool(id as Tool) : undefined}
+        onBrandClick={() => setShowTools((visible) => !visible)}
+        pane={
+          showTools || activeTool === 'geodata' || activeView === 'help' || !hasItems || pane === 'reader'
+            ? 'reader'
+            : 'list'
+        }
+        contentKey={`${showTools}:${activeTool}:${activeView}:${selectedId ?? ''}`}
         search={
-          hasItems ? (
+          !showTools && activeTool === 'inspector' && hasItems ? (
             <SearchBox
               value={query}
               onChange={(value) => {
@@ -99,14 +130,14 @@ export function App() {
             />
           ) : undefined
         }
-        commands={commands}
+        commands={!showTools && activeTool === 'inspector' ? commands : undefined}
         back={
-          activeView === 'analysis' && hasItems
+          !showTools && activeTool === 'inspector' && activeView === 'analysis' && hasItems
             ? { label: `Bandeja (${items.length})`, onClick: () => setPane('list') }
             : undefined
         }
         list={
-          hasItems ? (
+          !showTools && activeTool === 'inspector' && hasItems ? (
             <QueueList
               items={visibleItems}
               total={items.length}
@@ -118,17 +149,23 @@ export function App() {
             />
           ) : undefined
         }
-        overlay={dragging && hasItems ? <DropOverlay /> : null}
+        overlay={!showTools && activeTool === 'inspector' && dragging && hasItems ? <DropOverlay /> : null}
       >
-        <ReaderContent
-          view={activeView}
-          hasItems={hasItems}
-          selected={selected}
-          dragging={dragging}
-          onBrowse={browse}
-          onRetry={retry}
-          terms={terms}
-        />
+        {showTools ? (
+          <ToolPicker onChoose={chooseTool} />
+        ) : activeTool === 'geodata' ? (
+          <GeodataConverter />
+        ) : (
+          <ReaderContent
+            view={activeView}
+            hasItems={hasItems}
+            selected={selected}
+            dragging={dragging}
+            onBrowse={browse}
+            onRetry={retry}
+            terms={terms}
+          />
+        )}
       </AppLayout>
     </>
   )

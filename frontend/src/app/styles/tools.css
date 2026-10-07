@@ -1,0 +1,44 @@
+.brand {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+.tools__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-m);
+  margin-top: var(--space-xl);
+}
+.tools__card {
+  display: grid;
+  gap: var(--space-s);
+  min-height: 160px;
+  padding: var(--space-l);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-xl);
+  color: var(--fg-1);
+  text-align: left;
+  background: var(--bg-1);
+  box-shadow: var(--shadow-2);
+}
+.tools__card:hover {
+  border-color: var(--brand-80);
+  background: var(--brand-160);
+}
+.tools__card span,
+.geodata__file {
+  color: var(--fg-2);
+}
+.geodata__icon {
+  color: var(--brand-80);
+}
+.geodata__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  margin-top: var(--space-xl);
+}
+.geodata__error {
+  color: var(--danger-fg);
+}

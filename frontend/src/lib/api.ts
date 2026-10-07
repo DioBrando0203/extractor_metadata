@@ -109,3 +109,27 @@ export async function downloadAttachment(file: File, attachmentIndex: number, fa
   const attachment = await fetchAttachment(file, attachmentIndex, fallbackName)
   saveBlob(attachment.blob, attachment.filename)
 }
+
+/** Convierte un KML/KMZ local; el backend devuelve un ZIP temporal con el GeoPackage. */
+export async function convertGeodata(file: File): Promise<AttachmentFile> {
+  const data = new FormData()
+  data.append('file', file)
+  let response: Response
+  try {
+    response = await fetch(`${API_URL}/geodata/convert`, { method: 'POST', body: data })
+  } catch {
+    throw new Error('No se pudo conectar con el conversor local.')
+  }
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    const detail = typeof body?.detail === 'string' ? body.detail : body?.detail?.message
+    throw new Error(detail || 'No fue posible convertir el archivo.')
+  }
+  return {
+    blob: await response.blob(),
+    filename: filenameFromDisposition(
+      response.headers.get('content-disposition'),
+      `${file.name.replace(/\.km[zl]$/i, '')} - convertido.zip`,
+    ),
+  }
+}

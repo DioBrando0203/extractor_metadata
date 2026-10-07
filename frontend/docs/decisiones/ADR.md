@@ -2,6 +2,13 @@
 
 Formato: contexto, decisión, consecuencias. Una decisión sólo se reemplaza con un ADR nuevo que la cite.
 
+## ADR-23 Selector de herramientas dentro del shell local
+
+Fecha: 2026-10-07. Estado: vigente.
+Contexto: Inspector MSG es la herramienta principal, pero debe alojar conversores locales sin abrir otra aplicación ni perder la bandeja en memoria.
+Decisión: la marca de la cabecera abre un selector que reutiliza la barra de apps; cada herramienta es una feature y el estado MSG permanece elevado en `App`.
+Consecuencias: navegación interna sin router ni almacenamiento persistente; el selector puede crecer con más herramientas.
+
 ## ADR-01 Layout de cliente de correo a alto fijo
 
 Fecha: 2026-10-05. Estado: vigente.

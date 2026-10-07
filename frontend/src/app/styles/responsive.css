@@ -128,6 +128,9 @@
   }
 }
 @media (max-width: 640px) {
+  .tools__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .app-header {
     gap: var(--space-s);
     padding: 0 var(--space-s);

@@ -13,11 +13,16 @@ import { Button } from '../ui/Button'
 
 export type View = 'analysis' | 'help'
 export type Pane = 'list' | 'reader'
+export type NavigationItem = { id: string; label: string; icon: FluentIcon; activeIcon: FluentIcon }
 
 type Props = {
   children: ReactNode
   activeView: View
   onViewChange: (view: View) => void
+  navigation?: NavigationItem[]
+  activeNavigation?: string
+  onNavigationChange?: (id: string) => void
+  onBrandClick?: () => void
   /** Buscador de la cabecera; sólo tiene sentido cuando hay correos. */
   search?: ReactNode
   /** Barra de comandos sobre la bandeja y el lector. */
@@ -33,15 +38,19 @@ type Props = {
   overlay?: ReactNode
 }
 
-const NAVIGATION: { view: View; label: string; icon: FluentIcon; activeIcon: FluentIcon }[] = [
-  { view: 'analysis', label: 'Correo', icon: MailInbox24Regular, activeIcon: MailInbox24Filled },
-  { view: 'help', label: 'Ayuda', icon: QuestionCircle24Regular, activeIcon: QuestionCircle24Filled },
+const NAVIGATION: NavigationItem[] = [
+  { id: 'analysis', label: 'Correo', icon: MailInbox24Regular, activeIcon: MailInbox24Filled },
+  { id: 'help', label: 'Ayuda', icon: QuestionCircle24Regular, activeIcon: QuestionCircle24Filled },
 ]
 
 export function AppLayout({
   children,
   activeView,
   onViewChange,
+  navigation,
+  activeNavigation,
+  onNavigationChange,
+  onBrandClick,
   search,
   commands,
   list,
@@ -51,6 +60,9 @@ export function AppLayout({
   overlay,
 }: Props) {
   const reader = useRef<HTMLElement>(null)
+  const items = navigation ?? NAVIGATION
+  const selected = activeNavigation ?? activeView
+  const changeNavigation = onNavigationChange ?? ((id: string) => onViewChange(id as View))
 
   useEffect(() => {
     if (reader.current) reader.current.scrollTop = 0
@@ -62,12 +74,12 @@ export function AppLayout({
         Saltar al contenido
       </a>
       <header className="app-header">
-        <div className="brand">
+        <button className="brand" type="button" onClick={onBrandClick} aria-label="Herramientas">
           <span className="brand__mark" aria-hidden="true">
             <MailInbox24Filled />
           </span>
           <span className="brand__name">Inspector MSG</span>
-        </div>
+        </button>
         <div className="app-header__search">{search}</div>
         <p className="app-header__badge" title="Sin cuenta, sin nube y sin historial">
           <ShieldCheckmark16Regular aria-hidden="true" />
@@ -76,15 +88,15 @@ export function AppLayout({
       </header>
       <div className="app-body">
         <nav className="app-bar" aria-label="Navegación principal">
-          {NAVIGATION.map(({ view, label, icon: Icon, activeIcon: ActiveIcon }) => {
-            const active = activeView === view
+          {items.map(({ id, label, icon: Icon, activeIcon: ActiveIcon }) => {
+            const active = selected === id
             return (
               <button
-                key={view}
+                key={id}
                 type="button"
                 className="app-bar__item"
                 aria-current={active ? 'page' : undefined}
-                onClick={() => onViewChange(view)}
+                onClick={() => changeNavigation(id)}
               >
                 {active ? <ActiveIcon aria-hidden="true" /> : <Icon aria-hidden="true" />}
                 <span>{label}</span>
