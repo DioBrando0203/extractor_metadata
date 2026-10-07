@@ -6,7 +6,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 
 ## Requisitos verificables
 
-- RQ-01 Local: loopback, sin cuenta, base de datos, nube, telemetría ni historial.
+- RQ-01 Local: loopback por defecto; acceso desde la red local sólo si se configura de forma explícita (ADR-B12). Sin cuenta, base de datos, nube, telemetría ni historial.
 - RQ-02 Privacidad: estado en memoria del navegador; temporales efímeros del backend borrados al terminar.
 - RQ-03 Original intacto: sólo se trabaja sobre copias temporales; la reparación de FAT ocurre en una copia.
 - RQ-04 Correo legible: asunto, remitente, destinatarios Para/CC/CCO, fechas y cuerpo de texto. Si el parser o las propiedades cortas fallan, se identifican desde propiedades MAPI alternativas o los encabezados de transporte.
@@ -16,7 +16,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - RQ-08 Office: DOCX, XLSX y PPTX muestran la portada `docProps/thumbnail` cuando el archivo la incluye, y sus propiedades de documento.
 - RQ-09 Sin límite fijo de peso: MSG y adjuntos se procesan por bloques; el plazo crece con el tamaño.
 - RQ-10 Lectura parcial: lo legible se conserva; PNG/PDF completos fuera de enlaces OLE se ofrecen como recuperados.
-- RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin externos rechazados.
+- RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin fuera de la lista permitida rechazados.
 - RQ-12 Pruebas: MSG y adjuntos sintéticos; nunca correos privados en el repositorio.
 - RQ-13 Imágenes en posición: las imágenes incrustadas se marcan en el cuerpo (`[cid:…]`) y se enlazan con su adjunto por Content-ID o nombre. En un MSG dañado se recupera el HTML del RTF suelto y la posición se reconstruye sólo con evidencia inequívoca de medidas; lo ambiguo se queda en la lista de adjuntos y la interfaz lo dice.
 
@@ -99,6 +99,12 @@ Hacer: extraer el stream del objeto y tratarlo como adjunto cuando su formato se
 Prioridad: media (calidad). Alcance: proyecto. Estado: pendiente.
 Situación: sólo se probó con un MSG dañado real; la suite no se ejecutó en Linux en las últimas sesiones.
 Hacer: reunir un corpus autorizado de corrupciones reales sin correos privados versionados y ejecutar backend y E2E en Linux.
+
+### PEN-12 Acceso LAN documentado
+
+Prioridad: alta (coherencia). Alcance: proyecto. Estado: terminada (2026-10-06).
+Situación: el commit `07a9b11` permitió abrir la app desde otra PC configurando Host y Origin por entorno, pero RQ-01, guías y stack seguían diciendo "sólo loopback" y no había ADR.
+Hecho: ADR-B12 (modo LAN opcional, riesgos y límites), RQ-01, CA-08, guía, arquitectura, API y stack actualizados; `env_list` probado en `test_config.py`.
 
 ### PEN-11 Otros
 

@@ -4,7 +4,11 @@ from pathlib import Path
 from tempfile import gettempdir
 
 
-def _env_list(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+def env_list(name: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    """Lista separada por comas de una variable de entorno; vacía o ausente conserva ``default``.
+
+    Sólo amplía Host y Origin para el modo LAN opcional (ADR-B12); sin variables, todo es loopback.
+    """
     raw = os.getenv(name, "")
     return tuple(item.strip() for item in raw.split(",") if item.strip()) or default
 
@@ -22,7 +26,7 @@ class Settings:
     max_worker_memory_bytes: int = 1024 * 1024 * 1024
     max_concurrent_extractions: int = 2
     temp_root: Path = Path(gettempdir()) / "msg-metadata-extractor"
-    allowed_origins: tuple[str, ...] = _env_list(
+    allowed_origins: tuple[str, ...] = env_list(
         "APP_ALLOWED_ORIGINS",
         (
             "http://localhost:5173",
@@ -31,7 +35,7 @@ class Settings:
             "http://127.0.0.1:8000",
         ),
     )
-    allowed_hosts: tuple[str, ...] = _env_list(
+    allowed_hosts: tuple[str, ...] = env_list(
         "APP_ALLOWED_HOSTS",
         ("localhost", "127.0.0.1", "[::1]"),
     )

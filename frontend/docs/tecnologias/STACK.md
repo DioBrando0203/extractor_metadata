@@ -26,4 +26,4 @@ Versiones exactas en `package.json` y `package-lock.json`. No usar rangos (`^`, 
 ## Entorno verificado
 
 - Windows 11, Node 24, Chromium de Playwright.
-- `VITE_API_URL` opcional; por defecto `http://127.0.0.1:8000/api` en desarrollo y `/api` en build.
+- `VITE_API_URL` opcional; por defecto `http://127.0.0.1:8000/api` en desarrollo y `/api` en build. En modo LAN, la IP del servidor (`frontend/.env.example`, ADR-B12 del backend).

@@ -78,3 +78,10 @@ Fecha: 2026-10-06. Estado: vigente.
 Contexto: en el MSG real del usuario, el RTF del cuerpo (con el HTML y las posiciones `cid:`) seguía entero en el archivo pero sin enlace, y los Content-ID de los adjuntos se perdieron con el mini stream.
 Decisión: buscar la firma `LZFu`, aceptar el RTF sólo con CRC válido y texto coherente con el cuerpo legible, y usar su HTML. Para enlazar imágenes sin Content-ID se comparan las medidas declaradas en cada `<img>` con los píxeles de cada adjunto: tamaño exacto, o proporción (±1 %) con resolución suficiente cuando el par es inequívoco. Dos pasadas secuenciales: lo emparejado por tamaño exacto no compite después.
 Consecuencias: en el MSG real se ubicaron 4 de 14 imágenes (logos de firmas); iconos repetidos y capturas con varias candidatas quedan sin posición por diseño. Cada asignación se marca `content_id_inferred` y la interfaz lo indica.
+
+## ADR-B12 Acceso LAN opcional y explícito
+
+Fecha: 2026-10-06. Estado: vigente. Amplía ADR-B02 y RQ-01 sin reemplazarlos.
+Contexto: el usuario necesita abrir la aplicación desde otra PC de la misma red sin instalarla en cada equipo.
+Decisión: Host y Origin aceptados salen de `APP_ALLOWED_HOSTS` y `APP_ALLOWED_ORIGINS` (`backend/.env`, `core/config.env_list`); sin variables se conservan los valores de loopback. El frontend apunta al servidor con `VITE_API_URL`. `iniciar.py` sigue escuchando sólo en 127.0.0.1; el modo LAN exige levantar Uvicorn y Vite con `--host 0.0.0.0` a mano (README).
+Consecuencias: en modo LAN cualquier equipo que alcance el puerto puede enviar archivos al servicio; usarlo sólo en una red de confianza. Sigue sin haber cuentas, base de datos, nube ni historial, y cada solicitud conserva su temporal efímero. Los correos viajan por la red local sin cifrar (HTTP).

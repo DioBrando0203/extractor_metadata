@@ -30,9 +30,9 @@ app/
   main.py                      API local y build del frontend en "/"
   api/routes/messages.py       POST /extract y POST /attachment
   api/routes/health.py         GET /health
-  core/config.py               Settings inmutables: límites y presupuestos
+  core/config.py               Settings inmutables: límites, presupuestos y Host/Origin (env_list)
   core/errors.py               ExtractionError con código seguro
-  core/middleware.py           Host y Origin locales
+  core/middleware.py           Origin permitido en subidas
   models/schemas.py            MessageMetadata, AttachmentMetadata, MetadataItem
   services/worker.py           _run_isolated: spawn, plazo, JSON, limpieza del hijo
   services/body_text.py        HTML a texto sin ejecutar ni resolver recursos
@@ -94,7 +94,7 @@ app/
 
 ## Seguridad y recursos
 
-- Loopback, Host y Origin locales; el resto se rechaza antes de leer el cuerpo.
+- Host y Origin de la lista permitida: loopback por defecto, ampliable con `APP_ALLOWED_HOSTS` y `APP_ALLOWED_ORIGINS` (ADR-B12); el resto se rechaza antes de leer el cuerpo.
 - Hijo con `logging` desactivado, un hilo de cálculo y `RLIMIT_AS` en Linux.
 - Pillow sólo abre PNG, JPEG, GIF, BMP, DIB, TIFF, WEBP, ICO y WMF/EMF; máximo 100 MP por imagen.
 - ExifTool opcional: stdin, argumentos constantes, salida máxima 1 MiB, plazo de 15 s.

@@ -38,7 +38,7 @@
 ## Códigos de error
 
 - HTTP 415: archivo sin extensión `.msg`.
-- HTTP 403: Host u Origin no locales.
+- HTTP 403: Origin fuera de `APP_ALLOWED_ORIGINS` (loopback por defecto). Un Host fuera de `APP_ALLOWED_HOSTS` recibe 400 de `TrustedHostMiddleware`.
 - HTTP 422 con `code`:
   - `INVALID_OR_CORRUPT_MSG`: sin firma OLE o contenedor ilegible.
   - `NOT_A_MSG`: OLE válido sin propiedades de mensaje.

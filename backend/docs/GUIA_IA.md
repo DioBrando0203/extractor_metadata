@@ -4,7 +4,7 @@ Protocolo obligatorio para cualquier IA que modifique `backend/`. Si contradice 
 
 ## Contexto mínimo
 
-- Servicio FastAPI que sólo escucha en 127.0.0.1. Lee MSG que el navegador envía y responde JSON o un binario.
+- Servicio FastAPI que por defecto sólo escucha en 127.0.0.1; el acceso LAN es opcional y explícito (ADR-B12). Lee MSG que el navegador envía y responde JSON o un binario.
 - Sin base de datos, sesiones, cuentas, nube, telemetría ni logs con contenido de correos.
 - Cada solicitud trabaja en un temporal propio que se borra al terminar, también ante error o timeout.
 - El MSG original nunca se modifica. Una reparación sólo ocurre en una copia temporal.

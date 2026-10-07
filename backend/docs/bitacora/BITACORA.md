@@ -59,3 +59,10 @@ Estado: terminada
 Cambios: `REQUERIMIENTOS.md` pasa de una lista suelta a un backlog priorizado PEN-01 a PEN-11 con situación, qué hacer y criterio de terminado; punteros en `AGENTS.md` y en los índices de docs.
 Evidencia: revisión del código actual (métodos de adjunto, rescate de datos sueltos, formatos de Pillow, extractores registrados) y de lo observado en el MSG real.
 Notas: prioridad alta para correos adjuntos (PEN-01), adjuntos en la nube (PEN-02) y rescate ampliado (PEN-03).
+
+## 2026-10-06 22:29 -05:00 Acceso LAN documentado (PEN-12)
+
+Estado: terminada
+Cambios: ADR-B12 (modo LAN opcional y sus riesgos); RQ-01, RQ-11, CA-08, `GUIA_IA.md`, `ARQUITECTURA.md`, `estilos/API.md` y ambos `STACK.md` reflejan Host y Origin configurables; `env_list` público con docstring; `tests/test_config.py`; PEN-12 registrado y cerrado; punteros PEN-xx en `AGENTS.md` y el índice.
+Evidencia: pytest 75 aprobadas (2 nuevas); ruff check y format aprobados.
+Notas: el código del modo LAN vino del commit `07a9b11`; esta tarea sólo lo documenta y prueba. `iniciar.py` sigue en 127.0.0.1.

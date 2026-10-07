@@ -33,7 +33,7 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-05: textos en distintas codificaciones se decodifican. Prueba: `test_encoding.py::test_ansi_codepage_is_respected_in_parser_and_raw_metadata`.
 - CA-06: la respuesta incluye la miniatura de un adjunto imagen. Prueba: `test_previews.py::test_extraction_response_includes_attachment_preview`.
 - CA-07: el presupuesto de miniaturas no cambia estado ni advertencias. Prueba: `test_previews.py::test_preview_budget_drops_extra_thumbnails_without_partial`.
-- CA-08: Host u Origin externos reciben 403 antes de leer el cuerpo. Prueba: `test_messages.py::test_foreign_origin_cannot_upload`, `::test_reject_rebound_host`.
+- CA-08: un Origin fuera de la lista recibe 403 y un Host fuera de la lista 400, antes de leer el cuerpo; las listas sólo se amplían por variables de entorno (ADR-B12). Prueba: `test_messages.py::test_foreign_origin_cannot_upload`, `::test_reject_rebound_host`, `test_config.py`.
 - CA-09: un adjunto grande no se omite por un tope fijo. Prueba: `test_messages.py::test_attachment_is_not_omitted_by_a_fixed_size_limit`, `::test_large_msg_and_attachment_are_processed`.
 - CA-10: con el parser caído y sin propiedades cortas, remitente, asunto, Para y fecha salen de los encabezados de transporte. Prueba: `test_envelope.py::test_recovered_message_identifies_sender_from_transport_headers`.
 - CA-11: un asunto ausente en un MSG legible se completa desde los encabezados. Prueba: `test_envelope.py::test_parsed_message_completes_missing_subject_from_headers`.

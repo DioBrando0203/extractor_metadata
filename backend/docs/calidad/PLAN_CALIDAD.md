@@ -14,6 +14,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_encoding.py`: páginas de códigos ANSI.
 - `test_body_text.py`: HTML a texto sin scripts ni recursos remotos.
 - `test_health.py`: salud local sin estado.
+- `test_config.py`: listas de Host y Origin desde el entorno (modo LAN, ADR-B12) y valores de loopback por defecto.
 
 ## Comandos
 

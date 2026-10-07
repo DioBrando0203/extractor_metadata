@@ -4,7 +4,7 @@ Rangos en `pyproject.toml`; versiones verificadas en `requirements.lock`.
 
 ## Ejecución
 
-- Python 3.11+ y FastAPI: API tipada local con OpenAPI; Uvicorn en 127.0.0.1.
+- Python 3.11+ y FastAPI: API tipada local con OpenAPI; Uvicorn en 127.0.0.1 (modo LAN opcional, ADR-B12).
 - extract-msg 0.56 y olefile: parser MSG y lectura directa de streams CFB/OLE para recuperación.
 - Pillow: metadatos de imagen y miniaturas JPEG con lista cerrada de formatos (ADR-B06).
 - pypdf: páginas y propiedades de PDF, sin render (se sustituyó PyMuPDF).
