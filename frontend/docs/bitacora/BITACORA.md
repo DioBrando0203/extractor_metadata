@@ -77,3 +77,10 @@ Estado: terminada
 Cambios: `ItemDetails` en `types.ts` y su normalización con guarda de tipo; `formatWhen` y `formatDay`; `features/message-viewer/lib/itemRows.ts` e `ItemCard` bajo el remitente; contador de coincidencias incluye la tarjeta; búsqueda por lugar y campos; `.ics`, `.vcs` y `.vcf` como texto en el visor; `item.css`; captura `07b-reunion`.
 Evidencia: format:check, build y lint aprobados; 91 unitarias (11 nuevas); 8 E2E con el backend iniciado con el código actual (convocatoria real con propiedades con nombre); 5 visuales, `07b-reunion` revisada a 320 y 1440 px.
 Notas: ADR-21; SPEC-03 CA-18 y CA-19; SPEC-02 CA-10.
+
+## 2026-10-07 00:24 -05:00 Avisos de correo firmado, cifrado o con permisos (PEN-06, frontend)
+
+Estado: terminada
+Cambios: tipo `Security` y su normalización por lista cerrada; `SecurityNote` (línea de firmado en claro y `StatusAlert` desde una tabla para opaco, cifrado y permisos IRM) bajo el asunto; estilos `.mail__security` y `.mail__notice`; captura `07c-cifrado`.
+Evidencia: format:check, build y lint aprobados; 97 unitarias (6 nuevas); 9 E2E (correo firmado real: texto del contenido firmado y descarga de su PDF); 5 visuales, `07c-cifrado` revisada a 320 y 1024 px.
+Notas: ADR-22; SPEC-03 CA-20.

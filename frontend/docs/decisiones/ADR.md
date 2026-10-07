@@ -148,3 +148,10 @@ Fecha: 2026-10-07. Estado: vigente.
 Contexto: el backend entrega `item` para MSG que no son correos (ADR-B17); Outlook los abre con su propio formulario.
 Decisión: el lector conserva su anatomía y agrega `ItemCard` bajo el remitente: título e icono por tipo en tablas, filas de `itemRows` (Cuándo con `formatWhen` en la hora local, Dónde y los campos en el orden del backend) y resaltado de búsqueda. La cancelación usa los colores de peligro.
 Consecuencias: no hay formularios de edición ni acciones (aceptar, rechazar): es un lector. Un tipo nuevo es una entrada en `ITEM_TITLES` e `ICONS`.
+
+## ADR-22 Avisos de correo S/MIME
+
+Fecha: 2026-10-07. Estado: vigente.
+Contexto: el backend indica si un correo está firmado en claro, firmado en formato opaco o cifrado (ADR-B18), sin verificar firmas.
+Decisión: `SecurityNote` bajo el asunto. Firmado en claro: una línea discreta que nunca dice "firma válida". Opaco, cifrado y con permisos: `StatusAlert` (info y advertencia) desde una tabla, con qué se ve y qué hacer.
+Consecuencias: el usuario no confunde un correo cifrado con uno dañado ni una firma presente con una verificada.

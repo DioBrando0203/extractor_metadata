@@ -12,6 +12,7 @@ import type { Message } from '../../../lib/types'
 import { HighlightContext } from '../highlight'
 import { itemRows } from '../lib/itemRows'
 import { ItemCard } from './ItemCard'
+import { SecurityNote } from './SecurityNote'
 import { MessageBody } from './MessageBody'
 import { MessageTitle } from './MessageTitle'
 import { SenderBlock } from './SenderBlock'
@@ -83,6 +84,7 @@ export function MessageViewer({
           hits={hits}
           focus={focusTitle}
         />
+        <SecurityNote security={message.security} />
         <div className="mail__card">
           <SenderBlock message={message} />
           {message.item && <ItemCard item={message.item} />}

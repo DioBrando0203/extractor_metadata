@@ -150,3 +150,16 @@ describe('reuniones, contactos y tareas', () => {
     expect((await extractMessage(new File(['x'], 'nota.msg'))).message.item).toBeNull()
   })
 })
+
+describe('correos S/MIME', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('acepta sólo los valores de seguridad conocidos', async () => {
+    const respond = (security: unknown) =>
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ message: { security } }), { status: 200 }))
+    vi.stubGlobal('fetch', respond('encrypted'))
+    expect((await extractMessage(new File(['x'], 'a.msg'))).message.security).toBe('encrypted')
+    vi.stubGlobal('fetch', respond('valid-signature'))
+    expect((await extractMessage(new File(['x'], 'a.msg'))).message.security).toBeNull()
+  })
+})

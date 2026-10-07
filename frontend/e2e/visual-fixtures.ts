@@ -225,3 +225,14 @@ export const MEETING = {
     ],
   },
 }
+
+/** Correo cifrado: se ven el sobre y el archivo cifrado, nunca su contenido. */
+export const ENCRYPTED = {
+  ...COMPLETE,
+  file_name: 'Cifrado.msg',
+  subject: 'Propuesta económica confidencial',
+  body_preview: null,
+  body_truncated: false,
+  attachments: [attachment('smime.p7m', 18_204, { content_type: 'application/pkcs7-mime' })],
+  security: 'encrypted',
+}

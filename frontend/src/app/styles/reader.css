@@ -221,3 +221,20 @@
   color: var(--fg-2);
   font-weight: var(--fw-semibold);
 }
+
+/* Correo S/MIME (SecurityNote): línea discreta si se firmó en claro; MessageBar si es opaco o cifrado. */
+.mail__security {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: calc(-1 * var(--space-s)) var(--space-xl) var(--space-m);
+  color: var(--fg-3);
+  font-size: var(--fs-200);
+}
+.mail__security > svg {
+  flex: none;
+  color: var(--brand-80);
+}
+.mail__notice {
+  margin: 0 var(--space-m) var(--space-m);
+}

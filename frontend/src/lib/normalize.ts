@@ -7,6 +7,7 @@ import type {
   Message,
   MetadataItem,
   PreviewSource,
+  Security,
 } from './types'
 
 /*
@@ -132,6 +133,11 @@ function itemDetails(value: unknown): ItemDetails | null {
   }
 }
 
+const SECURITY: readonly Security[] = ['signed', 'opaque', 'encrypted', 'protected']
+function security(value: unknown): Security | null {
+  return SECURITY.find((kind) => kind === value) ?? null
+}
+
 export function normalizeMessage(payload: ApiMessage, fallback: Fallback, depth = 0): Message {
   const status: ExtractionStatus = payload.status === 'partial' ? 'partial' : 'complete'
   return {
@@ -150,5 +156,6 @@ export function normalizeMessage(payload: ApiMessage, fallback: Fallback, depth 
     warnings: warningList(payload.warnings),
     status,
     item: itemDetails(payload.item),
+    security: security(payload.security),
   }
 }

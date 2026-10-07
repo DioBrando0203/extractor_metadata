@@ -101,3 +101,10 @@ Estado: terminada
 Cambios: contrato `ItemDetails` y `MessageMetadata.item`; `msg/item_details.py` (tipo por clase de mensaje, fechas, lugar y campos en tablas, lectura aislada sin advertencias); la fábrica genera clase de mensaje, textos MAPI extra y propiedades con nombre (`named_properties`).
 Evidencia: pytest 111 aprobadas (4 nuevas en `test_item_details.py`, que fallan con el contrato anterior); ruff check y format aprobados.
 Notas: ADR-B17; SPEC-B01 CA-31 y CA-32; RQ-14.
+
+## 2026-10-07 00:24 -05:00 Correos S/MIME y con permisos (PEN-06, backend)
+
+Estado: terminada
+Cambios: `msg/smime.py` (firmado en claro con su contenido MIME, opaco y cifrado por OID, IRM por `.rpmsg`); `ReadContext` sale de `reader` a `read_context.py` con los adjuntos del contenido firmado y el cuerpo S/MIME (sin los bytes del PKCS#7 que extract-msg tomaba como texto); descarga coherente en `_MsgSource`; `eml.read_parts` y `eml.body_text` públicos; contrato `security`.
+Evidencia: pytest 116 aprobadas (5 nuevas en `test_smime.py`; con el código anterior fallan); ruff check y format aprobados.
+Notas: ADR-B18; SPEC-B01 CA-33 y CA-34; RQ-15. La firma no se verifica (límite honesto).

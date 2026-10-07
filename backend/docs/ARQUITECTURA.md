@@ -38,7 +38,9 @@ app/
   services/body_text.py        HTML a texto sin ejecutar ni resolver recursos
   services/msg/
     __init__.py                API: extract_msg_file, extract_attachment_file
-    reader.py                  orquesta: parser MSG o recuperación OLE (_ReadContext)
+    reader.py                  orquesta: parser MSG o recuperación OLE
+    read_context.py            ReadContext: datos comunes, adjuntos que se muestran, cuerpo firmado
+    smime.py                   correo S/MIME: firmado en claro (contenido MIME), opaco o cifrado (OID del PKCS#7)
     parsed_fields.py           lectura aislada de cada campo del parser (cuerpo, fechas, encabezados)
     item_details.py            reunión, cita, contacto o tarea según la clase de mensaje (ItemDetails)
     envelope.py                sobre de respaldo: propiedades MAPI alternativas y encabezados de transporte
@@ -90,13 +92,14 @@ app/
 ## Flujo de adjunto
 
 1. `POST /api/messages/attachment` recibe `file`, `attachment_index` y opcionales `preview` y `message_path` (`"2/0"`), agrupados en `AttachmentRequest`.
-2. `run_attachment_extraction` ejecuta `_attachment_worker`: `extract_attachment_file` recorre `message_path` con `_MsgSource` (carpeta OLE o `.msg` adjunto, copiados a `download-*/embedded-<nivel>.msg`) o `EmlSource` (partes del EML en el orden del análisis) y después copia el adjunto a `download-*/attachment.bin`. Un correo adjunto se entrega como `.msg` (`application/vnd.ms-outlook`); un enlace no tiene bytes y responde `UNREADABLE_ATTACHMENT`. Un índice después de los adjuntos OLE es un archivo suelto: la descarga aplica el mismo criterio que el análisis (cabecera reparada o `parser_fails`) y la misma lista (`loose_candidates`). Sin contenedor legible, el índice es directamente el del archivo suelto.
+2. `run_attachment_extraction` ejecuta `_attachment_worker`: `extract_attachment_file` recorre `message_path` con `_MsgSource` (carpeta OLE o `.msg` adjunto, copiados a `download-*/embedded-<nivel>.msg`) o `EmlSource` (partes del EML en el orden del análisis) y después copia el adjunto a `download-*/attachment.bin`. Un correo adjunto se entrega como `.msg` (`application/vnd.ms-outlook`); un enlace no tiene bytes y responde `UNREADABLE_ATTACHMENT`. En un correo firmado en claro, `_MsgSource` delega en `EmlSource` del contenido firmado (mismas partes que el análisis). Un índice después de los adjuntos OLE es un archivo suelto: la descarga aplica el mismo criterio que el análisis (cabecera reparada o `parser_fails`) y la misma lista (`loose_candidates`). Sin contenedor legible, el índice es directamente el del archivo suelto.
 3. Con `preview=true`, `write_large_preview` lo sustituye por un JPEG de hasta 2048 px o responde `NO_PREVIEW`.
 4. `FileResponse` entrega el archivo y una tarea de fondo borra el directorio al terminar la transmisión.
 
 ## Contrato
 
 - Detalle de campos y errores: `estilos/API.md`.
+- `MessageMetadata.security`: `signed` (firmado en claro: se muestran el contenido y los adjuntos firmados; la firma no se verifica), `opaque` o `encrypted` (queda el `smime.p7m`), `protected` (permisos IRM, `message.rpmsg`) o `null`.
 - `MessageMetadata.item`: `ItemDetails` (tipo, inicio, fin, todo el día, lugar y campos en orden) si la clase de mensaje es reunión, cita, contacto o tarea; `null` en un correo. Sólo con el parser (la recuperación OLE no la lee).
 - `AttachmentMetadata.preview`: data URI JPEG de hasta 480 px o `null`.
 - `AttachmentMetadata.preview_source`: `image` (el adjunto es imagen) o `embedded` (miniatura guardada por DWG, DXF u Office).

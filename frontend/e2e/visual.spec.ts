@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import type { Page } from '@playwright/test'
-import { COMPLETE, MEETING, PARTIAL, PHOTO } from './visual-fixtures'
+import { COMPLETE, ENCRYPTED, MEETING, PARTIAL, PHOTO } from './visual-fixtures'
 
 /*
  * Revisión visual (regla C-07): capturas en test-results/capturas/ con respuestas simuladas y
@@ -20,6 +20,7 @@ const FILES = [
   'RE_ Proyecto 24-123 _ Archivo con nombre muy largo guardado desde el cliente de correo.msg',
   'falla.msg',
   'Reunion semanal.msg',
+  'Cifrado.msg',
   'lento.msg',
 ]
 
@@ -38,7 +39,9 @@ async function open(page: Page, files: string[]) {
       ? PARTIAL
       : body.includes('Reunion semanal')
         ? MEETING
-        : COMPLETE
+        : body.includes('Cifrado')
+          ? ENCRYPTED
+          : COMPLETE
     return route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -119,6 +122,9 @@ for (const viewport of WIDTHS) {
     await select(/Revisión semanal/)
     await page.getByRole('region', { name: 'Invitación a una reunión' }).waitFor()
     await capture(page, '07b-reunion')
+    await select(/Propuesta económica/)
+    await page.getByText('Correo cifrado.').waitFor()
+    await capture(page, '07c-cifrado')
     await select(/^lento/)
     await capture(page, '08-cargando')
     await page.getByRole('searchbox').fill('memoria')

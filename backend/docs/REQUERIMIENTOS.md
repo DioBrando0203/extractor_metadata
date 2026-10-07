@@ -18,6 +18,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - RQ-10 Lectura parcial: lo legible se conserva; PNG, JPEG, GIF, PDF y ZIP/Office completos fuera de los streams legibles se ofrecen como recuperados cuando hay daño; un MSG sin firma o sin cabecera se lee con lo que sigue entero.
 - RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin fuera de la lista permitida rechazados.
 - RQ-12 Pruebas: MSG y adjuntos sintéticos; nunca correos privados en el repositorio.
+- RQ-15 Correos S/MIME: un correo firmado en claro muestra su texto y sus adjuntos y dice que la firma no se comprueba; uno opaco o cifrado lo explica y permite descargar el `smime.p7m`.
 - RQ-14 Otros elementos de Outlook: una reunión, cita, contacto o tarea muestra sus datos (cuándo, dónde, quiénes, teléfonos, estado) sobre el texto; los `.ics` y `.vcf` adjuntos se ven como texto.
 - RQ-13 Imágenes en posición: las imágenes incrustadas se marcan en el cuerpo (`[cid:…]`) y se enlazan con su adjunto por Content-ID o nombre. En un MSG dañado se recupera el HTML del RTF suelto y la posición se reconstruye sólo con evidencia inequívoca de medidas; lo ambiguo se queda en la lista de adjuntos y la interfaz lo dice.
 
@@ -28,6 +29,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - No hay render de DWG ni de páginas PDF en el backend; el PDF lo dibuja el visor del navegador.
 - EMF/WMF sólo se convierten donde Pillow puede renderizarlos (Windows).
 - Un corte de energía o terminación forzada puede impedir la limpieza de temporales.
+- La firma S/MIME no se verifica, un correo firmado en formato opaco no se desempaqueta y uno cifrado no se lee.
 - Sin cabecera legible sólo se rescata lo que sigue contiguo y se valida: no hay propiedades MAPI, adjuntos fragmentados ni nombres originales de adjuntos.
 
 ## Pendientes por revisar (backlog priorizado)
@@ -75,8 +77,9 @@ Terminado cuando: cada formato tiene miniatura o listado en una prueba sintétic
 
 ### PEN-06 Correos cifrados, firmados o con permisos
 
-Prioridad: media. Alcance: backend y frontend. Estado: pendiente.
-Situación: S/MIME (`smime.p7m`) y contenido con permisos (IRM, `.rpmsg`) no se detectan; el usuario ve un correo vacío o un adjunto raro.
+Prioridad: media. Alcance: backend y frontend. Estado: terminada (2026-10-07).
+Hecho: firmado en claro con su contenido y adjuntos (análisis y descarga); opaco y cifrado detectados por OID, sin cuerpo inventado; permisos IRM detectados; avisos en el lector (ADR-B18, ADR-22).
+Situación original: S/MIME (`smime.p7m`) y contenido con permisos (IRM, `.rpmsg`) no se detectan; el usuario ve un correo vacío o un adjunto raro.
 Hacer: detectar la clase y el tipo; en firmados (no cifrados) extraer el contenido interno; en cifrados, avisar con claridad que no se puede leer sin la clave.
 Terminado cuando: casos sintéticos firmado y cifrado muestran contenido o aviso correcto.
 

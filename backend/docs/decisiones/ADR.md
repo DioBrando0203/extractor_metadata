@@ -120,3 +120,10 @@ Fecha: 2026-10-07. Estado: vigente.
 Contexto: un MSG de reunión, contacto o tarea se veía como un correo sin sus datos (cuándo, dónde, quiénes). extract-msg ya abre cada clase con sus propiedades, muchas con nombre (`PSETID_Appointment`, `PSETID_Task`, `PSETID_Address`).
 Decisión: un único `ItemDetails` con `kind`, fechas tipadas (para que la interfaz las muestre en la hora local), lugar y una lista ordenada de campos de texto. Cada propiedad se lee aislada y, por ser accesoria, una ilegible se omite sin volver parcial el correo. La fábrica de pruebas genera propiedades con nombre (`named_properties`).
 Consecuencias: agregar un campo es una línea en una tabla. Sin el parser (MSG dañado) no hay `item`; el correo se sigue leyendo.
+
+## ADR-B18 Correos S/MIME sin criptografía
+
+Fecha: 2026-10-07. Estado: vigente.
+Contexto: un correo firmado o cifrado se veía como un adjunto `smime.p7m` y, en los cifrados, extract-msg devolvía los bytes del PKCS#7 como si fueran el cuerpo.
+Decisión: sin dependencias criptográficas. Firmado en claro (`multipart/signed`): se lee la primera parte con `email` y sus adjuntos se enumeran como en un EML, en el análisis y en la descarga. Opaco o cifrado: se reconoce por el OID al inicio del `.p7m`, se marca en `security` y el cuerpo sólo sale del stream `1000`. La firma nunca se verifica y la interfaz lo dice.
+Consecuencias: no se afirma la validez de una firma ni se descifra nada. Un correo con permisos IRM (`.rpmsg`) sólo se indica como `protected`. Un correo opaco necesita Outlook para verse. `ReadContext` sale de `reader` para que el lector no pase de 250 líneas.

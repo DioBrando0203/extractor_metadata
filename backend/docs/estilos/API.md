@@ -24,6 +24,7 @@
 - `headers`, `properties`: `MetadataItem[]` diagnósticos; el frontend no los muestra.
 - `attachments`: `AttachmentMetadata[]`; su posición es el índice para `/attachment`.
 - `warnings`: textos para diagnóstico.
+- `security`: `null`, `signed` (firmado en claro: `body_preview` y `attachments` son los del contenido firmado; la firma no se verifica), `opaque` (firmado dentro del `.p7m`, no se desempaqueta), `encrypted` (cifrado; sólo el sobre y el `smime.p7m`) o `protected` (permisos IRM: clase `.rpmsg` o adjunto `message.rpmsg`).
 - `item`: `null` en un correo; en otra clase de mensaje, `ItemDetails`:
   - `kind`: `meeting` (IPM.Schedule.Meeting.Request), `cancellation` (…Canceled), `response` (…Resp.*), `appointment` (IPM.Appointment), `contact` (IPM.Contact), `task` (IPM.Task y IPM.TaskRequest).
   - `start`, `end`: ISO-8601 o `null`; en una tarea, inicio y vencimiento.

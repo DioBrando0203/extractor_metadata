@@ -53,12 +53,9 @@ def read_eml(
     message: EmailMessage, file_name: str, size: int, budget: EmbeddedBudget
 ) -> MessageMetadata:
     """``MessageMetadata`` de un EML; sus correos adjuntos comparten el presupuesto."""
-    body = _body_text(message)
+    body = body_text(message)
     truncated = bool(body and len(body) > settings.max_body_chars)
-    attachments = [
-        _attachment(part, position, budget)
-        for position, part in enumerate(attachment_parts(message), start=1)
-    ]
+    attachments = read_parts(message, budget)
     warnings = (
         ["Uno o más adjuntos tienen advertencias."] if any(a.warnings for a in attachments) else []
     )
@@ -138,7 +135,15 @@ def _text(part: EmailMessage | None) -> str | None:
     return content if isinstance(content, str) and content.strip() else None
 
 
-def _body_text(message: EmailMessage) -> str | None:
+def read_parts(message: EmailMessage, budget: EmbeddedBudget) -> list[AttachmentMetadata]:
+    """Adjuntos de un mensaje MIME en el orden de ``attachment_parts`` (el índice de la API)."""
+    return [
+        _attachment(part, position, budget)
+        for position, part in enumerate(attachment_parts(message), start=1)
+    ]
+
+
+def body_text(message: EmailMessage) -> str | None:
     """Texto plano, salvo que sólo el HTML marque dónde van las imágenes (como en el MSG)."""
     plain = _text(message.get_body(preferencelist=("plain",)))
     html = _text(message.get_body(preferencelist=("html",)))

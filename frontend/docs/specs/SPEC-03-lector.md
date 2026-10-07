@@ -13,6 +13,7 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 1. Barra de asunto: `h1` 20/28 semibold, fuera de la tarjeta, como en Outlook.
 2. Nota de origen si el título no es el asunto real: "Asunto deducido del mensaje citado; coincide con el nombre del archivo." o "Asunto no recuperado: se muestra el nombre del archivo."
 3. MessageBar de advertencia si `status=partial`.
+   3b. Correo S/MIME (`SecurityNote`): firmado en claro, línea "Firmado digitalmente. Esta aplicación no comprueba la firma."; opaco, MessageBar informativo con cómo verlo; cifrado o con permisos IRM, MessageBar de advertencia que explica qué se ve (ADR-22).
 4. Tarjeta del mensaje (blanca, radio 8, `--shadow-4`):
    1. Remitente: avatar de 40 px, nombre semibold, `<correo>` en `--fg-3`, fecha a la derecha.
    2. Destinatarios Para, CC y CCO; más de 8 se pliegan con "+N más".
@@ -95,3 +96,4 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 - CA-17: las direcciones web del cuerpo son enlaces seguros y el texto no cambia; otros esquemas quedan como texto. Prueba: `InlineContent.test.tsx`, `lib/links.test.ts`.
 - CA-18: una reunión muestra qué es, cuándo, dónde y quiénes antes del texto; la búsqueda se resalta y se cuenta en la tarjeta; un correo no la muestra. Prueba: `ItemCard.test.tsx`, `features/message-viewer/lib/itemRows.test.ts`, `e2e/local-api.spec.ts`, captura `07b-reunion`.
 - CA-19: las fechas se muestran en la hora local, una vez el día si empieza y termina el mismo día, y sin horas en todo el día. Prueba: `itemRows.test.ts` (`formatWhen`).
+- CA-20: firmado, opaco, cifrado y con permisos tienen su aviso y nunca se afirma que la firma sea válida. Prueba: `SecurityNote.test.tsx`, `e2e/local-api.spec.ts` (correo firmado), captura `07c-cifrado`.

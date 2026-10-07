@@ -98,6 +98,29 @@ test('una convocatoria muestra cuándo y dónde es la reunión', async ({ page }
   await expect(card.getByText(/12 de octubre de 2026, \d\d:\d\d – \d\d:\d\d/)).toBeVisible()
 })
 
+test('un correo firmado muestra su contenido y sus adjuntos reales', async ({ page }) => {
+  const signed = python(
+    "from test_smime import _clear_signed, _smime_msg; sys.stdout.buffer.write(_smime_msg('IPM.Note.SMIME.MultipartSigned', _clear_signed()))",
+  )
+  await page.goto('/')
+  await page.locator('input[type=file]').first().setInputFiles({
+    name: 'firmado.msg',
+    mimeType: 'application/vnd.ms-outlook',
+    buffer: signed,
+  })
+  await expect(page.getByText('Firmado digitalmente.')).toBeVisible({ timeout: 20_000 })
+  await expect(
+    page.getByRole('region', { name: 'Contenido del correo' }).getByText('Texto firmado del contrato.'),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Ver smime.p7m' })).toHaveCount(0)
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Descargar contrato.pdf' }).click()
+  const download = await downloadPromise
+  const downloadedPath = await download.path()
+  expect(downloadedPath).not.toBeNull()
+  expect((await readFile(downloadedPath!)).toString()).toContain('contrato firmado')
+})
+
 test('un correo legible permite descargar su adjunto', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))

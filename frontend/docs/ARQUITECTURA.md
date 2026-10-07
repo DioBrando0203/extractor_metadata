@@ -23,6 +23,7 @@ src/
     components/MessageReader.tsx         navegación por correos adjuntos: ruta, barra Volver, foco y desplazamiento
     components/MessageViewer.tsx         composición: título, tarjeta, pestañas, adjuntos, cuerpo y visor
     components/MessageTitle.tsx          asunto, origen del título y aviso de lectura parcial
+    components/SecurityNote.tsx          aviso de correo firmado, opaco o cifrado (tabla de avisos)
     components/SenderBlock.tsx           remitente, fecha y destinatarios
     components/ItemCard.tsx              reunión, cita, contacto o tarea: título, cuándo, dónde y campos
     lib/itemRows.ts                      títulos por tipo y filas de la tarjeta (función pura)
@@ -87,6 +88,7 @@ e2e/                                     Playwright: funcional (backend real) y 
 
 - `POST /api/messages/extract` → `{ message, processed_locally }`.
 - `POST /api/messages/attachment` con `file`, `attachment_index`, `preview` opcional y `message_path` opcional (`2/0`, desde `messagePath`) → binario.
+- `Message.security`: `signed`, `opaque`, `encrypted`, `protected` o `null` (S/MIME; la firma no se verifica).
 - `Message.item`: reunión, cita, contacto o tarea (`ItemDetails`), o `null` en un correo.
 - `Attachment.kind`: `file`, `message` (con `message: Message`, ya leído) o `link` (con `link`, sin bytes).
 - `Attachment.preview`: data URI raster validada en `lib/api.ts` (sólo jpeg, png, gif, webp en base64); `preview_source`: `image` o `embedded`.

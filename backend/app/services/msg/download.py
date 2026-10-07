@@ -24,6 +24,7 @@ from app.services.msg.names import download_filename, message_filename
 from app.services.msg.ole_reader import read_ole_metadata
 from app.services.msg.raw_recovery import loose_candidates
 from app.services.msg.reader import parser_fails
+from app.services.msg.smime import smime_content
 
 _CHUNK = 1024 * 1024
 
@@ -68,6 +69,8 @@ class _MsgSource:
 
     def enter(self, index: int, target: Path) -> "_MsgSource | EmlSource":
         """Abre el correo adjunto ``index``: carpeta OLE, ``.msg`` o ``.eml`` adjunto."""
+        if (signed := self._signed_content()) is not None:
+            return signed.enter(index, target)
         with recovered_ole_path(self.path) as (read_path, _):
             directory, name = _directory_at(read_path, index)
             with olefile.OleFileIO(str(read_path)) as container:
@@ -85,6 +88,8 @@ class _MsgSource:
         return EmlSource(message)
 
     def extract(self, index: int, destination: Path) -> tuple[str, str]:
+        if (signed := self._signed_content()) is not None:
+            return signed.extract(index, destination)
         with recovered_ole_path(self.path) as (read_path, recovery_warnings):
             with olefile.OleFileIO(str(read_path)) as container:
                 directories = attachment_directories(container.listdir())
@@ -94,6 +99,13 @@ class _MsgSource:
             # Mismo criterio que el análisis: hay archivos sueltos si se reparó o el parser falla.
             rescue = bool(recovery_warnings) or parser_fails(read_path)
             return _copy_raw_attachment(read_path, index - len(directories), rescue, destination)
+
+    def _signed_content(self) -> EmlSource | None:
+        """Firmado en claro: sus adjuntos son los del contenido firmado, como en el análisis."""
+        with recovered_ole_path(self.path) as (read_path, _):
+            ole = read_ole_metadata(read_path)
+            smime = smime_content(read_path, ole.recovered.get("001A"), ole.attachments)
+        return EmlSource(smime.content) if smime and smime.content is not None else None
 
 
 def _directory_at(path: Path, index: int) -> tuple[str, str]:

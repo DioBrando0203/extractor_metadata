@@ -35,6 +35,8 @@ export interface AttachmentFile {
   blob: Blob
   filename: string
 }
+/** Correo S/MIME (firmado en claro, opaco o cifrado) o con permisos IRM. */
+export type Security = 'signed' | 'opaque' | 'encrypted' | 'protected'
 /** Qué es un MSG que no es un correo. */
 export type ItemKind = 'meeting' | 'cancellation' | 'response' | 'appointment' | 'contact' | 'task'
 
@@ -65,6 +67,7 @@ export interface Message {
   status: ExtractionStatus
   /** Reunión, cita, contacto o tarea; `null` en un correo. */
   item?: ItemDetails | null
+  security?: Security | null
 }
 export interface ExtractionResponse {
   message: Message

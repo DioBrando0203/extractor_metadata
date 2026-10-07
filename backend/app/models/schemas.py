@@ -60,6 +60,10 @@ class MessageMetadata(BaseModel):
     warnings: list[str] = Field(default_factory=list)
     # Reunión, cita, contacto o tarea; ``None`` en un correo.
     item: ItemDetails | None = None
+    # Correo S/MIME: ``signed`` (firmado en claro; la firma no se verifica), ``opaque`` (firmado
+    # dentro del .p7m, no se desempaqueta), ``encrypted`` (sin la clave no se lee) o ``protected``
+    # (permisos IRM: sólo Outlook con una cuenta autorizada).
+    security: Literal["signed", "opaque", "encrypted", "protected"] | None = None
 
 
 AttachmentMetadata.model_rebuild()
