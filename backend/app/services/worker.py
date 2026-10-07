@@ -42,6 +42,17 @@ class _IsolatedJob:
     failure_code: str
 
 
+@dataclass(frozen=True)
+class AttachmentRequest:
+    """Qué adjunto entregar y cómo (Parameter Object)."""
+
+    index: int
+    #: Correos adjuntos que se abren para llegar al adjunto; vacío = el correo principal.
+    message_path: tuple[int, ...] = ()
+    #: Entregar una imagen JPEG del adjunto en lugar del archivo original.
+    preview: bool = False
+
+
 def _timeout_for_size(size: int) -> int:
     """Escala el plazo de un archivo grande sin imponer un máximo de carga."""
     throughput = max(1, settings.minimum_processing_bytes_per_second)
@@ -90,14 +101,16 @@ def _worker(connection: Connection, path: str, filename: str, size: int) -> None
 
 
 def _attachment_worker(
-    connection: Connection, path: str, attachment_index: int, destination: str, preview: bool
+    connection: Connection, path: str, request: AttachmentRequest, destination: str
 ) -> None:
     def task() -> bytes:
         from app.services.msg import extract_attachment_file
 
         target = Path(destination)
-        filename, content_type = extract_attachment_file(Path(path), attachment_index, target)
-        if preview:
+        filename, content_type = extract_attachment_file(
+            Path(path), request.index, target, request.message_path
+        )
+        if request.preview:
             from app.services.previews import write_large_preview
 
             filename, content_type = write_large_preview(target, filename)
@@ -129,17 +142,14 @@ def run_extraction(path: Path, filename: str, size: int) -> MessageMetadata:
 
 
 def run_attachment_extraction(
-    path: Path, size: int, attachment_index: int, destination: Path, preview: bool = False
+    path: Path, size: int, request: AttachmentRequest, destination: Path
 ) -> tuple[str, str]:
-    """Aísla también la extracción de un binario antes de entregarlo al navegador.
-
-    Con ``preview`` entrega una imagen JPEG del adjunto en lugar del archivo original.
-    """
+    """Aísla también la extracción de un binario antes de entregarlo al navegador."""
     timeout = _timeout_for_size(size)
     payload = _run_isolated(
         _IsolatedJob(
             target=_attachment_worker,
-            args=(str(path), attachment_index, str(destination), preview),
+            args=(str(path), request, str(destination)),
             timeout=timeout,
             max_response_bytes=_ATTACHMENT_RESPONSE_BYTES,
             timeout_message=f"La preparación del adjunto excedió {timeout} segundos.",

@@ -12,6 +12,9 @@ Que cualquier adjunto se pueda descargar con sus bytes exactos y que imágenes, 
 
 - `POST /attachment` con `attachment_index` copia el stream del adjunto a un temporal y lo envía con nombre seguro y MIME por extensión o firma.
 - Índices: adjuntos OLE en orden de carpeta y, después, recuperados de datos sueltos.
+- `message_path` (`"2/0"`): abre cada correo adjunto en orden y aplica el índice dentro del último. Cada nivel se copia a un MSG propio dentro del temporal de la descarga.
+- Correo adjunto: se entrega como `.msg` legible por Outlook y por esta aplicación.
+- Enlace (`kind=link`): no tiene bytes; responde `UNREADABLE_ATTACHMENT`.
 - El directorio temporal se borra al terminar la transmisión o ante cualquier error.
 
 ## Miniatura en el análisis
@@ -36,3 +39,7 @@ Que cualquier adjunto se pueda descargar con sus bytes exactos y que imágenes, 
 - CA-05: EPS y PDF no se decodifican como imagen. Prueba: `test_previews.py::test_unsupported_or_dangerous_formats_are_not_decoded`.
 - CA-06: `preview=true` convierte TIFF a JPEG y responde `NO_PREVIEW` sin vista previa, dejando el temporal vacío. Prueba: `test_previews.py::test_large_preview_endpoint_converts_tiff_to_jpeg`, `::test_large_preview_endpoint_rejects_files_without_preview`.
 - CA-07: metadatos DWG informan "Miniatura incrustada". Prueba: `test_previews.py::test_dwg_metadata_reports_embedded_thumbnail`.
+- CA-08: un adjunto dentro de un correo adjunto se descarga con `message_path`. Prueba: `test_embedded.py::test_inner_attachment_downloads_through_the_message_path`.
+- CA-09: un correo adjunto se descarga como `.msg` que vuelve a leerse completo. Prueba: `test_embedded.py::test_attached_message_downloads_as_a_readable_msg`.
+- CA-10: `message_path` mal formado, demasiado profundo o que no lleva a un correo adjunto se rechaza. Prueba: `test_embedded.py::test_invalid_message_path_is_rejected`, `::test_message_path_must_point_to_an_attached_message`.
+- CA-11: un enlace no ofrece descarga vacía. Prueba: `test_embedded.py::test_cloud_attachment_is_a_link_without_bytes`.

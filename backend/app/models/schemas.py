@@ -23,6 +23,11 @@ class AttachmentMetadata(BaseModel):
     content_id: str | None = None
     # True si el archivo perdió el Content-ID y se reconstruyó por las medidas de la imagen.
     content_id_inferred: bool = False
+    # Cómo viaja: "file" trae sus bytes; "message" es un correo adjunto, leído en ``message``;
+    # "link" vive en una ruta o en la nube y el correo sólo guarda su dirección en ``link``.
+    kind: Literal["file", "message", "link"] = "file"
+    link: str | None = None
+    message: "MessageMetadata | None" = None
 
 
 class MessageMetadata(BaseModel):
@@ -40,6 +45,9 @@ class MessageMetadata(BaseModel):
     properties: list[MetadataItem] = Field(default_factory=list)
     attachments: list[AttachmentMetadata] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+
+
+AttachmentMetadata.model_rebuild()
 
 
 class ExtractionResponse(BaseModel):

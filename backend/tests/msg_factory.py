@@ -114,8 +114,15 @@ def build_cfb(streams: dict[tuple[str, ...], bytes]) -> bytes:
     return bytes(header) + b"".join(sectors)
 
 
-def make_msg(
+def make_msg(**options: object) -> bytes:
+    """MSG mínimo. ``omit`` quita propiedades (p. ej. ``("0037",)``) para simular daños."""
+    return build_cfb(message_streams(**options))
+
+
+def message_streams(
     *,
+    subject: str = "Mensaje de prueba — áéíóú",
+    sender: str = "equipo@example.test",
     body: str = "Contenido de prueba local.",
     attachment: bytes | None = None,
     filename: str = "plano.dwg",
@@ -124,16 +131,16 @@ def make_msg(
     headers: str | None = None,
     html: str | None = None,
     content_id: str | None = None,
-) -> bytes:
-    """MSG mínimo. ``omit`` quita propiedades (p. ej. ``("0037",)``) para simular daños."""
+) -> dict[tuple[str, ...], bytes]:
+    """Streams de un MSG mínimo, para construirlo o adjuntarlo dentro de otro."""
     strings = {
         "001A": "IPM.Note",
-        "0037": "Mensaje de prueba — áéíóú",
+        "0037": subject,
         "0C1A": "Equipo local",
-        "0C1F": "equipo@example.test",
+        "0C1F": sender,
         "0E04": "lector@example.test",
         "1000": body,
-        "007D": "From: equipo@example.test\r\nTo: lector@example.test\r\n"
+        "007D": f"From: {sender}\r\nTo: lector@example.test\r\n"
         "Date: Mon, 05 Oct 2026 10:00:00 -0500\r\n"
         "Message-ID: <local@example.test>\r\n",
     }
@@ -154,11 +161,49 @@ def make_msg(
     )
     if attachment is not None:
         folder = "__attach_version1.0_#00000000"
-        method = struct.pack("<II8s", 0x37050003, 6, struct.pack("<I", 1) + b"\0" * 4)
-        streams[(folder, "__properties_version1.0")] = b"\0" * 8 + method
+        streams[(folder, "__properties_version1.0")] = attachment_properties(1)
         streams[(folder, "__substg1.0_3707001F")] = filename.encode("utf-16-le")
         streams[(folder, "__substg1.0_37010102")] = attachment
         if content_id is not None:
             streams[(folder, "__substg1.0_3712001F")] = content_id.encode("utf-16-le")
     streams.update(extra_streams or {})
-    return build_cfb(streams)
+    return streams
+
+
+def attachment_properties(method: int) -> bytes:
+    """Stream de propiedades de un adjunto con su ``PidTagAttachMethod``."""
+    entry = struct.pack("<II8s", 0x37050003, 6, struct.pack("<I", method) + b"\0" * 4)
+    return b"\0" * 8 + entry
+
+
+def attached_message(
+    folder: str, inner: dict[tuple[str, ...], bytes], display_name: str | None = None
+) -> dict[tuple[str, ...], bytes]:
+    """Coloca un correo (``message_streams``) como correo adjunto (método 5) en ``folder``.
+
+    Como en Outlook, el correo interno usa las propiedades con nombre del contenedor y su stream
+    de propiedades raíz tiene 24 bytes de encabezado en lugar de 32.
+    """
+    streams = {(folder, "__properties_version1.0"): attachment_properties(5)}
+    if display_name is not None:
+        streams[(folder, "__substg1.0_3001001F")] = display_name.encode("utf-16-le")
+    for path, payload in inner.items():
+        if path[0] == "__nameid_version1.0":
+            continue
+        if path == ("__properties_version1.0",):
+            payload = payload[:24] + payload[32:]
+        streams[(folder, "__substg1.0_3701000D", *path)] = payload
+    return streams
+
+
+def reference_attachment(
+    folder: str, name: str, address: str | None, method: int = 7
+) -> dict[tuple[str, ...], bytes]:
+    """Adjunto por referencia: sólo nombre y dirección (OneDrive, SharePoint o una ruta)."""
+    streams = {
+        (folder, "__properties_version1.0"): attachment_properties(method),
+        (folder, "__substg1.0_3707001F"): name.encode("utf-16-le"),
+    }
+    if address is not None:
+        streams[(folder, "__substg1.0_370D001F")] = address.encode("utf-16-le")
+    return streams

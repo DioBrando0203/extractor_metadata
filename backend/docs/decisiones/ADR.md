@@ -85,3 +85,17 @@ Fecha: 2026-10-06. Estado: vigente. Amplía ADR-B02 y RQ-01 sin reemplazarlos.
 Contexto: el usuario necesita abrir la aplicación desde otra PC de la misma red sin instalarla en cada equipo.
 Decisión: Host y Origin aceptados salen de `APP_ALLOWED_HOSTS` y `APP_ALLOWED_ORIGINS` (`backend/.env`, `core/config.env_list`); sin variables se conservan los valores de loopback. El frontend apunta al servidor con `VITE_API_URL`. `iniciar.py` sigue escuchando sólo en 127.0.0.1; el modo LAN exige levantar Uvicorn y Vite con `--host 0.0.0.0` a mano (README).
 Consecuencias: en modo LAN cualquier equipo que alcance el puerto puede enviar archivos al servicio; usarlo sólo en una red de confianza. Sigue sin haber cuentas, base de datos, nube ni historial, y cada solicitud conserva su temporal efímero. Los correos viajan por la red local sin cifrar (HTTP).
+
+## ADR-B13 Correos adjuntos como MSG propio en el temporal
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: un correo reenviado como adjunto (método 5) vive en la carpeta `__substg1.0_3701000D` de su adjunto. Todo el flujo (parser, respaldo OLE, sobre de respaldo, RTF suelto, descargas) trabaja sobre un archivo.
+Decisión: copiar esa carpeta a un MSG propio con `OleWriter` de extract-msg, stream por stream (uno ilegible se omite y se avisa), con los 8 bytes reservados del stream de propiedades raíz y la tabla `__nameid_version1.0` del contenedor. La copia vive en el temporal de la solicitud, se lee con el mismo flujo y se borra al terminar. `AttachmentMetadata.message` es recursivo; las descargas internas usan `message_path`. `EmbeddedBudget` limita a 3 niveles y 20 correos por análisis y comparte el plazo de miniaturas; `limit_response` acota una sola vez toda la respuesta.
+Consecuencias: cada nivel cuesta una copia en disco y en memoria del tamaño del correo interno (`OleWriter` retiene los streams). Descargar un adjunto interno vuelve a copiar cada nivel (ADR-B02). Un correo interno ilegible o fuera del presupuesto se puede descargar como `.msg`.
+
+## ADR-B14 Adjuntos por referencia como enlace sin seguirlo
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: los adjuntos de OneDrive o SharePoint (método 7) y los que apuntan a una ruta (2, 3, 4) no traen bytes; el correo sólo guarda la dirección (`0x370D` o `0x3708`). Antes se informaban como "anidado" o "ilegible".
+Decisión: devolverlos como `kind=link` con la dirección como texto, sin advertencia porque no es un daño. El backend nunca abre la dirección (RQ-01). La interfaz decide cómo ofrecerla.
+Consecuencias: no hay miniatura ni descarga; el usuario abre el enlace con su navegador y sus credenciales, fuera de esta aplicación.

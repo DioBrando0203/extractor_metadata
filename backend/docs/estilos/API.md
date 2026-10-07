@@ -11,7 +11,7 @@
 
 - `GET /api/health`: `{"status": "ok", "storage": "none"}`.
 - `POST /api/messages/extract`: multipart `file` (.msg). Respuesta `ExtractionResponse { message, processed_locally }`.
-- `POST /api/messages/attachment`: multipart `file`, `attachment_index` (entero ≥ 0) y `preview` (booleano, opcional). Respuesta binaria con `Content-Disposition`. Con `preview=true`: `image/jpeg` de hasta 2048 px.
+- `POST /api/messages/attachment`: multipart `file`, `attachment_index` (entero ≥ 0), `preview` (booleano, opcional) y `message_path` (opcional, posiciones de correos adjuntos separadas por `/`, p. ej. `2/0`, hasta `max_embedded_depth` niveles). Respuesta binaria con `Content-Disposition`. Con `preview=true`: `image/jpeg` de hasta 2048 px. Un adjunto `kind=message` se entrega como `.msg` con `application/vnd.ms-outlook`.
 
 ## MessageMetadata
 
@@ -34,10 +34,14 @@
 - `preview_source`: `image` o `embedded` o `null`.
 - `content_id`: Content-ID sin `<>` o `null`; enlaza el adjunto con su `[cid:…]` del cuerpo.
 - `content_id_inferred`: `true` si el Content-ID se reconstruyó por las medidas de la imagen (archivo dañado); la interfaz lo indica.
+- `kind`: `file` (por defecto), `message` o `link`.
+- `message`: `MessageMetadata` del correo adjunto o `null` (fuera del presupuesto o ilegible; entonces `warnings` dice por qué). Sólo con `kind=message`.
+- `link`: URL o ruta de red de un adjunto por referencia, como texto; el backend nunca la abre. `null` si no se pudo leer. Sólo con `kind=link`.
 
 ## Códigos de error
 
 - HTTP 415: archivo sin extensión `.msg`.
+- HTTP 422 de validación: `message_path` con otro formato o más de `max_embedded_depth` niveles.
 - HTTP 403: Origin fuera de `APP_ALLOWED_ORIGINS` (loopback por defecto). Un Host fuera de `APP_ALLOWED_HOSTS` recibe 400 de `TrustedHostMiddleware`.
 - HTTP 422 con `code`:
   - `INVALID_OR_CORRUPT_MSG`: sin firma OLE o contenedor ilegible.
@@ -45,5 +49,5 @@
   - `UNREADABLE_MSG`: abre pero no hay asunto, cuerpo ni remitente recuperables.
   - `EXTRACTION_TIMEOUT`: superó el plazo proporcional al tamaño.
   - `WORKER_FAILED`, `EXTRACTION_FAILED`, `ATTACHMENT_FAILED`: el proceso aislado falló.
-  - `ATTACHMENT_NOT_FOUND`, `UNREADABLE_ATTACHMENT`: índice inexistente o adjunto ilegible.
+  - `ATTACHMENT_NOT_FOUND`, `UNREADABLE_ATTACHMENT`: índice inexistente, `message_path` que no lleva a un correo adjunto, adjunto ilegible o enlace sin bytes.
   - `NO_PREVIEW`: se pidió `preview=true` y el adjunto no tiene vista previa.

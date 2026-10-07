@@ -25,6 +25,9 @@ class Settings:
     minimum_processing_bytes_per_second: int = 4 * 1024 * 1024
     max_worker_memory_bytes: int = 1024 * 1024 * 1024
     max_concurrent_extractions: int = 2
+    # Correos adjuntos dentro de correos: un MSG anidado sin fin agotaría tiempo y memoria del hijo.
+    max_embedded_depth: int = 3
+    max_embedded_messages: int = 20
     temp_root: Path = Path(gettempdir()) / "msg-metadata-extractor"
     allowed_origins: tuple[str, ...] = env_list(
         "APP_ALLOWED_ORIGINS",

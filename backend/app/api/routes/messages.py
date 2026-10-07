@@ -12,9 +12,11 @@ from starlette.concurrency import run_in_threadpool
 from app.core.config import settings
 from app.core.errors import ExtractionError
 from app.models.schemas import ExtractionResponse
-from app.services.worker import run_attachment_extraction, run_extraction
+from app.services.worker import AttachmentRequest, run_attachment_extraction, run_extraction
 
 router = APIRouter()
+#: Índices de correos adjuntos separados por "/" (``"2/0"``); vacío = el correo principal.
+_MESSAGE_PATH = r"^(\d{1,4}(/\d{1,4})*)?$"
 
 
 async def _copy_upload(file: UploadFile, target: Path) -> int:
@@ -60,6 +62,7 @@ async def download_attachment(
     file: Annotated[UploadFile, File()],
     attachment_index: Annotated[int, Form(ge=0)],
     preview: Annotated[bool, Form()] = False,
+    message_path: Annotated[str, Form(max_length=64, pattern=_MESSAGE_PATH)] = "",
 ) -> FileResponse:
     filename = re.split(r"[/\\]", file.filename or "mensaje.msg")[-1]
     directory: Path | None = None
@@ -69,6 +72,7 @@ async def download_attachment(
                 status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                 detail="Seleccione un archivo .msg.",
             )
+        request_data = _attachment_request(attachment_index, message_path, preview)
         settings.temp_root.mkdir(parents=True, exist_ok=True)
         directory = Path(mkdtemp(prefix="download-", dir=settings.temp_root))
         target = directory / "input.msg"
@@ -76,12 +80,7 @@ async def download_attachment(
         total = await _copy_upload(file, target)
         async with request.app.state.extraction_slots:
             download_name, content_type = await run_in_threadpool(
-                run_attachment_extraction,
-                target,
-                total,
-                attachment_index,
-                output,
-                preview,
+                run_attachment_extraction, target, total, request_data, output
             )
         return FileResponse(
             output,
@@ -102,3 +101,13 @@ async def download_attachment(
         raise
     finally:
         await file.close()
+
+
+def _attachment_request(index: int, message_path: str, preview: bool) -> AttachmentRequest:
+    path = tuple(int(part) for part in message_path.split("/") if part)
+    if len(path) > settings.max_embedded_depth:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail={"code": "ATTACHMENT_NOT_FOUND", "message": "Ruta de correo adjunto inválida."},
+        )
+    return AttachmentRequest(index=index, message_path=path, preview=preview)

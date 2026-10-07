@@ -9,8 +9,8 @@ from pathlib import Path
 import olefile
 
 from app.models.schemas import AttachmentMetadata
+from app.services.msg.attachment_entries import ATTACHMENT_DATA_STREAM, attachment_directories
 from app.services.msg.attachments import attachment_from_payload
-from app.services.msg.ole_reader import ATTACHMENT_DATA_STREAM, attachment_directories
 
 
 @dataclass(frozen=True)
