@@ -149,4 +149,4 @@ Notas: abiertos al cierre: PEN-05, PEN-09, PEN-14; parciales PEN-08 (decisión),
 Estado: parcial
 Cambios: `POST /api/geodata/convert`; paquete `services/kmz` para extraer KMZ con límites y llamar a GDAL dentro del hijo aislado; ZIP temporal de descarga; límites de geodatos, SPEC-B03, ADR-B19 y contrato API.
 Evidencia: `python -m pytest` con 123 aprobadas; `ruff check app tests` y `ruff format --check app tests` aprobados; nuevas pruebas para extensión, KMZ sin KML, GDAL ausente y limpieza; HTTP local tras reiniciar: KML sintético devuelve 422 `GDAL_UNAVAILABLE` y el temporal queda vacío.
-Notas: la VM no tiene GDAL, por eso una conversión real devuelve `GDAL_UNAVAILABLE`; falta migrar estilos QML e interfaz React.
+Notas: GDAL 3.12.2 se instaló después de esta tarea; el endpoint convierte un KML sintético a GPKG verificable. Falta migrar estilos QML e interfaz React.
