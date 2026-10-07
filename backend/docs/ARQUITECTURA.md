@@ -47,10 +47,14 @@ app/
     embedded.py                AttachedMessages: correo adjunto en carpeta OLE, .msg o .eml adjunto; copia a MSG propio en el temporal
     eml.py                     EML con la biblioteca estándar: read_eml (contrato MessageMetadata) y EmlSource (descargas)
     nesting.py                 EmbeddedBudget (profundidad y cantidad) y open_nested, comunes a MSG y EML
-    raw_recovery.py            PNG/PDF completos fuera de enlaces OLE; búsqueda de firmas por bloques
+    raw_recovery.py            archivos sueltos completos (loose_candidates) con exclusiones; firmas por bloques
+    raw_formats.py             registro de formatos sueltos (Strategy): ZIP/Office y PDF con startxref
+    raw_images.py              validadores PNG (CRC), JPEG (segmentos y decodificación) y GIF (bloques)
+    sector_map.py              sectores y mini sectores de streams alcanzables: lo que no es suelto
+    rescue.py                  lectura de rescate sin cabecera: sueltos, RTF y encabezados UTF-16
     raw_body.py                cuerpo HTML desde un RTF comprimido suelto (CRC y coherencia con el texto)
     inline_images.py           posición de imágenes reconstruida por medidas cuando falta el Content-ID
-    fat_recovery.py            DIFAT truncada reparada en copia temporal
+    fat_recovery.py            firma borrada y DIFAT truncada reparadas en copia temporal
     download.py                copia un adjunto, o un correo adjunto como .msg, al temporal; recorre message_path por MSG y EML
     limits.py                  presupuesto de miniaturas y metadatos, único para el correo y sus correos adjuntos
     names.py                   avisos y nombres seguros
@@ -72,19 +76,20 @@ app/
 1. `POST /api/messages/extract` recibe multipart `file` con extensión `.msg`.
 2. La ruta copia por bloques a `temp_root/analysis-*/input.msg` y toma un cupo de `extraction_slots`.
 3. `run_extraction` lanza `_worker` en un hijo `spawn`; el plazo crece con el tamaño (`_timeout_for_size`).
-4. `extract_msg_file` valida firma OLE, aplica `recovered_ole_path` y lee `OleMetadata`.
+4. `extract_msg_file` comprueba que el contenedor sea legible (`readable_container`): con firma CFB o con la firma borrada y el resto de la cabecera coherente. Si no, lectura de rescate (`rescue`): archivos sueltos, cuerpo del RTF suelto y sobre desde los encabezados de transporte en UTF-16; sin nada de eso, `INVALID_OR_CORRUPT_MSG`. Si es legible, aplica `recovered_ole_path` (firma y DIFAT en copia) y lee `OleMetadata`.
 5. Estrategia principal: `extract_msg.openMsg`. Si falla y hay asunto, cuerpo, remitente o encabezados de transporte en OLE, estrategia de recuperación.
 6. En ambas estrategias, los campos del sobre vacíos se completan con `Envelope.complete_with`: primero propiedades MAPI alternativas, luego encabezados de transporte (`007D`), que viven en sectores normales y resisten daños del mini stream.
 7. Cuerpo: texto plano; si no marca imágenes incrustadas pero el HTML sí, se usa el HTML convertido, que conserva cada `<img src="cid:…">` como marcador `[cid:…]` en su posición y el destino de cada enlace web como `texto <url>` (salvo que el texto ya sea la dirección).
 8. Si el parser falló y el cuerpo legible no marca imágenes, se busca el RTF comprimido suelto (`LZFu`), se valida su CRC y que su texto coincida con el cuerpo legible, y se usa su HTML. Después `assign_by_size` asigna Content-ID a adjuntos sin él sólo si sus píxeles coinciden exactamente con las medidas declaradas en el HTML o si son el único candidato con la misma proporción; quedan marcados `content_id_inferred`.
 9. Cada adjunto se clasifica antes de leer bytes según su método (`attachment_entries`, `without_bytes`). Correo adjunto (5): `AttachedMessages.from_storage` lo copia con `write_embedded_message` a `<temporal>/<nombre>-<n>.msg`, lo lee con este mismo flujo (`_read_message`) y borra la copia. Un archivo adjunto que es un MSG (firma CFB con streams MAPI) o un `.eml` con encabezados de correo pasa por `AttachedMessages.from_file`: el MSG se escribe al temporal y se lee igual; el EML se lee con `eml.read_eml`. `EmbeddedBudget` (`nesting`) limita profundidad (`max_embedded_depth`) y cantidad (`max_embedded_messages`) y comparte el plazo de miniaturas. Referencia (2, 3, 4, 7): `kind=link` con su dirección. Objeto OLE (6): aviso. El resto pasa por `attachment_from_payload`: metadatos por formato y miniatura si queda presupuesto de tiempo.
+9b. Archivos sueltos (`finish_attachments`), sólo si se reparó la cabecera o el parser falló: firmas de `raw_formats` validadas enteras, descartando lo que cae en sectores o mini sectores de streams alcanzables (`sector_map`), lo que está dentro de otro candidato aceptado y lo idéntico a un adjunto legible.
 10. `limit_response` acota una sola vez toda la respuesta, incluidos los correos adjuntos: miniaturas (`max_total_preview_chars`) y metadatos (`max_total_metadata_chars`).
 11. El hijo envía JSON; el padre valida con Pydantic y borra el temporal.
 
 ## Flujo de adjunto
 
 1. `POST /api/messages/attachment` recibe `file`, `attachment_index` y opcionales `preview` y `message_path` (`"2/0"`), agrupados en `AttachmentRequest`.
-2. `run_attachment_extraction` ejecuta `_attachment_worker`: `extract_attachment_file` recorre `message_path` con `_MsgSource` (carpeta OLE o `.msg` adjunto, copiados a `download-*/embedded-<nivel>.msg`) o `EmlSource` (partes del EML en el orden del análisis) y después copia el adjunto a `download-*/attachment.bin`. Un correo adjunto se entrega como `.msg` (`application/vnd.ms-outlook`); un enlace no tiene bytes y responde `UNREADABLE_ATTACHMENT`.
+2. `run_attachment_extraction` ejecuta `_attachment_worker`: `extract_attachment_file` recorre `message_path` con `_MsgSource` (carpeta OLE o `.msg` adjunto, copiados a `download-*/embedded-<nivel>.msg`) o `EmlSource` (partes del EML en el orden del análisis) y después copia el adjunto a `download-*/attachment.bin`. Un correo adjunto se entrega como `.msg` (`application/vnd.ms-outlook`); un enlace no tiene bytes y responde `UNREADABLE_ATTACHMENT`. Un índice después de los adjuntos OLE es un archivo suelto: la descarga aplica el mismo criterio que el análisis (cabecera reparada o `parser_fails`) y la misma lista (`loose_candidates`). Sin contenedor legible, el índice es directamente el del archivo suelto.
 3. Con `preview=true`, `write_large_preview` lo sustituye por un JPEG de hasta 2048 px o responde `NO_PREVIEW`.
 4. `FileResponse` entrega el archivo y una tarea de fondo borra el directorio al terminar la transmisión.
 

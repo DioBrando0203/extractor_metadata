@@ -13,7 +13,6 @@ from datetime import datetime
 from pathlib import Path
 
 import extract_msg
-import olefile
 from extract_msg.enums import ErrorBehavior
 
 from app.core.config import settings
@@ -26,7 +25,7 @@ from app.services.msg.attachments import (
 )
 from app.services.msg.embedded import AttachedMessages
 from app.services.msg.envelope import Envelope, envelope_from_headers, envelope_from_properties
-from app.services.msg.fat_recovery import recovered_ole_path
+from app.services.msg.fat_recovery import readable_container, recovered_ole_path
 from app.services.msg.inline_images import assign_by_size
 from app.services.msg.limits import limit_response
 from app.services.msg.names import filename_warnings
@@ -42,6 +41,7 @@ from app.services.msg.parsed_fields import (
 )
 from app.services.msg.raw_body import best_recovered_body
 from app.services.msg.raw_recovery import raw_recovered_attachments
+from app.services.msg.rescue import rescue_message
 from app.services.msg.text import clean_text, read_attribute
 
 #: Presupuesto para herramientas externas y miniaturas de adjuntos, contado desde el inicio.
@@ -67,8 +67,11 @@ class _ReadContext:
     size_bytes: int
     ole: OleMetadata
     warnings: list[str]
-    fat_recovered: bool
+    #: Se reparó la cabecera o la FAT en una copia: puede haber archivos sueltos.
+    structure_repaired: bool
     budget: EmbeddedBudget
+    #: El parser MSG no abrió el archivo: también puede haber archivos sueltos.
+    parser_failed: bool = False
 
     @property
     def deadline(self) -> float:
@@ -86,7 +89,7 @@ class _ReadContext:
 
     def finish_attachments(self, attachments: list[AttachmentMetadata]) -> list[AttachmentMetadata]:
         """Suma los adjuntos recuperados de datos sueltos y avisa si alguno tiene advertencias."""
-        if self.fat_recovered:
+        if self.structure_repaired or self.parser_failed:
             attachments.extend(raw_recovered_attachments(self.path, self.deadline))
         if any(item.warnings for item in attachments):
             self.warnings.append(_ATTACHMENT_NOTICE)
@@ -102,13 +105,9 @@ def extract_msg_file(path: Path, original_name: str, size_bytes: int) -> Message
 def _read_message(
     path: Path, original_name: str, size_bytes: int, budget: EmbeddedBudget
 ) -> MessageMetadata:
-    """Valida la firma OLE y lee el correo de una copia segura."""
-    if not olefile.isOleFile(str(path)):
-        raise ExtractionError(
-            "El archivo no tiene una firma MSG/OLE válida. Puede estar corrupto "
-            "o haber sido renombrado desde otro formato.",
-            code="INVALID_OR_CORRUPT_MSG",
-        )
+    """Lee el correo de una copia segura; sin cabecera legible, intenta la lectura de rescate."""
+    if not readable_container(path):
+        return rescue_message(path, original_name, size_bytes, budget.deadline)
     with recovered_ole_path(path) as (read_path, recovery_warnings):
         ole = read_ole_metadata(read_path)
         context = _ReadContext(
@@ -117,13 +116,11 @@ def _read_message(
             size_bytes=size_bytes,
             ole=ole,
             warnings=filename_warnings(original_name) + recovery_warnings + ole.warnings,
-            fat_recovered=bool(recovery_warnings),
+            structure_repaired=bool(recovery_warnings),
             budget=budget,
         )
         try:
-            message = extract_msg.openMsg(
-                str(read_path), delayAttachments=True, errorBehavior=_PARSER_ERRORS
-            )
+            message = open_parser(read_path)
         except Exception:
             return _recovered_message(context)
         try:
@@ -136,8 +133,27 @@ def _read_message(
                 pass
 
 
+def open_parser(path: Path) -> object:
+    """Abre el MSG con extract_msg tolerando adjuntos rotos o no implementados."""
+    return extract_msg.openMsg(str(path), delayAttachments=True, errorBehavior=_PARSER_ERRORS)
+
+
+def parser_fails(path: Path) -> bool:
+    """El parser no abre ``path``: la descarga lo usa para numerar los archivos sueltos igual."""
+    try:
+        message = open_parser(path)
+    except Exception:
+        return True
+    try:
+        message.close()
+    except Exception:
+        pass  # El proceso hijo termina y el SO libera el archivo.
+    return False
+
+
 def _recovered_message(context: _ReadContext) -> MessageMetadata:
     """Estrategia de respaldo: correo armado sólo con propiedades OLE legibles."""
+    context.parser_failed = True
     recovered = context.ole.recovered
     if not any(recovered.get(key) for key in _RECOVERABLE_KEYS):
         raise ExtractionError(

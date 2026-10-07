@@ -11,7 +11,7 @@ Que cualquier adjunto se pueda descargar con sus bytes exactos y que imágenes, 
 ## Descarga
 
 - `POST /attachment` con `attachment_index` copia el stream del adjunto a un temporal y lo envía con nombre seguro y MIME por extensión o firma.
-- Índices: adjuntos OLE en orden de carpeta y, después, recuperados de datos sueltos.
+- Índices: adjuntos OLE en orden de carpeta y, después, recuperados de datos sueltos (con la cabecera reparada o el parser caído, el mismo criterio del análisis). En lectura de rescate sólo hay archivos sueltos.
 - `message_path` (`"2/0"`): abre cada correo adjunto en orden y aplica el índice dentro del último. Cada nivel se copia a un MSG propio dentro del temporal de la descarga.
 - Correo adjunto: se entrega como `.msg` legible por Outlook y por esta aplicación.
 - Enlace (`kind=link`): no tiene bytes; responde `UNREADABLE_ATTACHMENT`.

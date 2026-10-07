@@ -15,7 +15,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - RQ-07 AutoCAD: DWG desde R13 y DXF ASCII muestran la miniatura que AutoCAD guardó dentro (PNG o BMP), además de versión de formato (DWG) o versión, unidades y capas (DXF).
 - RQ-08 Office: DOCX, XLSX y PPTX muestran la portada `docProps/thumbnail` cuando el archivo la incluye, y sus propiedades de documento.
 - RQ-09 Sin límite fijo de peso: MSG y adjuntos se procesan por bloques; el plazo crece con el tamaño.
-- RQ-10 Lectura parcial: lo legible se conserva; PNG/PDF completos fuera de enlaces OLE se ofrecen como recuperados.
+- RQ-10 Lectura parcial: lo legible se conserva; PNG, JPEG, GIF, PDF y ZIP/Office completos fuera de los streams legibles se ofrecen como recuperados cuando hay daño; un MSG sin firma o sin cabecera se lee con lo que sigue entero.
 - RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin fuera de la lista permitida rechazados.
 - RQ-12 Pruebas: MSG y adjuntos sintéticos; nunca correos privados en el repositorio.
 - RQ-13 Imágenes en posición: las imágenes incrustadas se marcan en el cuerpo (`[cid:…]`) y se enlazan con su adjunto por Content-ID o nombre. En un MSG dañado se recupera el HTML del RTF suelto y la posición se reconstruye sólo con evidencia inequívoca de medidas; lo ambiguo se queda en la lista de adjuntos y la interfaz lo dice.
@@ -27,6 +27,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - No hay render de DWG ni de páginas PDF en el backend; el PDF lo dibuja el visor del navegador.
 - EMF/WMF sólo se convierten donde Pillow puede renderizarlos (Windows).
 - Un corte de energía o terminación forzada puede impedir la limpieza de temporales.
+- Sin cabecera legible sólo se rescata lo que sigue contiguo y se valida: no hay propiedades MAPI, adjuntos fragmentados ni nombres originales de adjuntos.
 
 ## Pendientes por revisar (backlog priorizado)
 
@@ -51,8 +52,9 @@ Terminado cuando: un adjunto por referencia sintético se muestra como enlace co
 
 ### PEN-03 Rescate de datos sueltos ampliado
 
-Prioridad: alta. Alcance: backend. Estado: pendiente.
-Situación: el rescate fuera de los enlaces OLE sólo reconoce PNG, PDF y el RTF del cuerpo; las imágenes sólo se rescatan si hubo reparación de FAT; un archivo que perdió la firma OLE inicial se rechaza entero.
+Prioridad: alta. Alcance: backend. Estado: terminada (2026-10-06).
+Hecho: JPEG, GIF y ZIP/Office validados; exclusión por sectores y mini sectores alcanzables, por anidamiento y por duplicado; activación también con el parser caído (con la descarga coherente); firma repuesta en copia y lectura de rescate sin cabecera (ADR-B16).
+Situación original: el rescate fuera de los enlaces OLE sólo reconoce PNG, PDF y el RTF del cuerpo; las imágenes sólo se rescatan si hubo reparación de FAT; un archivo que perdió la firma OLE inicial se rechaza entero.
 Hacer: validar y rescatar JPEG (SOI/EOI y decodificación de prueba), GIF y ZIP/Office (directorio central); intentar el rescate también sin reparación de FAT cuando el parser falla; ante firma OLE ausente, ofrecer lectura de rescate en lugar de rechazo.
 Terminado cuando: pruebas sintéticas con cada formato desconectado y con la cabecera OLE borrada recuperan los archivos sin duplicar adjuntos ya legibles.
 

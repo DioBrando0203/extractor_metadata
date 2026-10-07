@@ -87,3 +87,10 @@ Estado: terminada
 Cambios: `body_text.py` conserva el destino de cada enlace http/https como `texto <url>` salvo que el texto ya sea la dirección; `mailto:` y `javascript:` no se agregan.
 Evidencia: pytest 97 aprobadas (2 nuevas en `test_body_text.py`, que fallan con el código anterior); ruff check y format aprobados.
 Notas: SPEC-B01 CA-24; PEN-08 queda parcial (HTML saneado pendiente de decisión). La coincidencia del RTF suelto con el texto plano mejora cuando éste empieza con un enlace.
+
+## 2026-10-06 23:57 -05:00 Rescate de datos sueltos ampliado (PEN-03)
+
+Estado: terminada
+Cambios: `raw_formats.py` (registro: ZIP/Office por EOCD coherente, PDF hasta su propio `startxref` sin pasar a otro PDF y con su fin de línea) y `raw_images.py` (PNG, JPEG con segmentos y decodificación, GIF por bloques); `sector_map.py` (sectores y mini sectores de streams alcanzables); `raw_recovery.loose_candidates` con exclusión por sectores, anidamiento y duplicado; activación también con el parser caído (`reader.parser_fails` en la descarga); `fat_recovery` repone la firma borrada en copia (`readable_container`); `rescue.py` lee sin cabecera (sueltos, RTF del cuerpo y encabezados UTF-16); `metadata` exporta `zip_kind`.
+Evidencia: pytest 107 aprobadas (10 nuevas en `test_raw_recovery.py` y `test_rescue.py`; con el código anterior fallan, y la del mini stream falla simulando el mapa grueso); ruff check y format aprobados. MSG real del usuario (local): mismo resultado que antes de PEN-03 salvo el fin de línea del PDF; la primera versión del mapa marcaba todo el mini stream y perdía 2 PNG pequeños, corregido con mini sectores.
+Notas: ADR-B16; SPEC-B01 CA-25 a CA-30.

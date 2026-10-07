@@ -48,6 +48,7 @@ Protocolo obligatorio para cualquier IA que modifique `backend/`. Si contradice 
 - Cómo viaja un adjunto (método MAPI, referencia, correo adjunto): `msg/attachment_entries.py`; abrir correos adjuntos: `msg/embedded.py` (carpeta OLE y .msg adjunto, ADR-B13) y `msg/eml.py` (.eml, ADR-B15); presupuesto común en `msg/nesting.py`.
 - Metadatos de un formato nuevo: módulo en `app/services/metadata/` y registro en `extractor.py` (Strategy).
 - Miniaturas: `app/services/previews/` (`embedded.py` localiza, `render.py` convierte).
+- Archivos sueltos: formato nuevo en `msg/raw_formats.py` (o `raw_images.py`) con su validador; qué no es suelto en `msg/sector_map.py`; sin cabecera, `msg/rescue.py` (ADR-B16).
 - Contrato JSON: `app/models/schemas.py`.
 - Límites y presupuestos: `app/core/config.py`.
 

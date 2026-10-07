@@ -2,7 +2,7 @@
 
 Estado: implementada
 Código: `api/routes/messages.py` (`extract_message`), `services/worker.py`, `services/msg/`
-Relacionadas: SPEC-B02, ADR-B01, ADR-B03, ADR-B07, ADR-B13, ADR-B14, ADR-B15
+Relacionadas: SPEC-B02, ADR-B01, ADR-B03, ADR-B07, ADR-B13, ADR-B14, ADR-B15, ADR-B16
 
 ## Objetivo
 
@@ -12,12 +12,12 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 
 1. Rechazar con 415 si el nombre no termina en `.msg`.
 2. Copiar por bloques a un temporal de la solicitud y procesar en un hijo aislado con plazo proporcional.
-3. Rechazar con `INVALID_OR_CORRUPT_MSG` si no hay firma OLE.
+3. Sin firma OLE: si el resto de la cabecera es coherente, reponer la firma en una copia y avisar; si la cabecera está destruida, lectura de rescate (sueltos, RTF del cuerpo y sobre desde encabezados de transporte en UTF-16), siempre `partial`; si no queda nada legible, `INVALID_OR_CORRUPT_MSG`.
 4. Si la DIFAT está truncada y es verificable, leer de una copia reparada y avisar.
 5. Leer propiedades OLE acotadas (`OleMetadata`).
 6. Estrategia principal: parser MSG. Remitente, Para/CC/CCO, fecha (o `Date` del encabezado), cuerpo (texto, o HTML a texto, o stream OLE), encabezados, propiedades y adjuntos.
 7. Estrategia de respaldo: si el parser falla y hay asunto, cuerpo o remitente en OLE, devolver correo `partial` con adjuntos OLE.
-8. Con FAT reparada, añadir PNG/PDF completos encontrados fuera de los enlaces OLE.
+8. Con la cabecera reparada o el parser caído, añadir los archivos completos (PNG, JPEG, GIF, PDF y ZIP/Office) que no pertenecen a ningún stream alcanzable, no están dentro de otro archivo aceptado y no repiten un adjunto legible.
 9. Completar asunto, remitente, destinatarios y fecha vacíos con propiedades MAPI alternativas (`0E1D`, `003D`, `0070`, `0042`, `5D01`, `5D02`, `0065`) y después con los encabezados de transporte.
 10. Cuerpo con marcadores `[cid:…]` en la posición de cada imagen incrustada; cada enlace `http`/`https` del HTML conserva su destino como `texto <url>`, salvo que el texto ya sea la dirección. Otros esquemas (`mailto:`, `javascript:`) no se agregan.
 11. Cada adjunto: metadatos por formato, Content-ID y miniatura si queda presupuesto de tiempo.
@@ -53,3 +53,9 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-22: un `.eml` adjunto se lee con sobre decodificado, destinatarios, fecha, cuerpo con su imagen en posición, adjuntos y otro correo dentro. Prueba: `test_eml.py::test_eml_attachment_is_read_like_an_email`.
 - CA-23: un `.msg` adjunto con sus bytes se lee como correo; un `.doc` (CFB sin streams MAPI) o un `.eml` sin encabezados siguen siendo archivos. Prueba: `test_eml.py::test_msg_attached_as_a_file_is_read_and_its_attachments_download`, `::test_files_that_only_look_like_messages_stay_files`.
 - CA-24: el destino real de un enlace queda visible en el texto; no se duplica si ya es el texto y no se agregan otros esquemas. Prueba: `test_body_text.py::test_links_keep_their_real_destination_visible`, `::test_linked_inline_image_keeps_marker_and_destination`.
+- CA-25: JPEG, GIF y ZIP/Office sueltos se validan enteros y se nombran por tipo; truncados se rechazan. Prueba: `test_raw_recovery.py::test_new_formats_are_validated_and_named_by_type`, `::test_truncated_files_are_rejected_but_intact_contents_survive`.
+- CA-26: lo que está dentro de otro archivo (miniatura EXIF, imagen de un DOCX) o en un stream legible no se ofrece como suelto; un adjunto pequeño sin entrada en el mini stream sí. Prueba: `test_raw_recovery.py::test_files_inside_other_files_are_not_separate_attachments`, `::test_streams_that_are_still_readable_are_never_loose`, `::test_small_loose_file_inside_the_mini_stream_is_found`.
+- CA-27: cada PDF termina en su propio cierre, con su fin de línea. Prueba: `test_raw_recovery.py::test_each_pdf_ends_at_its_own_trailer`.
+- CA-28: con el parser caído aparecen los archivos sueltos y se descargan con el mismo índice; con el parser sano, no. Prueba: `test_raw_recovery.py::test_loose_files_appear_only_when_the_parser_fails`.
+- CA-29: una firma borrada se repone en una copia sin tocar el original. Prueba: `test_rescue.py::test_erased_signature_is_restored_in_a_copy`.
+- CA-30: con la cabecera destruida se rescatan remitente, destinatarios, fecha y adjuntos, y se descargan con sus bytes exactos. Prueba: `test_rescue.py::test_destroyed_header_still_yields_envelope_and_attachments`, `::test_rescued_attachment_downloads_with_its_exact_bytes`.

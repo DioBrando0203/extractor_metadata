@@ -19,10 +19,11 @@ from app.services.msg.embedded import (
     write_embedded_message,
 )
 from app.services.msg.eml import EmlSource, looks_like_eml, parse_eml
-from app.services.msg.fat_recovery import recovered_ole_path
+from app.services.msg.fat_recovery import readable_container, recovered_ole_path
 from app.services.msg.names import download_filename, message_filename
 from app.services.msg.ole_reader import read_ole_metadata
-from app.services.msg.raw_recovery import ole_attachment_digests, raw_attachment_candidates
+from app.services.msg.raw_recovery import loose_candidates
+from app.services.msg.reader import parser_fails
 
 _CHUNK = 1024 * 1024
 
@@ -35,8 +36,13 @@ def extract_attachment_file(
     Los índices siguen el orden de la respuesta de análisis: primero los adjuntos OLE y después
     los recuperados de datos sueltos cuando hubo recuperación de FAT.
     """
-    if attachment_index < 0 or not olefile.isOleFile(str(path)):
+    if attachment_index < 0:
         raise _not_found()
+    if not readable_container(path):
+        # Lectura de rescate (``rescue``): los únicos adjuntos son los archivos sueltos.
+        if message_path:
+            raise _not_found()
+        return _copy_raw_attachment(path, attachment_index, True, destination)
     source: _MsgSource | EmlSource = _MsgSource(path)
     try:
         for level, index in enumerate(message_path):
@@ -85,8 +91,9 @@ class _MsgSource:
             if index < len(directories):
                 directory, name = _directory_at(read_path, index)
                 return _copy_ole_attachment(read_path, directory, name, index, destination)
-            raw_index = index - len(directories)
-            return _copy_raw_attachment(read_path, raw_index, bool(recovery_warnings), destination)
+            # Mismo criterio que el análisis: hay archivos sueltos si se reparó o el parser falla.
+            rescue = bool(recovery_warnings) or parser_fails(read_path)
+            return _copy_raw_attachment(read_path, index - len(directories), rescue, destination)
 
 
 def _directory_at(path: Path, index: int) -> tuple[str, str]:
@@ -139,11 +146,9 @@ def _copy_stream(
 
 
 def _copy_raw_attachment(
-    path: Path, raw_index: int, fat_recovered: bool, destination: Path
+    path: Path, raw_index: int, rescue: bool, destination: Path
 ) -> tuple[str, str]:
-    candidates = (
-        raw_attachment_candidates(path, ole_attachment_digests(path)) if fat_recovered else []
-    )
+    candidates = loose_candidates(path) if rescue else []
     if raw_index < 0 or raw_index >= len(candidates):
         raise _not_found()
     candidate = candidates[raw_index]
