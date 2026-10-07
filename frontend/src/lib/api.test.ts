@@ -121,3 +121,32 @@ describe('correos adjuntos y enlaces', () => {
     expect(second.has('message_path')).toBe(false)
   })
 })
+
+describe('reuniones, contactos y tareas', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('normaliza los datos del elemento y descarta tipos desconocidos', async () => {
+    const respond = (item: unknown) =>
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ message: { item } }), { status: 200 }))
+    vi.stubGlobal(
+      'fetch',
+      respond({
+        kind: 'meeting',
+        start: '2026-10-12T15:00:00Z',
+        location: ' Sala 3 ',
+        fields: [{ label: 'Organizador', value: 'María' }],
+      }),
+    )
+    const { message } = await extractMessage(new File(['x'], 'reunion.msg'))
+    expect(message.item).toEqual({
+      kind: 'meeting',
+      start: '2026-10-12T15:00:00Z',
+      end: null,
+      all_day: false,
+      location: 'Sala 3',
+      fields: [{ group: 'Elemento', label: 'Organizador', value: 'María' }],
+    })
+    vi.stubGlobal('fetch', respond({ kind: 'nota-adhesiva' }))
+    expect((await extractMessage(new File(['x'], 'nota.msg'))).message.item).toBeNull()
+  })
+})

@@ -104,3 +104,18 @@ describe('búsqueda dentro de correos adjuntos', () => {
     expect(matchPreview(outer, ['ventas@acero'])).toBe('Correo adjunto: Cotización de acero')
   })
 })
+
+describe('búsqueda en reuniones', () => {
+  it('encuentra una reunión por su lugar o sus asistentes', () => {
+    const meeting = item('r', 'Revisión semanal', {
+      item: {
+        kind: 'meeting',
+        all_day: false,
+        location: 'Sala Pacífico',
+        fields: [{ group: 'Reunión', label: 'Obligatorios', value: 'Ana Pérez' }],
+      },
+    })
+    expect(filterQueue([meeting], 'pacifico').map((entry) => entry.id)).toEqual(['r'])
+    expect(filterQueue([meeting], 'perez').map((entry) => entry.id)).toEqual(['r'])
+  })
+})

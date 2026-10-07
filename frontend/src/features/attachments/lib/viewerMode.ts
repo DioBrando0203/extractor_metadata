@@ -33,6 +33,9 @@ const TEXT = new Set([
   'yml',
   'sql',
   'eml',
+  'ics',
+  'vcs',
+  'vcf',
   'htm',
   'html',
 ])

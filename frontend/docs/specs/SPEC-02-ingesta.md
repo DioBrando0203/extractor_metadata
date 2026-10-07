@@ -71,3 +71,4 @@ Que abrir uno o varios `.msg` sea obvio, tolerante a errores, y que encontrarlos
 - CA-07: búsqueda sin tildes con rangos correctos sobre el texto original y fragmentos de contexto. Prueba: `lib/textSearch.test.ts`.
 - CA-08: la vista previa explica la coincidencia (texto, adjunto o destinatarios) sin mostrar marcadores internos. Prueba: `features/ingestion/lib/search.test.ts`, `lib/thread.test.ts`.
 - CA-09: la búsqueda encuentra texto, remitente o adjuntos de un correo adjunto y la vista previa dice en cuál. Prueba: `features/ingestion/lib/search.test.ts`.
+- CA-10: la búsqueda encuentra una reunión por su lugar o sus asistentes. Prueba: `features/ingestion/lib/search.test.ts`.

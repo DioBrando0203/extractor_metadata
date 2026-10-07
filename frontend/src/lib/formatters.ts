@@ -14,6 +14,13 @@ const mailDate = new Intl.DateTimeFormat(LOCALE, {
 const timeOnly = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
 const dayMonth = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short' })
 const shortDate = new Intl.DateTimeFormat(LOCALE, { day: '2-digit', month: '2-digit', year: '2-digit' })
+const longDay = new Intl.DateTimeFormat(LOCALE, {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+const DAY_MS = 24 * 60 * 60 * 1000
 
 export function formatBytes(bytes?: number | null): string {
   if (bytes == null || !Number.isFinite(bytes) || bytes < 0) return '—'
@@ -46,6 +53,34 @@ export function formatListDate(value?: string | null, now: Date = new Date()): s
   if (date.toDateString() === now.toDateString()) return timeOnly.format(date)
   if (date.getFullYear() === now.getFullYear()) return dayMonth.format(date)
   return shortDate.format(date)
+}
+
+/** Día completo, p. ej. `lunes, 12 de octubre de 2026`. */
+export function formatDay(value?: string | null): string | null {
+  const date = parseDate(value)
+  return date ? longDay.format(date) : null
+}
+
+/**
+ * Cuándo ocurre una reunión o cita: `lunes, 12 de octubre de 2026, 10:00 – 11:30`. Un evento de todo el
+ * día termina a la medianoche siguiente, así que su último día es el anterior a `end`.
+ */
+export function formatWhen(start?: string | null, end?: string | null, allDay = false): string | null {
+  const from = parseDate(start)
+  if (!from) return null
+  const to = parseDate(end)
+  if (allDay) {
+    const last = to ? new Date(Math.max(from.getTime(), to.getTime() - DAY_MS)) : from
+    const days =
+      last.toDateString() === from.toDateString()
+        ? longDay.format(from)
+        : `${longDay.format(from)} – ${longDay.format(last)}`
+    return `${days} (todo el día)`
+  }
+  const opening = `${longDay.format(from)}, ${timeOnly.format(from)}`
+  if (!to) return opening
+  if (to.toDateString() === from.toDateString()) return `${opening} – ${timeOnly.format(to)}`
+  return `${opening} – ${longDay.format(to)}, ${timeOnly.format(to)}`
 }
 
 /**

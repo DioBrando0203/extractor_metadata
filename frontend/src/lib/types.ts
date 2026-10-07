@@ -35,6 +35,19 @@ export interface AttachmentFile {
   blob: Blob
   filename: string
 }
+/** Qué es un MSG que no es un correo. */
+export type ItemKind = 'meeting' | 'cancellation' | 'response' | 'appointment' | 'contact' | 'task'
+
+export interface ItemDetails {
+  kind: ItemKind
+  /** Reunión o cita: inicio y fin. Tarea: inicio y vencimiento. ISO-8601. */
+  start?: string | null
+  end?: string | null
+  all_day: boolean
+  location?: string | null
+  /** Organizador, asistentes, repetición, respuesta, teléfonos, estado… en orden. */
+  fields: MetadataItem[]
+}
 export interface Message {
   file_name: string
   file_size_bytes: number
@@ -50,6 +63,8 @@ export interface Message {
   attachments: Attachment[]
   warnings: string[]
   status: ExtractionStatus
+  /** Reunión, cita, contacto o tarea; `null` en un correo. */
+  item?: ItemDetails | null
 }
 export interface ExtractionResponse {
   message: Message

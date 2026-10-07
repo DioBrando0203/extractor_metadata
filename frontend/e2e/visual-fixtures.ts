@@ -197,3 +197,31 @@ export const PARTIAL = {
   body_truncated: false,
   status: 'partial',
 }
+
+/** Convocatoria de reunión con lugar, asistentes y repetición. */
+export const MEETING = {
+  ...COMPLETE,
+  file_name: 'Reunion semanal.msg',
+  subject: 'Revisión semanal de avance de obra',
+  recipients: ['Para: Equipo de Ingeniería <ingenieria@example.test>'],
+  body_preview: 'Revisaremos el avance de estructuras y el cronograma de vaciado.',
+  body_truncated: false,
+  attachments: [],
+  item: {
+    kind: 'meeting',
+    start: '2026-10-12T10:00:00',
+    end: '2026-10-12T11:30:00',
+    all_day: false,
+    location: 'Sala Pacífico, piso 2 (y por Teams)',
+    fields: [
+      { group: 'Reunión', label: 'Organizador', value: 'María Fernández' },
+      {
+        group: 'Reunión',
+        label: 'Obligatorios',
+        value: 'Lucía Torres; Jorge Medina; Carlos Rojas; Persona 4; Persona 5; Persona 6',
+      },
+      { group: 'Reunión', label: 'Opcionales', value: 'Ana Pérez' },
+      { group: 'Reunión', label: 'Repetición', value: 'Cada semana el lunes de 10:00 a 11:30' },
+    ],
+  },
+}

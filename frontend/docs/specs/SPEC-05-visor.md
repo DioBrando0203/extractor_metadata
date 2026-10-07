@@ -20,7 +20,7 @@ Ver un adjunto de frente, a pantalla completa, sin descargarlo: imágenes, PDF, 
 - image: PNG, JPEG, GIF, WEBP, BMP, ICO, AVIF, SVG o sin extensión con MIME de imagen. `<img>` con el binario original.
 - converted: TIFF, EMF, WMF, DIB o imagen que el navegador no muestra. `<img>` con el JPEG de `preview=true`.
 - pdf: `<iframe>` con el visor de PDF del navegador; el binario se fuerza a `application/pdf`.
-- text: TXT, CSV, LOG, JSON, XML, MD, INI, YAML, SQL, EML, HTML. `<pre>` monoespaciado con el primer MB; UTF-8 o Windows-1252.
+- text: TXT, CSV, LOG, JSON, XML, MD, INI, YAML, SQL, EML, HTML, ICS, VCS, VCF. `<pre>` monoespaciado con el primer MB; UTF-8 o Windows-1252.
 - video: MP4, M4V, WEBM, OGV, MOV. `<video controls>`.
 - audio: MP3, WAV, OGG, M4A, AAC, FLAC. `<audio controls>` en una hoja.
 - embedded: DWG, DXF u Office con miniatura incrustada. La miniatura grande con la nota "Miniatura guardada dentro del archivo por el programa que lo creó…".

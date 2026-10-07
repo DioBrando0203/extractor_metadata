@@ -73,6 +73,7 @@ Base: Fluent 2, sistema de diseño público de Microsoft (repositorio `microsoft
 - Resaltado de búsqueda: `<mark class="highlight">` con `--search-hit` (#fde300, amarillo de estado de Fluent, como Outlook); contador de coincidencias con el mismo fondo.
 - Imagen reconstruida: nota "Ubicación reconstruida" 12/16 en `--fg-3` bajo la imagen.
 - Imagen no recuperada: chip con borde discontinuo `--stroke-1`, 10/14, icono de 14 px.
+- Tarjeta de elemento (`item.css`): fondo `--brand-160`, borde `--stroke-2` con borde izquierdo de marca de 3 px y radio 6; título 14 semibold con icono de 20; filas 12/16 con etiqueta `--fg-3`. Cancelación con `--danger-bg` y `--danger-fg`.
 - Pista de atajo del buscador: `kbd` de 20 px a la derecha, oculta al enfocar y con puntero táctil.
 
 ## Iconografía

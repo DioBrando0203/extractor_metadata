@@ -70,3 +70,10 @@ Estado: terminada
 Cambios: `lib/links.ts` (`isWebLink`, `splitLinks`), `LinkedText` en message-viewer usado por `InlineContent` (texto actual e historial), estilo `.text-link`; `features/attachments/lib/link.ts` reutiliza `isWebLink`. Corregido el comentario de `stripMailto` que tenía escapes literales (`ñ`) por B-13.
 Evidencia: format:check, build y lint aprobados; 80 unitarias (5 nuevas en `links.test.ts` e `InlineContent.test.tsx`); 7 E2E con el backend iniciado con el código actual.
 Notas: ADR-20; SPEC-03 CA-17.
+
+## 2026-10-07 00:10 -05:00 Tarjeta de reunión, contacto o tarea (PEN-07, frontend)
+
+Estado: terminada
+Cambios: `ItemDetails` en `types.ts` y su normalización con guarda de tipo; `formatWhen` y `formatDay`; `features/message-viewer/lib/itemRows.ts` e `ItemCard` bajo el remitente; contador de coincidencias incluye la tarjeta; búsqueda por lugar y campos; `.ics`, `.vcs` y `.vcf` como texto en el visor; `item.css`; captura `07b-reunion`.
+Evidencia: format:check, build y lint aprobados; 91 unitarias (11 nuevas); 8 E2E con el backend iniciado con el código actual (convocatoria real con propiedades con nombre); 5 visuales, `07b-reunion` revisada a 320 y 1440 px.
+Notas: ADR-21; SPEC-03 CA-18 y CA-19; SPEC-02 CA-10.

@@ -9,6 +9,8 @@ function messageParts(message: Message): string[] {
     message.sender ?? '',
     ...message.recipients,
     stripInlineMarkers(message.body_preview ?? ''),
+    message.item?.location ?? '',
+    ...(message.item?.fields.map((field) => field.value) ?? []),
     ...message.attachments.flatMap((attachment) => [
       attachment.name,
       ...(attachment.message ? messageParts(attachment.message) : []),

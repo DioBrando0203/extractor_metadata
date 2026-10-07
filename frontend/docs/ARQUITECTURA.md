@@ -24,6 +24,8 @@ src/
     components/MessageViewer.tsx         composición: título, tarjeta, pestañas, adjuntos, cuerpo y visor
     components/MessageTitle.tsx          asunto, origen del título y aviso de lectura parcial
     components/SenderBlock.tsx           remitente, fecha y destinatarios
+    components/ItemCard.tsx              reunión, cita, contacto o tarea: título, cuándo, dónde y campos
+    lib/itemRows.ts                      títulos por tipo y filas de la tarjeta (función pura)
     components/RecipientList.tsx         Para/CC/CCO con plegado
     components/MessageBody.tsx           mensaje actual e historial citado
     components/InlineContent.tsx         párrafos con imágenes incrustadas en su posición
@@ -44,7 +46,7 @@ src/
   lib/api.ts                             único punto HTTP
   lib/normalize.ts                       normalización del JSON del backend, recursiva para correos adjuntos
   lib/types.ts                           contrato normalizado
-  lib/mail.ts, lib/formatters.ts         utilidades puras (direcciones, título con asunto deducido, ruta de correos adjuntos, texto)
+  lib/mail.ts, lib/formatters.ts         utilidades puras (direcciones, título con asunto deducido, ruta de correos adjuntos, texto, fechas de reuniones)
   lib/thread.ts                          hilo citado, marcadores [cid:…] y asunto deducido verificado
   lib/textSearch.ts                      búsqueda sin tildes con rangos sobre el texto original y fragmentos
   lib/links.ts                           direcciones web: isWebLink (sólo http/https) y splitLinks
@@ -85,6 +87,7 @@ e2e/                                     Playwright: funcional (backend real) y 
 
 - `POST /api/messages/extract` → `{ message, processed_locally }`.
 - `POST /api/messages/attachment` con `file`, `attachment_index`, `preview` opcional y `message_path` opcional (`2/0`, desde `messagePath`) → binario.
+- `Message.item`: reunión, cita, contacto o tarea (`ItemDetails`), o `null` en un correo.
 - `Attachment.kind`: `file`, `message` (con `message: Message`, ya leído) o `link` (con `link`, sin bytes).
 - `Attachment.preview`: data URI raster validada en `lib/api.ts` (sólo jpeg, png, gif, webp en base64); `preview_source`: `image` o `embedded`.
 - Detalle completo: `backend/docs/estilos/API.md`.

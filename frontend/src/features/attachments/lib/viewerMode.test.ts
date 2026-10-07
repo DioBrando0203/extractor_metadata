@@ -55,3 +55,11 @@ describe('viewerMode por cómo viaja el adjunto', () => {
     expect(needsFile('link')).toBe(false)
   })
 })
+
+describe('viewerMode de calendario y contactos', () => {
+  it('muestra .ics, .vcs y .vcf como texto', () => {
+    expect(viewerMode({ name: 'invitacion.ics' })).toBe('text')
+    expect(viewerMode({ name: 'cita.vcs' })).toBe('text')
+    expect(viewerMode({ name: 'ana.vcf' })).toBe('text')
+  })
+})

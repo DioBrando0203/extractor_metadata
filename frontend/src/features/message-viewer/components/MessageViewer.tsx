@@ -10,6 +10,8 @@ import { findRanges } from '../../../lib/textSearch'
 import { inlineAttachmentIndices } from '../../../lib/thread'
 import type { Message } from '../../../lib/types'
 import { HighlightContext } from '../highlight'
+import { itemRows } from '../lib/itemRows'
+import { ItemCard } from './ItemCard'
 import { MessageBody } from './MessageBody'
 import { MessageTitle } from './MessageTitle'
 import { SenderBlock } from './SenderBlock'
@@ -52,9 +54,16 @@ export function MessageViewer({
   const wellIndices = attachments.map((_, index) => index).filter((index) => !inline.has(index))
   const tabbed = inline.size > 0
   const showGallery = tabbed && tab === 'attachments'
+  const itemText = message.item
+    ? itemRows(message.item)
+        .map((row) => row.value)
+        .join(' ')
+    : ''
   const hits = useMemo(
-    () => findRanges([title.text, message.sender ?? '', ...message.recipients, body].join(' '), terms).length,
-    [title.text, message.sender, message.recipients, body, terms],
+    () =>
+      findRanges([title.text, message.sender ?? '', ...message.recipients, itemText, body].join(' '), terms)
+        .length,
+    [title.text, message.sender, message.recipients, itemText, body, terms],
   )
   // Un correo adjunto legible se abre en el lector; cualquier otro adjunto, en el visor.
   const open = (index: number) => {
@@ -76,6 +85,7 @@ export function MessageViewer({
         />
         <div className="mail__card">
           <SenderBlock message={message} />
+          {message.item && <ItemCard item={message.item} />}
           {tabbed && (
             <Tabs
               label="Vista del correo"

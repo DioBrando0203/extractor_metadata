@@ -18,6 +18,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 - RQ-10 Lectura parcial: lo legible se conserva; PNG, JPEG, GIF, PDF y ZIP/Office completos fuera de los streams legibles se ofrecen como recuperados cuando hay daño; un MSG sin firma o sin cabecera se lee con lo que sigue entero.
 - RQ-11 Seguridad: sin macros ni HTML activo; Pillow con lista cerrada de formatos; Host y Origin fuera de la lista permitida rechazados.
 - RQ-12 Pruebas: MSG y adjuntos sintéticos; nunca correos privados en el repositorio.
+- RQ-14 Otros elementos de Outlook: una reunión, cita, contacto o tarea muestra sus datos (cuándo, dónde, quiénes, teléfonos, estado) sobre el texto; los `.ics` y `.vcf` adjuntos se ven como texto.
 - RQ-13 Imágenes en posición: las imágenes incrustadas se marcan en el cuerpo (`[cid:…]`) y se enlazan con su adjunto por Content-ID o nombre. En un MSG dañado se recupera el HTML del RTF suelto y la posición se reconstruye sólo con evidencia inequívoca de medidas; lo ambiguo se queda en la lista de adjuntos y la interfaz lo dice.
 
 ## Límites honestos
@@ -81,8 +82,9 @@ Terminado cuando: casos sintéticos firmado y cifrado muestran contenido o aviso
 
 ### PEN-07 Invitaciones, contactos y tareas
 
-Prioridad: media. Alcance: backend y frontend. Estado: pendiente.
-Situación: los MSG de calendario (`IPM.Schedule.Meeting*`, `IPM.Appointment`), contactos y tareas se muestran como correo genérico; los `.ics` adjuntos sólo se descargan.
+Prioridad: media. Alcance: backend y frontend. Estado: terminada (2026-10-07).
+Hecho: `item` con reunión, cancelación, respuesta, cita, contacto o tarea; tarjeta en el lector; búsqueda en lugar y asistentes; `.ics`, `.vcs` y `.vcf` como texto en el visor (ADR-B17, ADR-21).
+Situación original: los MSG de calendario (`IPM.Schedule.Meeting*`, `IPM.Appointment`), contactos y tareas se muestran como correo genérico; los `.ics` adjuntos sólo se descargan.
 Hacer: mostrar fecha, hora, lugar y asistentes de una invitación; ficha básica de contacto; vista de texto de `.ics`.
 Terminado cuando: un MSG de reunión sintético muestra sus datos de agenda.
 

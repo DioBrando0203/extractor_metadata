@@ -24,6 +24,11 @@
 - `headers`, `properties`: `MetadataItem[]` diagnósticos; el frontend no los muestra.
 - `attachments`: `AttachmentMetadata[]`; su posición es el índice para `/attachment`.
 - `warnings`: textos para diagnóstico.
+- `item`: `null` en un correo; en otra clase de mensaje, `ItemDetails`:
+  - `kind`: `meeting` (IPM.Schedule.Meeting.Request), `cancellation` (…Canceled), `response` (…Resp.*), `appointment` (IPM.Appointment), `contact` (IPM.Contact), `task` (IPM.Task y IPM.TaskRequest).
+  - `start`, `end`: ISO-8601 o `null`; en una tarea, inicio y vencimiento.
+  - `all_day`, `location`.
+  - `fields`: `MetadataItem[]` en orden de lectura (organizador, obligatorios, opcionales, repetición, respuesta; o nombre, correo, empresa, teléfonos; o estado, avance, responsable).
 
 ## AttachmentMetadata
 

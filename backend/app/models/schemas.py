@@ -30,6 +30,19 @@ class AttachmentMetadata(BaseModel):
     message: "MessageMetadata | None" = None
 
 
+class ItemDetails(BaseModel):
+    """Datos propios de un MSG que no es un correo: reunión, cita, contacto o tarea."""
+
+    kind: Literal["meeting", "cancellation", "response", "appointment", "contact", "task"]
+    # Reunión o cita: cuándo empieza y termina. Tarea: inicio y vencimiento.
+    start: datetime | None = None
+    end: datetime | None = None
+    all_day: bool = False
+    location: str | None = None
+    # Resto de datos en el orden en que se muestran: organizador, asistentes, teléfonos, estado…
+    fields: list[MetadataItem] = Field(default_factory=list)
+
+
 class MessageMetadata(BaseModel):
     file_name: str
     file_size_bytes: int
@@ -45,6 +58,8 @@ class MessageMetadata(BaseModel):
     properties: list[MetadataItem] = Field(default_factory=list)
     attachments: list[AttachmentMetadata] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    # Reunión, cita, contacto o tarea; ``None`` en un correo.
+    item: ItemDetails | None = None
 
 
 AttachmentMetadata.model_rebuild()

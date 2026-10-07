@@ -2,6 +2,7 @@
 
 import math
 import struct
+import uuid
 
 FREE = 0xFFFFFFFF
 END = 0xFFFFFFFE
@@ -131,10 +132,17 @@ def message_streams(
     headers: str | None = None,
     html: str | None = None,
     content_id: str | None = None,
+    message_class: str = "IPM.Note",
+    properties: dict[str, str] | None = None,
+    named: tuple[tuple[str, int, str, bytes], ...] = (),
 ) -> dict[tuple[str, ...], bytes]:
-    """Streams de un MSG mínimo, para construirlo o adjuntarlo dentro de otro."""
+    """Streams de un MSG mínimo, para construirlo o adjuntarlo dentro de otro.
+
+    ``properties`` agrega textos MAPI por identificador (``{"3A16": "Empresa"}``) y ``named``,
+    propiedades con nombre ``(GUID, LID, tipo, valor)`` como las de reuniones y tareas.
+    """
     strings = {
-        "001A": "IPM.Note",
+        "001A": message_class,
         "0037": subject,
         "0C1A": "Equipo local",
         "0C1F": sender,
@@ -146,6 +154,7 @@ def message_streams(
     }
     if headers is not None:
         strings["007D"] = headers
+    strings.update(properties or {})
     streams = {
         (f"__substg1.0_{key}001F",): value.encode("utf-16-le")
         for key, value in strings.items()
@@ -153,11 +162,13 @@ def message_streams(
     }
     if html is not None:
         streams[("__substg1.0_10130102",)] = html.encode("utf-8")
-    for tag in ("00020102", "00030102", "00040102"):
-        streams[("__nameid_version1.0", f"__substg1.0_{tag}")] = b""
+    named_streams, fixed = named_properties(named)
+    streams.update(named_streams)
     flags = struct.pack("<II8s", 0x340D0003, 6, struct.pack("<I", 0x40000) + b"\0" * 4)
     streams[("__properties_version1.0",)] = (
-        struct.pack("<8xIIII8x", 0, 1 if attachment else 0, 0, 1 if attachment else 0) + flags
+        struct.pack("<8xIIII8x", 0, 1 if attachment else 0, 0, 1 if attachment else 0)
+        + flags
+        + b"".join(fixed)
     )
     if attachment is not None:
         folder = "__attach_version1.0_#00000000"
@@ -168,6 +179,35 @@ def message_streams(
             streams[(folder, "__substg1.0_3712001F")] = content_id.encode("utf-16-le")
     streams.update(extra_streams or {})
     return streams
+
+
+def named_properties(
+    named: tuple[tuple[str, int, str, bytes], ...],
+) -> tuple[dict[tuple[str, ...], bytes], list[bytes]]:
+    """Tabla ``__nameid_version1.0`` y valores de propiedades con nombre numéricas.
+
+    Cada propiedad ``n`` se guarda como ``0x8000 + n``: los textos y binarios en su stream y los
+    valores de tamaño fijo (fecha, booleano, entero) como entradas del stream de propiedades.
+    """
+    guids: list[str] = []
+    entries = b""
+    streams: dict[tuple[str, ...], bytes] = {}
+    fixed: list[bytes] = []
+    for index, (guid, lid, prop_type, value) in enumerate(named):
+        if guid not in guids:
+            guids.append(guid)
+        entries += struct.pack("<IHH", lid, (guids.index(guid) + 3) << 1, index)
+        prop_id = 0x8000 + index
+        if prop_type in ("001F", "0102"):
+            streams[(f"__substg1.0_{prop_id:04X}{prop_type}",)] = value
+        else:
+            tag = (prop_id << 16) | int(prop_type, 16)
+            fixed.append(struct.pack("<II8s", tag, 6, value.ljust(8, b"\0")))
+    folder = "__nameid_version1.0"
+    streams[(folder, "__substg1.0_00020102")] = b"".join(uuid.UUID(g).bytes_le for g in guids)
+    streams[(folder, "__substg1.0_00030102")] = entries
+    streams[(folder, "__substg1.0_00040102")] = b""
+    return streams, fixed
 
 
 def attachment_properties(method: int) -> bytes:

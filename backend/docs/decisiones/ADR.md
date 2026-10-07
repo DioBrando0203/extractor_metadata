@@ -113,3 +113,10 @@ Fecha: 2026-10-06. Estado: vigente. Amplía ADR-B03.
 Contexto: el rescate de datos sueltos sólo reconocía PNG y PDF y sólo tras reparar la FAT; un MSG sin firma se rechazaba entero. Buscar firmas sin más confunde una miniatura EXIF, una imagen guardada en un DOCX o un adjunto legible con adjuntos sueltos.
 Decisión: registro de formatos (PNG, JPEG, GIF, PDF, ZIP/Office) validados enteros. Un candidato es suelto sólo si no cae en sectores ni mini sectores que reclama un stream alcanzable (`sector_map`), no está dentro de otro aceptado y no repite un adjunto legible. Se activa con la cabecera reparada o el parser caído; la descarga calcula lo mismo (`parser_fails`) para conservar los índices. La firma borrada con el resto de la cabecera coherente se repone en una copia; sin cabecera usable, lectura de rescate con datos validados (CRC del RTF, estructura de cada archivo, encabezados que se leen como tales).
 Consecuencias: con el MSG real dañado del usuario el resultado coincide con el anterior (mismos 9 PNG y el PDF) y el PDF conserva su fin de línea. Una descarga de archivo suelto con el parser caído vuelve a probar el parser. Sin cabecera no se recuperan propiedades ni adjuntos fragmentados.
+
+## ADR-B17 Reuniones, contactos y tareas como ItemDetails
+
+Fecha: 2026-10-07. Estado: vigente.
+Contexto: un MSG de reunión, contacto o tarea se veía como un correo sin sus datos (cuándo, dónde, quiénes). extract-msg ya abre cada clase con sus propiedades, muchas con nombre (`PSETID_Appointment`, `PSETID_Task`, `PSETID_Address`).
+Decisión: un único `ItemDetails` con `kind`, fechas tipadas (para que la interfaz las muestre en la hora local), lugar y una lista ordenada de campos de texto. Cada propiedad se lee aislada y, por ser accesoria, una ilegible se omite sin volver parcial el correo. La fábrica de pruebas genera propiedades con nombre (`named_properties`).
+Consecuencias: agregar un campo es una línea en una tabla. Sin el parser (MSG dañado) no hay `item`; el correo se sigue leyendo.

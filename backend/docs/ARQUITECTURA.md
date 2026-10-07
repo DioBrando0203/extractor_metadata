@@ -40,6 +40,7 @@ app/
     __init__.py                API: extract_msg_file, extract_attachment_file
     reader.py                  orquesta: parser MSG o recuperación OLE (_ReadContext)
     parsed_fields.py           lectura aislada de cada campo del parser (cuerpo, fechas, encabezados)
+    item_details.py            reunión, cita, contacto o tarea según la clase de mensaje (ItemDetails)
     envelope.py                sobre de respaldo: propiedades MAPI alternativas y encabezados de transporte
     ole_reader.py              OleMetadata: propiedades MAPI, adjuntos y página de códigos
     attachment_entries.py      OleAttachment: nombre, tamaño, Content-ID, método de adjunto (0x3705) y dirección de una referencia
@@ -96,6 +97,7 @@ app/
 ## Contrato
 
 - Detalle de campos y errores: `estilos/API.md`.
+- `MessageMetadata.item`: `ItemDetails` (tipo, inicio, fin, todo el día, lugar y campos en orden) si la clase de mensaje es reunión, cita, contacto o tarea; `null` en un correo. Sólo con el parser (la recuperación OLE no la lee).
 - `AttachmentMetadata.preview`: data URI JPEG de hasta 480 px o `null`.
 - `AttachmentMetadata.preview_source`: `image` (el adjunto es imagen) o `embedded` (miniatura guardada por DWG, DXF u Office).
 - `AttachmentMetadata.content_id`: Content-ID sin `<>`; el cuerpo lo referencia como `[cid:…]`.

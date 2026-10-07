@@ -27,6 +27,7 @@ from app.services.msg.embedded import AttachedMessages
 from app.services.msg.envelope import Envelope, envelope_from_headers, envelope_from_properties
 from app.services.msg.fat_recovery import readable_container, recovered_ole_path
 from app.services.msg.inline_images import assign_by_size
+from app.services.msg.item_details import read_item
 from app.services.msg.limits import limit_response
 from app.services.msg.names import filename_warnings
 from app.services.msg.nesting import EmbeddedBudget
@@ -225,4 +226,5 @@ def _parsed_message(message: object, context: _ReadContext) -> MessageMetadata:
         attachments=attachments,
         warnings=warnings,
         status="partial" if warnings else "complete",
+        item=read_item(message),
     )

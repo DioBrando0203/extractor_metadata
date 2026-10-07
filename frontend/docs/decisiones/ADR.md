@@ -141,3 +141,10 @@ Fecha: 2026-10-06. Estado: vigente. Mantiene ADR-07 y aplica ADR-19.
 Contexto: el cuerpo es texto plano; el texto de Outlook y el HTML convertido (PEN-08) traen las direcciones como `texto <url>`, pero no se podían abrir.
 Decisión: `splitLinks` separa las direcciones `http`/`https` del texto sin alterar ningún carácter y `LinkedText` las muestra como `<a>` con esa misma dirección como contenido, en otra pestaña y con `noopener noreferrer`. No se interpreta HTML: un destino distinto del texto visible es imposible.
 Consecuencias: el usuario ve adónde lleva cada enlace antes de abrirlo. Un término de búsqueda que cruza el borde de un enlace no se resalta entero.
+
+## ADR-21 Tarjeta de reunión, contacto o tarea
+
+Fecha: 2026-10-07. Estado: vigente.
+Contexto: el backend entrega `item` para MSG que no son correos (ADR-B17); Outlook los abre con su propio formulario.
+Decisión: el lector conserva su anatomía y agrega `ItemCard` bajo el remitente: título e icono por tipo en tablas, filas de `itemRows` (Cuándo con `formatWhen` en la hora local, Dónde y los campos en el orden del backend) y resaltado de búsqueda. La cancelación usa los colores de peligro.
+Consecuencias: no hay formularios de edición ni acciones (aceptar, rechazar): es un lector. Un tipo nuevo es una entrada en `ITEM_TITLES` e `ICONS`.

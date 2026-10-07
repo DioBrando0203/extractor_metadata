@@ -16,12 +16,13 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 4. Tarjeta del mensaje (blanca, radio 8, `--shadow-4`):
    1. Remitente: avatar de 40 px, nombre semibold, `<correo>` en `--fg-3`, fecha a la derecha.
    2. Destinatarios Para, CC y CCO; más de 8 se pliegan con "+N más".
-   3. Pestañas Mensaje y Datos adjuntos (N), sólo si alguna imagen está en su posición (ADR-13).
-   4. Datos adjuntos no incrustados (SPEC-04).
-   5. Cuerpo: párrafos de texto plano con espaciado compacto e imágenes incrustadas en su posición (botón "Ver <nombre>" que abre el visor); "Imagen incrustada no disponible" si el `cid` no tiene adjunto.
-   6. Historial: "Mostrar los N mensajes anteriores"; cada mensaje con avatar, remitente, correo, fecha, Para/CC (nombres; la lista completa al pasar el ratón), Asunto y su texto. Abierto por defecto si el correo no tiene texto propio.
-   7. Nota si el cuerpo fue truncado.
-   8. Pie: nombre del archivo `.msg` y tamaño.
+   3. Tarjeta del elemento (`ItemCard`) si el MSG es una reunión, cita, contacto o tarea: título por tipo ("Invitación a una reunión", "Reunión cancelada", "Respuesta a una reunión", "Cita", "Contacto", "Tarea"), Cuándo (o Inicio y Vence), Dónde y los campos del backend; en 640 px o menos, etiqueta sobre valor (ADR-21).
+   4. Pestañas Mensaje y Datos adjuntos (N), sólo si alguna imagen está en su posición (ADR-13).
+   5. Datos adjuntos no incrustados (SPEC-04).
+   6. Cuerpo: párrafos de texto plano con espaciado compacto e imágenes incrustadas en su posición (botón "Ver <nombre>" que abre el visor); "Imagen incrustada no disponible" si el `cid` no tiene adjunto.
+   7. Historial: "Mostrar los N mensajes anteriores"; cada mensaje con avatar, remitente, correo, fecha, Para/CC (nombres; la lista completa al pasar el ratón), Asunto y su texto. Abierto por defecto si el correo no tiene texto propio.
+   8. Nota si el cuerpo fue truncado.
+   9. Pie: nombre del archivo `.msg` y tamaño.
 
 ## Correo adjunto (ADR-18)
 
@@ -92,3 +93,5 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 - CA-15: un adjunto del correo adjunto se descarga con su ruta y sus bytes reales. Prueba: `MessageReader.test.tsx`, `e2e/local-api.spec.ts`.
 - CA-16: la ruta de correos adjuntos se corta donde no hay un correo leído. Prueba: `lib/mail.test.ts` (`messageTrail`).
 - CA-17: las direcciones web del cuerpo son enlaces seguros y el texto no cambia; otros esquemas quedan como texto. Prueba: `InlineContent.test.tsx`, `lib/links.test.ts`.
+- CA-18: una reunión muestra qué es, cuándo, dónde y quiénes antes del texto; la búsqueda se resalta y se cuenta en la tarjeta; un correo no la muestra. Prueba: `ItemCard.test.tsx`, `features/message-viewer/lib/itemRows.test.ts`, `e2e/local-api.spec.ts`, captura `07b-reunion`.
+- CA-19: las fechas se muestran en la hora local, una vez el día si empieza y termina el mismo día, y sin horas en todo el día. Prueba: `itemRows.test.ts` (`formatWhen`).

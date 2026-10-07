@@ -9,6 +9,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
   - `src/lib/formatters.test.ts`: bytes, fechas de encabezado y bandeja, limpieza de texto.
   - `src/lib/api.test.ts`: normalización del contrato (incluidos correos adjuntos y enlaces), `message_path` y error de red.
   - `src/lib/textSearch.test.ts`: normalización, rangos sobre el texto original, solapes y fragmentos.
+  - `src/features/message-viewer/lib/itemRows.test.ts`: fechas de reuniones (mismo día, varios días, todo el día) y filas de la tarjeta.
   - `src/lib/links.test.ts`: direcciones web en el texto sin alterar caracteres; sólo http y https.
   - `src/lib/thread.test.ts`: hilo citado en español e inglés, marcadores `[cid:…]`, emparejamiento de adjuntos y asunto deducido.
   - `src/features/attachments/lib/fileKind.test.ts`: clasificación por extensión y MIME, correo adjunto y enlace.
@@ -16,9 +17,9 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
   - `src/features/attachments/lib/viewerMode.test.ts`: modos del visor y decodificación de texto.
   - `src/features/ingestion/lib/search.test.ts`: búsqueda sin tildes ni mayúsculas, también en adjuntos y en correos adjuntos.
   - `src/features/ingestion/hooks/useExtractionQueue.test.tsx`: cola secuencial, reintento y limpieza durante una petición.
-- Componente (React Testing Library): `MessageViewer.test.tsx` cubre SPEC-03 (imágenes en posición, pestañas, historial, asunto deducido) y el plegado de SPEC-04; `AttachmentList.test.tsx` cubre miniaturas, chips, visor (abrir, navegar, cerrar con foco devuelto), detalles y descarga; `InlineContent.test.tsx` cubre los enlaces del cuerpo (atributos seguros y resaltado dentro); `MessageReader.test.tsx` cubre correos adjuntos (abrir, volver, foco, descarga con ruta) y enlaces (sin descarga, http frente a ruta de red).
-- E2E funcional (Playwright, backend real): `e2e/app.spec.ts` y `e2e/local-api.spec.ts`. Portada, Ayuda, extracción, descarga de bytes reales, correo adjunto con su PDF y enlace, miniatura real y visor con imagen del backend, móvil 320/390 sin desborde, maestro-detalle y build servido por FastAPI.
-- E2E visual (Playwright, respuestas simuladas): `e2e/visual.spec.ts` con datos de `e2e/visual-fixtures.ts` (PNG sintéticos generados en la prueba), etiqueta `@visual`. Captura portada, correo con imagen incrustada, historial abierto, galería de adjuntos, visor de imagen, visor de plano con detalles, visor de enlace, correo adjunto abierto, bandeja móvil, parcial, error, cargando, búsqueda y ayuda en 320, 390, 1024, 1440 y 1920 px; falla si hay desborde horizontal.
+- Componente (React Testing Library): `MessageViewer.test.tsx` cubre SPEC-03 (imágenes en posición, pestañas, historial, asunto deducido) y el plegado de SPEC-04; `AttachmentList.test.tsx` cubre miniaturas, chips, visor (abrir, navegar, cerrar con foco devuelto), detalles y descarga; `ItemCard.test.tsx` cubre la tarjeta de reunión (filas, resaltado y contador); `InlineContent.test.tsx` cubre los enlaces del cuerpo (atributos seguros y resaltado dentro); `MessageReader.test.tsx` cubre correos adjuntos (abrir, volver, foco, descarga con ruta) y enlaces (sin descarga, http frente a ruta de red).
+- E2E funcional (Playwright, backend real): `e2e/app.spec.ts` y `e2e/local-api.spec.ts`. Portada, Ayuda, extracción, descarga de bytes reales, correo adjunto con su PDF y enlace, convocatoria de reunión, miniatura real y visor con imagen del backend, móvil 320/390 sin desborde, maestro-detalle y build servido por FastAPI.
+- E2E visual (Playwright, respuestas simuladas): `e2e/visual.spec.ts` con datos de `e2e/visual-fixtures.ts` (PNG sintéticos generados en la prueba), etiqueta `@visual`. Captura portada, correo con imagen incrustada, historial abierto, galería de adjuntos, visor de imagen, visor de plano con detalles, visor de enlace, correo adjunto abierto, reunión, bandeja móvil, parcial, error, cargando, búsqueda y ayuda en 320, 390, 1024, 1440 y 1920 px; falla si hay desborde horizontal.
 
 ## Comandos
 

@@ -18,6 +18,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_eml.py`: `.eml` adjunto (sobre, cuerpo con imagen en posición, adjuntos, correo dentro), descargas por `message_path` dentro del EML, `.msg` adjunto como archivo y archivos que sólo lo parecen.
 - `test_raw_recovery.py`: formatos sueltos (JPEG, GIF, ZIP/Office, PDF con su cierre), truncados, anidados, sectores y mini sectores legibles, activación con el parser caído y descarga del suelto.
 - `test_rescue.py`: firma borrada repuesta en copia; cabecera destruida con sobre, adjuntos y descarga por HTTP.
+- `test_item_details.py`: convocatoria, respuesta, contacto, tarea y correo sin elemento, con propiedades con nombre sintéticas.
 - `test_config.py`: listas de Host y Origin desde el entorno (modo LAN, ADR-B12) y valores de loopback por defecto.
 
 ## Comandos

@@ -94,3 +94,10 @@ Estado: terminada
 Cambios: `raw_formats.py` (registro: ZIP/Office por EOCD coherente, PDF hasta su propio `startxref` sin pasar a otro PDF y con su fin de línea) y `raw_images.py` (PNG, JPEG con segmentos y decodificación, GIF por bloques); `sector_map.py` (sectores y mini sectores de streams alcanzables); `raw_recovery.loose_candidates` con exclusión por sectores, anidamiento y duplicado; activación también con el parser caído (`reader.parser_fails` en la descarga); `fat_recovery` repone la firma borrada en copia (`readable_container`); `rescue.py` lee sin cabecera (sueltos, RTF del cuerpo y encabezados UTF-16); `metadata` exporta `zip_kind`.
 Evidencia: pytest 107 aprobadas (10 nuevas en `test_raw_recovery.py` y `test_rescue.py`; con el código anterior fallan, y la del mini stream falla simulando el mapa grueso); ruff check y format aprobados. MSG real del usuario (local): mismo resultado que antes de PEN-03 salvo el fin de línea del PDF; la primera versión del mapa marcaba todo el mini stream y perdía 2 PNG pequeños, corregido con mini sectores.
 Notas: ADR-B16; SPEC-B01 CA-25 a CA-30.
+
+## 2026-10-07 00:10 -05:00 Reuniones, contactos y tareas (PEN-07, backend)
+
+Estado: terminada
+Cambios: contrato `ItemDetails` y `MessageMetadata.item`; `msg/item_details.py` (tipo por clase de mensaje, fechas, lugar y campos en tablas, lectura aislada sin advertencias); la fábrica genera clase de mensaje, textos MAPI extra y propiedades con nombre (`named_properties`).
+Evidencia: pytest 111 aprobadas (4 nuevas en `test_item_details.py`, que fallan con el contrato anterior); ruff check y format aprobados.
+Notas: ADR-B17; SPEC-B01 CA-31 y CA-32; RQ-14.

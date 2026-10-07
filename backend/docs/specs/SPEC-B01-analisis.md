@@ -24,6 +24,7 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 12. Correo adjunto (método 5): se lee como un correo propio con este mismo flujo y queda en `attachments[i].message` (`kind=message`); hasta `max_embedded_depth` niveles y `max_embedded_messages` correos por análisis. Fuera del presupuesto o ilegible: `kind=message` sin `message` y con aviso. Sin nombre propio, toma su asunto. Igual para un archivo adjunto que es un MSG (firma CFB con streams MAPI) o un `.eml` con De, Asunto o Fecha: queda `kind=message` y se descarga tal cual.
 13. Adjunto por referencia (métodos 2, 3, 4 y 7: OneDrive, SharePoint o una ruta): `kind=link` con su dirección en `link`, sin bytes ni advertencia; sin dirección legible, con aviso.
 14. Acotar la respuesta una sola vez, incluidos los correos adjuntos: miniaturas hasta `max_total_preview_chars`, metadatos hasta `max_total_metadata_chars`.
+14b. Reunión, cita, contacto o tarea (por la clase de mensaje): `item` con cuándo, dónde y sus campos; cada campo es accesorio y uno ilegible se omite sin advertencia.
 15. `status = partial` si hay cualquier advertencia en ese correo; un correo adjunto parcial no vuelve parcial al contenedor.
 
 ## Criterios de aceptación
@@ -59,3 +60,5 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-28: con el parser caído aparecen los archivos sueltos y se descargan con el mismo índice; con el parser sano, no. Prueba: `test_raw_recovery.py::test_loose_files_appear_only_when_the_parser_fails`.
 - CA-29: una firma borrada se repone en una copia sin tocar el original. Prueba: `test_rescue.py::test_erased_signature_is_restored_in_a_copy`.
 - CA-30: con la cabecera destruida se rescatan remitente, destinatarios, fecha y adjuntos, y se descargan con sus bytes exactos. Prueba: `test_rescue.py::test_destroyed_header_still_yields_envelope_and_attachments`, `::test_rescued_attachment_downloads_with_its_exact_bytes`.
+- CA-31: una convocatoria muestra inicio, fin, lugar, organizador, asistentes y repetición; una respuesta, su respuesta; un correo no tiene `item`. Prueba: `test_item_details.py::test_meeting_request_shows_when_where_and_who`, `::test_meeting_response_says_the_answer`, `::test_ordinary_mail_has_no_item`.
+- CA-32: un contacto muestra nombre, correo, empresa y teléfonos; una tarea, su vencimiento, estado y avance. Prueba: `test_item_details.py::test_contact_card_and_task_status`.

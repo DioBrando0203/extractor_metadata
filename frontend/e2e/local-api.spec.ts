@@ -68,6 +68,36 @@ test('un correo adjunto se lee como un correo propio y su PDF se descarga', asyn
   await expect(page.getByRole('heading', { level: 1, name: 'Reenvío de cotización' })).toBeFocused()
 })
 
+/** Convocatoria de reunión con inicio, fin y lugar como propiedades con nombre de Outlook. */
+function meetingFixture() {
+  return python(
+    [
+      'import struct',
+      'from datetime import datetime, timezone',
+      'from msg_factory import make_msg',
+      "A = '{00062002-0000-0000-C000-000000000046}'",
+      "ft = lambda d: struct.pack('<Q', int((d - datetime(1601, 1, 1, tzinfo=timezone.utc)).total_seconds() * 10000000))",
+      's = datetime(2026, 10, 12, 15, 0, tzinfo=timezone.utc)',
+      'e = datetime(2026, 10, 12, 16, 30, tzinfo=timezone.utc)',
+      "named = ((A, 0x820D, '0040', ft(s)), (A, 0x820E, '0040', ft(e)), (A, 0x8208, '001F', 'Sala Pacífico'.encode('utf-16-le')))",
+      "sys.stdout.buffer.write(make_msg(subject='Revisión de planos', message_class='IPM.Schedule.Meeting.Request', named=named))",
+    ].join('; '),
+  )
+}
+
+test('una convocatoria muestra cuándo y dónde es la reunión', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('input[type=file]').first().setInputFiles({
+    name: 'reunion.msg',
+    mimeType: 'application/vnd.ms-outlook',
+    buffer: meetingFixture(),
+  })
+  const card = page.getByRole('region', { name: 'Invitación a una reunión' })
+  await expect(card).toBeVisible({ timeout: 20_000 })
+  await expect(card.getByText('Sala Pacífico')).toBeVisible()
+  await expect(card.getByText(/12 de octubre de 2026, \d\d:\d\d – \d\d:\d\d/)).toBeVisible()
+})
+
 test('un correo legible permite descargar su adjunto', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))

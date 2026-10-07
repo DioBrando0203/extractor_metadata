@@ -2,6 +2,8 @@ import type {
   Attachment,
   AttachmentKind,
   ExtractionStatus,
+  ItemDetails,
+  ItemKind,
   Message,
   MetadataItem,
   PreviewSource,
@@ -105,6 +107,31 @@ function attachmentList(value: unknown, depth: number): Attachment[] {
   })
 }
 
+const ITEM_KINDS: readonly ItemKind[] = [
+  'meeting',
+  'cancellation',
+  'response',
+  'appointment',
+  'contact',
+  'task',
+]
+function isItemKind(value: unknown): value is ItemKind {
+  return ITEM_KINDS.some((kind) => kind === value)
+}
+function itemDetails(value: unknown): ItemDetails | null {
+  if (!value || typeof value !== 'object') return null
+  const item = value as Record<string, unknown>
+  if (!isItemKind(item.kind)) return null
+  return {
+    kind: item.kind,
+    start: text(item.start) || null,
+    end: text(item.end) || null,
+    all_day: item.all_day === true,
+    location: text(item.location).trim() || null,
+    fields: items(item.fields, 'Elemento'),
+  }
+}
+
 export function normalizeMessage(payload: ApiMessage, fallback: Fallback, depth = 0): Message {
   const status: ExtractionStatus = payload.status === 'partial' ? 'partial' : 'complete'
   return {
@@ -122,5 +149,6 @@ export function normalizeMessage(payload: ApiMessage, fallback: Fallback, depth 
     attachments: attachmentList(payload.attachments, depth),
     warnings: warningList(payload.warnings),
     status,
+    item: itemDetails(payload.item),
   }
 }
