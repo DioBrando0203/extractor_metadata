@@ -8,9 +8,12 @@ import { extensionOf, fileKind } from './fileKind'
  * - pdf: visor de PDF del navegador.
  * - text, video, audio: elementos nativos, siempre como datos y nunca como HTML.
  * - embedded: sólo la miniatura que el propio archivo guardó (DWG, DXF, Office).
+ * - message: correo adjunto; se ofrece abrirlo como un correo propio.
+ * - link: archivo en la nube o en una carpeta compartida; sólo hay una dirección.
  * - none: sin vista previa; se ofrece descargar.
  */
-export type ViewerMode = 'image' | 'converted' | 'pdf' | 'text' | 'video' | 'audio' | 'embedded' | 'none'
+export type ViewerMode =
+  'image' | 'converted' | 'pdf' | 'text' | 'video' | 'audio' | 'embedded' | 'message' | 'link' | 'none'
 
 const NATIVE_IMAGES = new Set(['png', 'jpg', 'jpeg', 'jfif', 'gif', 'webp', 'bmp', 'ico', 'avif', 'svg'])
 const NATIVE_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'])
@@ -33,12 +36,14 @@ const TEXT = new Set([
   'htm',
   'html',
 ])
+const NO_FILE = new Set<ViewerMode>(['embedded', 'message', 'link', 'none'])
 const VIDEO = new Set(['mp4', 'm4v', 'webm', 'ogv', 'mov'])
 const AUDIO = new Set(['mp3', 'wav', 'ogg', 'oga', 'm4a', 'aac', 'flac'])
 
 export function viewerMode(
-  attachment: Pick<Attachment, 'name' | 'content_type' | 'preview_source'>,
+  attachment: Pick<Attachment, 'name' | 'content_type' | 'preview_source' | 'kind'>,
 ): ViewerMode {
+  if (attachment.kind === 'message' || attachment.kind === 'link') return attachment.kind
   const extension = extensionOf(attachment.name)
   const type = attachment.content_type?.toLowerCase() ?? ''
   if (NATIVE_IMAGES.has(extension) || (!extension && NATIVE_IMAGE_TYPES.has(type))) return 'image'
@@ -54,7 +59,7 @@ export function viewerMode(
 
 /** El modo necesita pedir el archivo al backend (los demás usan la miniatura o nada). */
 export function needsFile(mode: ViewerMode): boolean {
-  return mode !== 'embedded' && mode !== 'none'
+  return !NO_FILE.has(mode)
 }
 
 /**

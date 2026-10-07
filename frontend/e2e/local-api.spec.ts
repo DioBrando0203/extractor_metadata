@@ -28,6 +28,46 @@ function photoFixture() {
   )
 }
 
+/** Correo que reenvía otro como adjunto (con un PDF dentro) y enlaza un archivo de la nube. */
+function forwardedFixture() {
+  return python(
+    [
+      'from msg_factory import build_cfb, message_streams, attached_message, reference_attachment',
+      "inner = message_streams(subject='Cotización interna', sender='proveedor@example.test', body='Texto del correo reenviado.', attachment=b'%PDF-1.4 cotizacion %%EOF', filename='informe.pdf')",
+      "streams = attached_message('__attach_version1.0_#00000000', inner, 'Cotización interna')",
+      "streams.update(reference_attachment('__attach_version1.0_#00000001', 'Presupuesto.xlsx', 'https://contoso.example.test/Presupuesto.xlsx'))",
+      "sys.stdout.buffer.write(build_cfb(message_streams(subject='Reenvío de cotización', body='Te reenvío el correo.', extra_streams=streams)))",
+    ].join('; '),
+  )
+}
+
+test('un correo adjunto se lee como un correo propio y su PDF se descarga', async ({ page }) => {
+  await page.goto('/')
+  await page.locator('input[type=file]').first().setInputFiles({
+    name: 'reenvio.msg',
+    mimeType: 'application/vnd.ms-outlook',
+    buffer: forwardedFixture(),
+  })
+  await expect(page.getByRole('heading', { name: 'Reenvío de cotización' })).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByText('XLSX · Enlace web')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Descargar Presupuesto.xlsx' })).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Abrir Cotización interna' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Cotización interna' })).toBeFocused()
+  await expect(page.getByText('proveedor@example.test')).toBeVisible()
+  await expect(page.getByText('Texto del correo reenviado.')).toBeVisible()
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Descargar informe.pdf' }).click()
+  const download = await downloadPromise
+  expect(download.suggestedFilename()).toBe('informe.pdf')
+  const downloadedPath = await download.path()
+  expect(downloadedPath).not.toBeNull()
+  expect((await readFile(downloadedPath!)).toString()).toBe('%PDF-1.4 cotizacion %%EOF')
+
+  await page.getByRole('button', { name: 'Volver a Reenvío de cotización' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Reenvío de cotización' })).toBeFocused()
+})
+
 test('un correo legible permite descargar su adjunto', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))

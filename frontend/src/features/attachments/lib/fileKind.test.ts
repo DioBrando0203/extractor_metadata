@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fileKind, kindLabel } from './fileKind'
+import { attachmentMeta, describeAttachment, fileKind, kindLabel } from './fileKind'
 
 describe('fileKind', () => {
   it('prioriza la extensión del nombre', () => {
@@ -22,5 +22,27 @@ describe('kindLabel', () => {
     expect(kindLabel('acta.pdf')).toBe('PDF')
     expect(kindLabel('adjunto', 'image/png')).toBe('Imagen')
     expect(kindLabel('adjunto')).toBe('Archivo')
+  })
+})
+
+describe('describeAttachment y attachmentMeta', () => {
+  it('un correo adjunto es Correo aunque su asunto parezca tener extensión', () => {
+    expect(describeAttachment({ name: 'Informe v1.2', kind: 'message' })).toEqual({
+      kind: 'mail',
+      label: 'Correo',
+    })
+    expect(attachmentMeta({ name: 'Informe v1.2', kind: 'message', size_bytes: 2048 })).toBe('Correo · 2 KB')
+  })
+
+  it('un enlace muestra su tipo y dónde vive en lugar del tamaño', () => {
+    const cloud = {
+      name: 'Presupuesto.xlsx',
+      kind: 'link' as const,
+      link: 'https://contoso.sharepoint.com/x',
+    }
+    expect(describeAttachment(cloud).kind).toBe('excel')
+    expect(attachmentMeta(cloud)).toBe('XLSX · Enlace web')
+    const share = String.raw`\\servidor\obras\Presupuesto.xlsx`
+    expect(attachmentMeta({ ...cloud, link: share })).toBe('XLSX · Carpeta compartida')
   })
 })

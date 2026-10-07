@@ -120,3 +120,17 @@ Fecha: 2026-10-06. Estado: vigente.
 Contexto: en MSG dañados el backend puede reconstruir la posición de algunas imágenes por sus medidas (ADR-B11) y otras no.
 Decisión: una imagen con `content_id_inferred` se muestra en su lugar con la nota "Ubicación reconstruida" (explicación en el tooltip). Un `cid` sin adjunto se muestra como un aviso compacto "Imagen no recuperada · nombre" en lugar de un hueco grande.
 Consecuencias: el usuario ve el orden del correo sin confundir inferencias con datos leídos.
+
+## ADR-18 Correos adjuntos navegables en el lector
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: el backend entrega cada correo adjunto ya leído dentro de `Attachment.message` (ADR-B13). Outlook lo abre en otra ventana; aquí no hay ventanas.
+Decisión: `MessageReader` guarda la ruta de posiciones abiertas y muestra el correo de esa ruta con `MessageViewer key={ruta}`, que reinicia pestañas, visor y caché de adjuntos. Una barra "Correo adjunto" con "Volver" sube un nivel. Al navegar, el contenedor que se desplaza vuelve al inicio y el foco pasa al asunto. Las descargas internas mandan `message_path`.
+Consecuencias: abrir un correo adjunto no hace peticiones; cada descarga interna reenvía el MSG y el backend recopia cada nivel. App no conoce la ruta: elegir otro correo de la bandeja vuelve al principal.
+
+## ADR-19 Enlaces de adjuntos sólo http y https
+
+Fecha: 2026-10-06. Estado: vigente.
+Contexto: un adjunto de OneDrive, SharePoint o una carpeta de red sólo trae su dirección, que es texto del correo y podría ser cualquier esquema.
+Decisión: `isWebLink` acepta sólo `http://` y `https://`; esa dirección se ofrece como "Abrir enlace" en otra pestaña con `noopener noreferrer`. Cualquier otra se muestra como texto seleccionable. Sin descarga ni miniatura.
+Consecuencias: la aplicación nunca pide la dirección (RQ-01); el usuario la abre con su navegador y su cuenta. Las rutas de red se copian a mano porque el navegador bloquea `file:` desde una página web.

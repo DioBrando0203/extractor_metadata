@@ -89,6 +89,15 @@ for (const viewport of WIDTHS) {
     await capture(page, '04-visor-plano')
     await page.keyboard.press('Escape')
 
+    await page.getByRole('button', { name: 'Ver Presupuesto obra.xlsx' }).click()
+    await page.getByRole('link', { name: 'Abrir enlace' }).waitFor()
+    await capture(page, '04b-visor-enlace')
+    await page.keyboard.press('Escape')
+    await page.getByRole('button', { name: 'Abrir Cotización de acero corrugado' }).click()
+    await page.getByRole('navigation', { name: 'Correo adjunto' }).waitFor()
+    await capture(page, '04c-correo-adjunto')
+    await page.getByRole('button', { name: /^Volver a / }).click()
+
     const select = async (name: RegExp) => {
       if (narrow) await page.getByRole('button', { name: /^Bandeja \(/ }).click()
       await page.getByRole('button', { name }).click()

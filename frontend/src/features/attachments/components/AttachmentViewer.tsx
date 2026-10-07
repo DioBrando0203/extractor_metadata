@@ -9,10 +9,9 @@ import {
 } from '@fluentui/react-icons'
 import { Button } from '../../../components/ui/Button'
 import { Spinner } from '../../../components/ui/Spinner'
-import { formatBytes } from '../../../lib/formatters'
 import type { Attachment } from '../../../lib/types'
 import type { useAttachmentFiles } from '../hooks/useAttachmentFiles'
-import { fileKind, kindLabel } from '../lib/fileKind'
+import { attachmentMeta, describeAttachment } from '../lib/fileKind'
 import { viewerMode } from '../lib/viewerMode'
 import { AttachmentDetails } from './AttachmentDetails'
 import { AttachmentPreview } from './AttachmentPreview'
@@ -24,10 +23,12 @@ type Props = {
   files: ReturnType<typeof useAttachmentFiles>
   onNavigate: (index: number) => void
   onClose: () => void
+  /** Abre un correo adjunto como correo propio (navegación del lector). */
+  onOpenMessage?: (index: number) => void
 }
 
 /** Visor a pantalla completa: ver un adjunto de frente, pasar al siguiente y descargarlo. */
-export function AttachmentViewer({ attachments, index, files, onNavigate, onClose }: Props) {
+export function AttachmentViewer({ attachments, index, files, onNavigate, onClose, onOpenMessage }: Props) {
   const dialog = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const [details, setDetails] = useState(false)
@@ -85,11 +86,11 @@ export function AttachmentViewer({ attachments, index, files, onNavigate, onClos
       onKeyDown={onKeyDown}
     >
       <header className="viewer__bar">
-        <FileTypeIcon kind={fileKind(attachment.name, attachment.content_type)} size="sm" />
+        <FileTypeIcon kind={describeAttachment(attachment).kind} size="sm" />
         <div className="viewer__title">
           <h2 id={titleId}>{attachment.name}</h2>
           <p>
-            {kindLabel(attachment.name, attachment.content_type)} · {formatBytes(attachment.size_bytes)}
+            {attachmentMeta(attachment)}
             {count > 1 && ` · ${index + 1} de ${count}`}
           </p>
         </div>
@@ -97,14 +98,16 @@ export function AttachmentViewer({ attachments, index, files, onNavigate, onClos
           <Button variant="subtle" aria-pressed={details} onClick={() => setDetails((value) => !value)}>
             <Info20Regular aria-hidden="true" /> <span className="viewer__label">Detalles</span>
           </Button>
-          <Button variant="subtle" onClick={() => void save()} disabled={download === 'busy'}>
-            {download === 'busy' ? (
-              <Spinner size="sm" tone="inverted" />
-            ) : (
-              <ArrowDownload20Regular aria-hidden="true" />
-            )}
-            <span className="viewer__label">Descargar</span>
-          </Button>
+          {attachment.kind !== 'link' && (
+            <Button variant="subtle" onClick={() => void save()} disabled={download === 'busy'}>
+              {download === 'busy' ? (
+                <Spinner size="sm" tone="inverted" />
+              ) : (
+                <ArrowDownload20Regular aria-hidden="true" />
+              )}
+              <span className="viewer__label">Descargar</span>
+            </Button>
+          )}
           <Button
             variant="subtle"
             iconOnly
@@ -130,6 +133,7 @@ export function AttachmentViewer({ attachments, index, files, onNavigate, onClos
             mode={mode}
             files={files}
             onDownload={() => void save()}
+            onOpenMessage={onOpenMessage && (() => onOpenMessage(index))}
           />
           {count > 1 && (
             <>

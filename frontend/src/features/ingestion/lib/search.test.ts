@@ -64,3 +64,43 @@ describe('matchPreview', () => {
     expect(matchPreview(message, [])).toBeNull()
   })
 })
+
+describe('búsqueda dentro de correos adjuntos', () => {
+  const inner = {
+    file_name: 'Cotización.msg',
+    file_size_bytes: 1,
+    subject: 'Cotización de acero',
+    sender: 'Proveedor <ventas@acero.example.test>',
+    recipients: [],
+    body_preview: 'Adjuntamos el precio del acero corrugado para la obra.',
+    body_truncated: false,
+    headers: [],
+    properties: [],
+    attachments: [],
+    warnings: [],
+    status: 'complete' as const,
+  }
+  const forwarded = item('c', 'Reenvío', {
+    body_preview: 'Te reenvío lo del proveedor.',
+    attachments: [
+      { name: 'Cotización de acero', metadata: [], warnings: [], kind: 'message', message: inner },
+    ],
+  })
+  const outer = {
+    ...inner,
+    subject: 'Reenvío',
+    sender: null,
+    body_preview: 'Te reenvío lo del proveedor.',
+    attachments: forwarded.message?.attachments ?? [],
+  }
+
+  it('encuentra el correo por el texto o el remitente de su correo adjunto', () => {
+    expect(filterQueue([forwarded], 'corrugado').map((entry) => entry.id)).toEqual(['c'])
+    expect(filterQueue([forwarded], 'ventas@acero').map((entry) => entry.id)).toEqual(['c'])
+  })
+
+  it('explica que la coincidencia está en el correo adjunto', () => {
+    expect(matchPreview(outer, ['corrugado'])).toMatch(/^Correo adjunto «Cotización de acero»: .*corrugado/)
+    expect(matchPreview(outer, ['ventas@acero'])).toBe('Correo adjunto: Cotización de acero')
+  })
+})

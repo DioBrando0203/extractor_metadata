@@ -56,7 +56,7 @@ Cuándo: dos ramas del árbol necesitan disparar el mismo componente (el visor).
 
 ## Reinicio por clave
 
-Dónde: `<MessageViewer key={id}>`, `<AttachmentPreview key={index}>`.
+Dónde: `<MessageReader key={id}>`, `<MessageViewer key={ruta}>` (correo adjunto abierto), `<AttachmentPreview key={index}>`.
 Qué: al cambiar de entidad, React monta de nuevo y el estado local parte limpio (P-10).
 
 ## Diálogo nativo

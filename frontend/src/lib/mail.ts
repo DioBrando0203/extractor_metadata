@@ -1,4 +1,5 @@
 import { inferSubject, splitThread, stripInlineMarkers } from './thread'
+import type { Message } from './types'
 
 /**
  * Utilidades de presentación para direcciones y textos de correo.
@@ -119,4 +120,18 @@ export function previewLine(body: string | null | undefined, maxLength = 160): s
   if (!body) return ''
   const line = stripInlineMarkers(body).replace(/\s+/g, ' ').trim()
   return line.length > maxLength ? line.slice(0, maxLength) : line
+}
+
+/**
+ * Correos desde el principal hasta el correo adjunto que indica `path` (posiciones de adjuntos). Se corta
+ * en la primera posición que no lleva a un correo leído.
+ */
+export function messageTrail(root: Message, path: readonly number[]): Message[] {
+  const trail = [root]
+  for (const index of path) {
+    const next = trail[trail.length - 1].attachments[index]?.message
+    if (!next) break
+    trail.push(next)
+  }
+  return trail
 }

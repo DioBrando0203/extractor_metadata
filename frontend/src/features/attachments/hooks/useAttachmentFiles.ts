@@ -5,11 +5,15 @@ import type { Attachment, AttachmentFile } from '../../../lib/types'
 export type Variant = 'original' | 'preview'
 export type AttachmentFiles = ReturnType<typeof useAttachmentFiles>
 
+/** Sin correos adjuntos de por medio: el adjunto está en el correo principal. */
+const ROOT: readonly number[] = []
+
 /**
  * Caché en memoria de los binarios pedidos mientras se lee un correo. Evita reenviar el MSG al volver a
  * ver o descargar el mismo adjunto y revoca todas las URLs `blob:` al desmontar el lector.
+ * `messagePath` ubica el correo adjunto que se está leyendo dentro del archivo.
  */
-export function useAttachmentFiles(file: File) {
+export function useAttachmentFiles(file: File, messagePath: readonly number[] = ROOT) {
   const files = useRef(new Map<string, Promise<AttachmentFile>>())
   const urls = useRef(new Map<string, string>())
 
@@ -28,13 +32,16 @@ export function useAttachmentFiles(file: File) {
       const key = `${index}:${variant}`
       const cached = files.current.get(key)
       if (cached) return cached
-      const pending = fetchAttachment(file, index, attachment.name, { preview: variant === 'preview' })
+      const pending = fetchAttachment(file, index, attachment.name, {
+        preview: variant === 'preview',
+        messagePath,
+      })
       // Un fallo no queda en caché: el usuario puede reintentar.
       pending.catch(() => files.current.delete(key))
       files.current.set(key, pending)
       return pending
     },
-    [file],
+    [file, messagePath],
   )
 
   /** URL `blob:` estable para un adjunto, con el tipo MIME que necesita el visor. */

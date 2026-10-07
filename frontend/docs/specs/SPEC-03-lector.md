@@ -1,8 +1,8 @@
 # SPEC-03 Panel de lectura del correo
 
 Estado: implementada
-Código: `src/features/message-viewer/` (`MessageViewer`, `RecipientList`, `MessageLoading`), `src/lib/mail.ts`, `src/lib/formatters.ts`
-Relacionadas: SPEC-04, ADR-02, ADR-07
+Código: `src/features/message-viewer/` (`MessageReader`, `MessageViewer`, `RecipientList`, `MessageLoading`), `src/lib/mail.ts`, `src/lib/formatters.ts`
+Relacionadas: SPEC-04, ADR-02, ADR-07, ADR-18
 
 ## Objetivo
 
@@ -22,6 +22,14 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
    6. Historial: "Mostrar los N mensajes anteriores"; cada mensaje con avatar, remitente, correo, fecha, Para/CC (nombres; la lista completa al pasar el ratón), Asunto y su texto. Abierto por defecto si el correo no tiene texto propio.
    7. Nota si el cuerpo fue truncado.
    8. Pie: nombre del archivo `.msg` y tamaño.
+
+## Correo adjunto (ADR-18)
+
+- Un adjunto `kind: 'message'` con `message` se abre con "Abrir <nombre>" desde la lista o con "Abrir correo" desde el visor, y se muestra en el mismo lector con esta misma anatomía.
+- Encima del asunto, la barra "Correo adjunto": botón "Volver" (nombre accesible "Volver a <asunto del contenedor>") y "Correo adjunto en <asunto>" en una línea, con el asunto completo en `title`.
+- Al abrir o volver, la vista regresa al inicio y el foco pasa al asunto del correo mostrado.
+- Los adjuntos del correo adjunto se ven y se descargan con su ruta (`messagePath`); la búsqueda resalta también dentro de él.
+- Elegir otro correo de la bandeja vuelve al correo principal.
 
 ## Reglas de datos
 
@@ -79,3 +87,6 @@ Al abrir un MSG el usuario ve el correo como en su cliente de correo habitual: a
 
 - CA-12: con búsqueda activa se resaltan asunto, remitente, destinatarios, texto e historial, se cuentan las coincidencias y el historial se despliega si la coincidencia está ahí. Prueba: `MessageViewer.test.tsx`.
 - CA-13: una imagen ubicada por medidas muestra "Ubicación reconstruida" y una no recuperada se indica con "Imagen no recuperada · nombre". Prueba: `MessageViewer.test.tsx`.
+- CA-14: un correo adjunto se abre en el lector con su remitente y su texto, y "Volver" regresa al contenedor; el foco va al asunto en ambos casos. Prueba: `MessageReader.test.tsx`, `e2e/local-api.spec.ts`, capturas `04c-correo-adjunto`.
+- CA-15: un adjunto del correo adjunto se descarga con su ruta y sus bytes reales. Prueba: `MessageReader.test.tsx`, `e2e/local-api.spec.ts`.
+- CA-16: la ruta de correos adjuntos se corta donde no hay un correo leído. Prueba: `lib/mail.test.ts` (`messageTrail`).

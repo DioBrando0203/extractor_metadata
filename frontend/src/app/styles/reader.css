@@ -189,3 +189,35 @@
   flex: 1;
   padding-top: var(--space-xs);
 }
+
+/* Barra de un correo adjunto abierto en el lector: volver al correo que lo contiene. */
+.mail-trail {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  max-width: var(--reading-max);
+  margin: var(--space-m) auto 0;
+  padding: 0 var(--space-m);
+}
+.mail-trail__text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+  color: var(--fg-3);
+  font-size: var(--fs-200);
+  line-height: var(--lh-200);
+}
+.mail-trail__text > svg {
+  flex: none;
+}
+.mail-trail__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mail-trail__parent {
+  color: var(--fg-2);
+  font-weight: var(--fw-semibold);
+}

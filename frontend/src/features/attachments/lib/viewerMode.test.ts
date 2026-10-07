@@ -45,3 +45,13 @@ describe('decodeText', () => {
     )
   })
 })
+
+describe('viewerMode por cómo viaja el adjunto', () => {
+  it('un correo adjunto y un enlace tienen su propio modo y no piden archivo para verse', () => {
+    expect(viewerMode({ name: 'Informe v1.2', kind: 'message' })).toBe('message')
+    expect(viewerMode({ name: 'Presupuesto.xlsx', kind: 'link' })).toBe('link')
+    expect(viewerMode({ name: 'foto.png', kind: 'file' })).toBe('image')
+    expect(needsFile('message')).toBe(false)
+    expect(needsFile('link')).toBe(false)
+  })
+})

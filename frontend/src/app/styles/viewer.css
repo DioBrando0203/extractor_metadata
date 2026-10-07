@@ -169,6 +169,24 @@
 .viewer-sheet__message {
   color: var(--fg-2);
 }
+.viewer-sheet__address {
+  justify-self: stretch;
+  max-width: 100%;
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-md);
+  background: var(--bg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-200);
+  text-align: start;
+  word-break: break-all;
+  user-select: all;
+}
+.viewer-sheet__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-s);
+}
 .viewer-text {
   margin: 0;
   padding: var(--space-xl) var(--space-xxl);

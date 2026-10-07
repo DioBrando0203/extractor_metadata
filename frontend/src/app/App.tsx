@@ -17,7 +17,7 @@ import { filterQueue } from '../features/ingestion/lib/search'
 import { searchTerms } from '../lib/textSearch'
 import { fileValidationError } from '../features/ingestion/lib/validation'
 import { MessageLoading } from '../features/message-viewer/components/MessageLoading'
-import { MessageViewer } from '../features/message-viewer/components/MessageViewer'
+import { MessageReader } from '../features/message-viewer/components/MessageReader'
 import type { QueueItem } from '../lib/types'
 
 const MSG_ACCEPT = '.msg,application/vnd.ms-outlook'
@@ -157,7 +157,7 @@ function ReaderContent({
   if (view === 'help') return <HelpPage />
   if (!hasItems) return <Dropzone active={dragging} onBrowse={onBrowse} />
   if (selected?.message)
-    return <MessageViewer key={selected.id} message={selected.message} file={selected.file} terms={terms} />
+    return <MessageReader key={selected.id} message={selected.message} file={selected.file} terms={terms} />
   if (selected?.status === 'error') {
     return (
       <ExtractionFailed

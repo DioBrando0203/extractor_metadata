@@ -67,7 +67,7 @@ Cambios: ADR-B12 (modo LAN opcional y sus riesgos); RQ-01, RQ-11, CA-08, `GUIA_I
 Evidencia: pytest 75 aprobadas (2 nuevas); ruff check y format aprobados.
 Notas: el código del modo LAN vino del commit `07a9b11`; esta tarea sólo lo documenta y prueba. `iniciar.py` sigue en 127.0.0.1.
 
-## 2026-10-06 23:05 -05:00 Correos adjuntos y adjuntos en la nube (PEN-01 y PEN-02, backend)
+## 2026-10-06 22:42 -05:00 Correos adjuntos y adjuntos en la nube (PEN-01 y PEN-02, backend)
 
 Estado: terminada (backend; frontend en su bitácora)
 Cambios: `msg/attachment_entries.py` (método de adjunto 0x3705, dirección 0x370D/0x3708, nombre con respaldo 3001/3704); `msg/embedded.py` (correo adjunto a MSG propio con `OleWriter`, `EmbeddedBudget`); `attachments.py` clasifica antes de leer bytes (`AttachmentSources`, `without_bytes`) y divide funciones largas; `reader.py` lee recursivamente y acota una sola vez; `limits.py` recorre correos adjuntos; `download.py` con `message_path` y descarga `.msg`; ruta `/attachment` con `message_path` y `AttachmentRequest` en el worker; contrato `kind`, `link`, `message`; fábrica de MSG con `message_streams`, `attached_message` y `reference_attachment`.

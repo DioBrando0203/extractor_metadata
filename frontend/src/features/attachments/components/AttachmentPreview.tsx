@@ -9,6 +9,7 @@ import { fileKind } from '../lib/fileKind'
 import { blobTypeFor, needsFile, TEXT_PREVIEW_LIMIT } from '../lib/viewerMode'
 import type { ViewerMode } from '../lib/viewerMode'
 import { FileTypeIcon } from './FileTypeIcon'
+import { LinkSheet, MessageSheet } from './ReferenceSheets'
 
 type Props = {
   attachment: Attachment
@@ -16,6 +17,8 @@ type Props = {
   mode: ViewerMode
   files: ReturnType<typeof useAttachmentFiles>
   onDownload: () => void
+  /** Abre un correo adjunto como correo propio; sin él sólo se ofrece descargarlo. */
+  onOpenMessage?: () => void
 }
 
 type Loaded =
@@ -27,7 +30,7 @@ type Loaded =
  * Contenido del visor. Se monta con `key` por adjunto, así el estado inicial siempre es "cargando".
  * Todo contenido se muestra como dato (img, iframe de PDF, pre, video): nunca HTML del adjunto.
  */
-export function AttachmentPreview({ attachment, index, mode, files, onDownload }: Props) {
+export function AttachmentPreview({ attachment, index, mode, files, onDownload, onOpenMessage }: Props) {
   const [loaded, setLoaded] = useState<Loaded>({ status: 'loading' })
 
   useEffect(() => {
@@ -55,6 +58,10 @@ export function AttachmentPreview({ attachment, index, mode, files, onDownload }
     }
   }, [attachment, index, mode, files])
 
+  if (mode === 'link') return <LinkSheet attachment={attachment} />
+  if (mode === 'message') {
+    return <MessageSheet attachment={attachment} onOpen={onOpenMessage} onDownload={onDownload} />
+  }
   if (mode === 'embedded') {
     return (
       <figure className="viewer-embedded">

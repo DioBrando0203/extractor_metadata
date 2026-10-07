@@ -15,7 +15,9 @@ Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y
 - Orden visual: primero los adjuntos con miniatura, después el resto, conservando el orden original dentro de cada grupo. El índice que se envía a la API es siempre la posición original.
 - Con miniatura (`preview`): tarjeta con la imagen (16:10; `cover` para fotos, `contain` para miniaturas incrustadas), icono de tipo, nombre y "TIPO · tamaño".
 - Sin miniatura: chip con icono de tipo coloreado, nombre, tipo y tamaño.
-- Toda tarjeta o chip es un botón "Ver <nombre>" que abre el visor (SPEC-05).
+- Toda tarjeta o chip es un botón "Ver <nombre>" que abre el visor (SPEC-05). Un correo adjunto legible es "Abrir <nombre>" y se abre en el lector (SPEC-03).
+- Correo adjunto (`kind: 'message'`): icono de correo y "Correo · tamaño", aunque su asunto parezca tener extensión; se descarga como `.msg`.
+- Enlace (`kind: 'link'`): icono del tipo de archivo, "TIPO · Enlace web" o "TIPO · Carpeta compartida" y sin botón de descarga, porque sus bytes no viajan en el correo.
 - Cada adjunto tiene un botón "Descargar <nombre>": siempre visible en chips y en táctil; en tarjetas aparece al pasar el ratón o al enfocar.
 - Descarga: spinner en el botón mientras se prepara; se pueden descargar varios a la vez; el binario se reutiliza si ya se pidió para el visor.
 - Error de descarga: `role="alert"` bajo la lista con el nombre del adjunto.
@@ -24,6 +26,7 @@ Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y
 
 - Por extensión primero; si falta, por MIME.
 - Grupos: pdf, word, excel, slides, image, cad, archive, mail, text, media, other.
+- `describeAttachment` y `attachmentMeta` aplican primero `kind`: un correo adjunto siempre es mail.
 - Etiqueta: extensión en mayúsculas o, sin extensión, descripción ("Imagen", "Archivo").
 
 ## Estados
@@ -42,6 +45,8 @@ Ver de frente las imágenes, planos y portadas de documentos sin descargarlos, y
 - CA-04: la clasificación prioriza extensión y cae al MIME. Prueba: `fileKind.test.ts`.
 - CA-05: miniatura real generada por el backend para un PNG adjunto. Prueba: `e2e/local-api.spec.ts` (visor).
 - CA-06: a 320 px el botón de descarga es visible sin desborde. Prueba: `e2e/local-api.spec.ts` (móvil).
+- CA-07: un enlace muestra dónde vive y no ofrece descarga. Prueba: `MessageReader.test.tsx`, `fileKind.test.ts`, `link.test.ts`, `e2e/local-api.spec.ts`.
+- CA-08: un correo adjunto se etiqueta como Correo aunque su asunto tenga puntos. Prueba: `fileKind.test.ts`.
 
 ## Pendientes
 

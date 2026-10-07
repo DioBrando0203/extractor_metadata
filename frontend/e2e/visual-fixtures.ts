@@ -80,6 +80,33 @@ const attachment = (name: string, size_bytes: number, extra: Record<string, unkn
   ...extra,
 })
 
+const SHAREPOINT =
+  'https://contoso.sharepoint.example.test/sites/obra-24-123/Documentos%20compartidos/Presupuesto%20obra.xlsx'
+
+/** Correo reenviado como adjunto, con asunto largo y su propio adjunto. */
+const ATTACHED = {
+  file_name: 'Cotización de acero corrugado.msg',
+  file_size_bytes: 182_000,
+  subject: 'Cotización de acero corrugado para la obra 24-123, válida hasta el 30 de octubre',
+  sender: 'Ventas Aceros del Sur <ventas@aceros.example.test>',
+  recipients: ['Para: María Fernández <maria.fernandez@example.test>'],
+  sent_at: '2026-10-01T11:20:00-05:00',
+  body_preview: [
+    'Estimada María:',
+    '',
+    'Adjuntamos la cotización solicitada para el acero corrugado de la obra.',
+    '',
+    'Saludos,',
+    'Ventas',
+  ].join(String.fromCharCode(13, 10)),
+  body_truncated: false,
+  status: 'complete',
+  headers: [],
+  properties: [],
+  attachments: [attachment('Cotización 0923.pdf', 245_000)],
+  warnings: [],
+}
+
 export const COMPLETE = {
   file_name: 'Revision planos.msg',
   file_size_bytes: 4_812_331,
@@ -138,6 +165,18 @@ export const COMPLETE = {
     attachment('Presentación avance.pptx', 3_120_000, {
       preview: dataUri(SLIDE),
       preview_source: 'embedded',
+    }),
+    attachment('Cotización de acero corrugado', 182_000, {
+      kind: 'message',
+      content_type: 'application/vnd.ms-outlook',
+      message: ATTACHED,
+      metadata: [],
+    }),
+    attachment('Presupuesto obra.xlsx', 0, {
+      kind: 'link',
+      size_bytes: null,
+      link: SHAREPOINT,
+      metadata: [{ group: 'Enlace', label: 'Ubicación', value: SHAREPOINT }],
     }),
     attachment('S-201 Vigas eje C rev3.pdf', 1_245_000),
     attachment('Memoria de cálculo v3.docx', 412_330),

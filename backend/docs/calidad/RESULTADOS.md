@@ -1,15 +1,19 @@
 # Resultados de calidad (backend)
 
-Última ejecución: 2026-10-06 01:32 -05:00 (America/Lima).
+Última ejecución: 2026-10-06 23:00 -05:00 (America/Lima).
 Entorno: Windows 11, Python 3.12.10 en `.venv`.
 
 ## Comandos
 
-- `python -m pytest`: 73 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
+- `python -m pytest`: 91 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
 - `python -m ruff check app tests`: aprobado.
-- `python -m ruff format --check app tests`: 47 archivos con formato correcto.
+- `python -m ruff format --check app tests`: 51 archivos con formato correcto.
 
 ## Verificaciones destacadas
+
+- Correos adjuntos: lectura con el mismo flujo (parser y respaldo OLE), tres niveles, límites de profundidad y cantidad, stream dañado marcado como parcial, descarga como `.msg` legible y de adjuntos internos con `message_path`; el temporal queda vacío.
+- Adjuntos por referencia: URL de SharePoint, ruta de red y referencia sin dirección; sin descarga vacía.
+- Integración: E2E del frontend (7) con el backend iniciado con el código actual.
 
 - Miniaturas: PNG, JPEG, GIF, BMP, TIFF y WEBP; DWG con preview PNG y BMP; DXF `THUMBNAILIMAGE`; Office `docProps/thumbnail`.
 - Rechazo: EPS y PDF no se decodifican como imagen; sección DWG alterada se ignora.
@@ -20,7 +24,6 @@ Entorno: Windows 11, Python 3.12.10 en `.venv`.
 - MSG real del usuario (sólo local): sobre completo recuperado de los encabezados de transporte.
 - RTF suelto y posición por medidas: CRC, coherencia, tamaño exacto, proporción única, ambigüedad rechazada; en el MSG real 4 imágenes ubicadas y 10 ambiguas sin ubicar.
 - Refactorización: la suite previa pasa sin modificar aserciones; sólo cambiaron imports y puntos de parcheo.
-- Integración: E2E del frontend (6) contra este backend reiniciado, incluida miniatura real y visor.
 
 ## No ejecutado
 

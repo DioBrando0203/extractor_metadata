@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { groupRecipients, messageTitle, parseAddress, previewLine, splitAddresses } from './mail'
+import {
+  groupRecipients,
+  messageTitle,
+  messageTrail,
+  parseAddress,
+  previewLine,
+  splitAddresses,
+} from './mail'
+import type { Message } from './types'
 
 describe('parseAddress', () => {
   it('separa nombre y correo en formato con corchetes angulares', () => {
@@ -64,5 +72,46 @@ describe('messageTitle y previewLine', () => {
   it('resume el cuerpo en una línea', () => {
     expect(previewLine('Hola\n\n  equipo,\tgracias', 12)).toBe('Hola equipo,')
     expect(previewLine(null)).toBe('')
+  })
+})
+
+describe('messageTrail', () => {
+  const mail = (subject: string, attachments: Message['attachments'] = []): Message => ({
+    file_name: `${subject}.msg`,
+    file_size_bytes: 1,
+    subject,
+    recipients: [],
+    body_truncated: false,
+    headers: [],
+    properties: [],
+    attachments,
+    warnings: [],
+    status: 'complete',
+  })
+  const attached = (message: Message | null) => ({
+    name: message?.subject ?? 'roto',
+    metadata: [],
+    warnings: [],
+    kind: 'message' as const,
+    message,
+  })
+  const root = mail('Principal', [
+    { name: 'plano.dwg', metadata: [], warnings: [] },
+    attached(mail('Nivel 1', [attached(mail('Nivel 2')), attached(null)])),
+  ])
+
+  it('sigue la ruta de correos adjuntos desde el principal', () => {
+    expect(messageTrail(root, []).map((item) => item.subject)).toEqual(['Principal'])
+    expect(messageTrail(root, [1, 0]).map((item) => item.subject)).toEqual([
+      'Principal',
+      'Nivel 1',
+      'Nivel 2',
+    ])
+  })
+
+  it('se corta donde la ruta no lleva a un correo leído', () => {
+    expect(messageTrail(root, [0]).map((item) => item.subject)).toEqual(['Principal'])
+    expect(messageTrail(root, [1, 1]).map((item) => item.subject)).toEqual(['Principal', 'Nivel 1'])
+    expect(messageTrail(root, [7]).map((item) => item.subject)).toEqual(['Principal'])
   })
 })

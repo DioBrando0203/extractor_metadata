@@ -1,6 +1,6 @@
 import { formatBytes } from '../../../lib/formatters'
 import type { Attachment, MetadataItem } from '../../../lib/types'
-import { kindLabel } from '../lib/fileKind'
+import { describeAttachment } from '../lib/fileKind'
 
 /** Campos que ya están en la cabecera del visor y no se repiten. */
 const REDUNDANT = new Set(['Archivo/Nombre', 'Archivo/Tamaño'])
@@ -23,7 +23,7 @@ export function AttachmentDetails({ attachment }: { attachment: Attachment }) {
       <dl>
         <div>
           <dt>Tipo</dt>
-          <dd>{kindLabel(attachment.name, attachment.content_type)}</dd>
+          <dd>{describeAttachment(attachment).label}</dd>
         </div>
         <div>
           <dt>Tamaño</dt>

@@ -19,6 +19,12 @@ type Props = {
   file: File
   /** Términos de la búsqueda de la bandeja, para resaltarlos en el correo. */
   terms?: string[]
+  /** Correos adjuntos abiertos hasta llegar a este; sin valor, el correo principal. */
+  messagePath?: readonly number[]
+  /** Abre el correo adjunto en `index` como un correo propio. */
+  onOpenMessage?: (index: number) => void
+  /** Lleva el foco al asunto al montar, tras navegar entre correos adjuntos. */
+  focusTitle?: boolean
 }
 type Tab = 'message' | 'attachments'
 
@@ -26,10 +32,17 @@ type Tab = 'message' | 'attachments'
  * Panel de lectura con la estructura de Outlook: asunto y, debajo, la tarjeta del mensaje. Si el cuerpo
  * coloca imágenes en su posición, la pestaña "Datos adjuntos" reúne además todos los archivos.
  */
-export function MessageViewer({ message, file, terms = [] }: Props) {
+export function MessageViewer({
+  message,
+  file,
+  terms = [],
+  messagePath,
+  onOpenMessage,
+  focusTitle = false,
+}: Props) {
   const titleId = useId()
   const panelId = useId()
-  const files = useAttachmentFiles(file)
+  const files = useAttachmentFiles(file, messagePath)
   const [tab, setTab] = useState<Tab>('message')
   const [viewing, setViewing] = useState<number | null>(null)
   const { attachments } = message
@@ -43,6 +56,12 @@ export function MessageViewer({ message, file, terms = [] }: Props) {
     () => findRanges([title.text, message.sender ?? '', ...message.recipients, body].join(' '), terms).length,
     [title.text, message.sender, message.recipients, body, terms],
   )
+  // Un correo adjunto legible se abre en el lector; cualquier otro adjunto, en el visor.
+  const open = (index: number) => {
+    const attachment = attachments[index]
+    if (attachment?.kind === 'message' && attachment.message && onOpenMessage) onOpenMessage(index)
+    else setViewing(index)
+  }
 
   return (
     <HighlightContext.Provider value={terms}>
@@ -53,6 +72,7 @@ export function MessageViewer({ message, file, terms = [] }: Props) {
           source={title.source}
           partial={message.status === 'partial'}
           hits={hits}
+          focus={focusTitle}
         />
         <div className="mail__card">
           <SenderBlock message={message} />
@@ -77,7 +97,7 @@ export function MessageViewer({ message, file, terms = [] }: Props) {
               <AttachmentList
                 attachments={attachments}
                 files={files}
-                onOpen={setViewing}
+                onOpen={open}
                 collapsible={false}
                 heading={`Todos los datos adjuntos (${attachments.length})`}
               />
@@ -88,7 +108,7 @@ export function MessageViewer({ message, file, terms = [] }: Props) {
                     attachments={attachments}
                     indices={wellIndices}
                     files={files}
-                    onOpen={setViewing}
+                    onOpen={open}
                   />
                 )}
                 <MessageBody
@@ -114,6 +134,7 @@ export function MessageViewer({ message, file, terms = [] }: Props) {
             files={files}
             onNavigate={setViewing}
             onClose={() => setViewing(null)}
+            onOpenMessage={onOpenMessage}
           />
         )}
       </article>

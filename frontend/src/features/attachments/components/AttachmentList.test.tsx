@@ -81,7 +81,10 @@ describe('AttachmentList', () => {
     fireEvent.click(opener)
     const dialog = await screen.findByRole('dialog', { name: 'foto.png' })
     expect(await within(dialog).findByRole('img', { name: 'foto.png' })).toHaveAttribute('src', 'blob:vista')
-    expect(mocks.fetchAttachment).toHaveBeenCalledWith(file, 0, 'foto.png', { preview: false })
+    expect(mocks.fetchAttachment).toHaveBeenCalledWith(file, 0, 'foto.png', {
+      preview: false,
+      messagePath: [],
+    })
 
     fireEvent.click(within(dialog).getByRole('button', { name: 'Adjunto siguiente' }))
     expect(screen.getByRole('dialog', { name: 'plano.dwg' })).toBeInTheDocument()

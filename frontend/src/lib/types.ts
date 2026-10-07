@@ -7,6 +7,8 @@ export interface MetadataItem {
   value: string
 }
 export type PreviewSource = 'image' | 'embedded'
+/** Cómo viaja un adjunto: con sus bytes, como correo adjunto o como enlace a la nube o a una ruta. */
+export type AttachmentKind = 'file' | 'message' | 'link'
 
 export interface Attachment {
   name: string
@@ -21,6 +23,12 @@ export interface Attachment {
   content_id?: string | null
   /** El Content-ID se reconstruyó por las medidas de la imagen (archivo dañado). */
   content_id_inferred?: boolean
+  /** Sin valor equivale a `file`. */
+  kind?: AttachmentKind
+  /** Dirección de un adjunto `link` (URL o ruta de red), como texto. */
+  link?: string | null
+  /** Correo adjunto ya leído por el backend; `null` si no se pudo abrir. */
+  message?: Message | null
 }
 
 export interface AttachmentFile {

@@ -10,7 +10,7 @@ Que abrir uno o varios `.msg` sea obvio, tolerante a errores, y que encontrarlos
 
 ## Portada (sin archivos)
 
-- Insignia de privacidad, título "Lee lo que Outlook no pudo", texto de apoyo.
+- Insignia de privacidad, título "Cargar MSG", texto de apoyo.
 - Zona de arrastre con icono, "Arrastra tus archivos .msg aquí", separador "o" y "Elegir archivos".
 - Tres tarjetas: Local, Adjuntos, Lectura parcial. Todo centrado en el lector.
 
@@ -70,3 +70,4 @@ Que abrir uno o varios `.msg` sea obvio, tolerante a errores, y que encontrarlos
 
 - CA-07: búsqueda sin tildes con rangos correctos sobre el texto original y fragmentos de contexto. Prueba: `lib/textSearch.test.ts`.
 - CA-08: la vista previa explica la coincidencia (texto, adjunto o destinatarios) sin mostrar marcadores internos. Prueba: `features/ingestion/lib/search.test.ts`, `lib/thread.test.ts`.
+- CA-09: la búsqueda encuentra texto, remitente o adjuntos de un correo adjunto y la vista previa dice en cuál. Prueba: `features/ingestion/lib/search.test.ts`.

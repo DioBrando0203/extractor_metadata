@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Warning20Filled } from '@fluentui/react-icons'
 import { Highlight } from '../../../components/ui/Highlight'
 import type { TitleSource } from '../../../lib/mail'
@@ -10,6 +11,8 @@ type Props = {
   partial: boolean
   /** Coincidencias de la búsqueda activa dentro del correo. */
   hits: number
+  /** Enfocar el asunto al montar: el lector acaba de cambiar de correo. */
+  focus?: boolean
 }
 
 const SOURCE_NOTE: Record<Exclude<TitleSource, 'subject'>, string> = {
@@ -18,12 +21,17 @@ const SOURCE_NOTE: Record<Exclude<TitleSource, 'subject'>, string> = {
 }
 
 /** Asunto sobre la tarjeta del mensaje, nota de origen y aviso de lectura parcial. */
-export function MessageTitle({ id, text, source, partial, hits }: Props) {
+export function MessageTitle({ id, text, source, partial, hits, focus = false }: Props) {
   const terms = useHighlightTerms()
+  const heading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    // Sin desplazar: el lector ya llevó la vista al inicio del correo.
+    if (focus) heading.current?.focus({ preventScroll: true })
+  }, [focus])
   return (
     <>
       <header className="mail__subject-bar">
-        <h1 id={id} className="mail__subject">
+        <h1 ref={heading} id={id} className="mail__subject" tabIndex={focus ? -1 : undefined}>
           <Highlight text={text} terms={terms} />
         </h1>
         {source !== 'subject' && <p className="mail__subject-note">{SOURCE_NOTE[source]}</p>}

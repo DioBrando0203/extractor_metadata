@@ -18,6 +18,10 @@ const STEPS = [
     title: 'Mira y descarga los adjuntos',
     text: 'Pulsa un adjunto para verlo de frente (imágenes, PDF, texto y la miniatura de planos AutoCAD) o usa el botón de descarga. El archivo original no se modifica.',
   },
+  {
+    title: 'Abre los correos adjuntos',
+    text: 'Un correo reenviado como adjunto se abre como cualquier otro correo; usa “Volver” para regresar. Un archivo guardado en la nube o en una carpeta compartida aparece como enlace: no viaja dentro del correo.',
+  },
 ]
 
 export function HelpPage() {
