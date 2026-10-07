@@ -74,7 +74,7 @@ Cambios: `msg/attachment_entries.py` (método de adjunto 0x3705, dirección 0x37
 Evidencia: pytest 91 aprobadas (16 nuevas en `test_embedded.py`); ruff check y format aprobados. Con el código anterior, 13 de las 16 nuevas fallan (las 3 restantes son rechazos de `message_path` que antes daban 422 por otro motivo).
 Notas: ADR-B13 y ADR-B14; SPEC-B01 CA-17 a CA-21; SPEC-B02 CA-08 a CA-11. EML adjunto sigue pendiente dentro de PEN-01.
 
-## 2026-10-06 23:20 -05:00 EML y MSG adjuntos como archivo (cierre de PEN-01)
+## 2026-10-06 23:09 -05:00 EML y MSG adjuntos como archivo (cierre de PEN-01)
 
 Estado: terminada
 Cambios: `msg/eml.py` (lectura con la biblioteca estándar y `EmlSource`), `msg/nesting.py` (presupuesto común y `open_nested`), `embedded.AttachedMessages` (carpeta OLE, `.msg` y `.eml` adjuntos), `attachments.MessageOpener` (Protocol) para no crear ciclos, `download.py` recorre `message_path` con `_MsgSource` y `EmlSource`, `names.message_filename`. Frontend: el visor ofrece "Descargar correo" en lugar de "Descargar .msg".
