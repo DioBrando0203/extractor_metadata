@@ -16,6 +16,7 @@ frontend/dist/
 frontend/coverage/
 frontend/test-results/
 frontend/playwright-report/
+*.tsbuildinfo
 npm-debug.log*
 
 # Local configuration and generated files
