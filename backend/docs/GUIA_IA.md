@@ -49,6 +49,7 @@ Protocolo obligatorio para cualquier IA que modifique `backend/`. Si contradice 
 - Metadatos de un formato nuevo: módulo en `app/services/metadata/` y registro en `extractor.py` (Strategy).
 - Miniaturas: `app/services/previews/` (`embedded.py` localiza, `render.py` convierte).
 - Archivos sueltos: formato nuevo en `msg/raw_formats.py` (o `raw_images.py`) con su validador; qué no es suelto en `msg/sector_map.py`; sin cabecera, `msg/rescue.py` (ADR-B16).
+- Daños de cabecera reparables en copia: `msg/fat_recovery.py`; MiniFAT perdida, `msg/minifat_recovery.py` (ADR-B19). Nunca leer el mini stream como bytes contiguos.
 - Contrato JSON: `app/models/schemas.py`.
 - Límites y presupuestos: `app/core/config.py`.
 

@@ -1,7 +1,8 @@
 """Reparación de la cabecera CFB en una copia temporal; el MSG original nunca se modifica.
 
-Dos daños verificables: la firma inicial borrada (con el resto de la cabecera coherente) y una DIFAT
-truncada cuyas FAT aún se enlazan entre sí. Cualquier otro daño de cabecera no se repara.
+Tres daños verificables: la firma inicial borrada (con el resto de la cabecera coherente), una DIFAT
+truncada cuyas FAT aún se enlazan entre sí y la ubicación de la MiniFAT perdida cuando una única
+cadena la explica (``minifat_recovery``). Cualquier otro daño de cabecera no se repara.
 """
 
 import shutil
@@ -10,6 +11,8 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+from app.services.msg.minifat_recovery import locate_minifat, minifat_lost
 
 CFB_SIGNATURE = bytes.fromhex("D0CF11E0A1B11AE1")
 
@@ -27,6 +30,12 @@ _SIGNATURE_NOTICE = (
     "Se reconstruyó la firma del archivo en una copia temporal; el MSG original no fue modificado."
 )
 _FAT_NOTICE = "Se recuperó la tabla FAT en una copia temporal; el MSG original no fue modificado."
+_MINIFAT_NOTICE = (
+    "Se recuperó la tabla de datos cortos (MiniFAT: asunto, nombres de adjuntos) en una copia "
+    "temporal; el MSG original no fue modificado."
+)
+#: Inicio y cantidad de sectores de la MiniFAT en la cabecera.
+_MINIFAT_FIELDS = 60
 
 
 def _read_header(path: Path) -> bytes:
@@ -125,10 +134,12 @@ def recover_fat_sectors(path: Path) -> list[int] | None:
 
 @contextmanager
 def recovered_ole_path(path: Path) -> Iterator[tuple[Path, list[str]]]:
-    """Entrega el original o una copia temporal con su firma y su DIFAT reparadas."""
-    lost_signature = signature_lost(_read_header(path))
+    """Entrega el original o una copia temporal con su firma, su DIFAT y su MiniFAT reparadas."""
+    header = _read_header(path)
+    lost_signature = signature_lost(header)
     fat_ids = recover_fat_sectors(path)
-    if not lost_signature and fat_ids is None:
+    lost_minifat = minifat_lost(header)
+    if not lost_signature and fat_ids is None and not lost_minifat:
         yield path, []
         return
 
@@ -148,4 +159,17 @@ def recovered_ole_path(path: Path) -> Iterator[tuple[Path, list[str]]]:
                 notices.append(_FAT_NOTICE)
             target.seek(0)
             target.write(header)
+        if lost_minifat:
+            notices.extend(_restore_minifat(recovered_path))
         yield recovered_path, notices
+
+
+def _restore_minifat(copy: Path) -> list[str]:
+    """Escribe en la copia, ya con firma y FAT repuestas, la única MiniFAT que encaja."""
+    location = locate_minifat(copy)
+    if location is None:
+        return []
+    with copy.open("r+b") as target:
+        target.seek(_MINIFAT_FIELDS)
+        target.write(struct.pack("<II", location.start, location.count))
+    return [_MINIFAT_NOTICE]

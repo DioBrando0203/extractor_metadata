@@ -11,6 +11,7 @@ from itertools import islice
 from app.core.config import settings
 from app.models.schemas import MetadataItem
 from app.services.body_text import html_to_text
+from app.services.msg.inline_images import InlineTag, inline_tags
 from app.services.msg.text import clean_text, read_attribute
 
 _RECIPIENT_FIELDS = (("to", "Para"), ("cc", "CC"), ("bcc", "CCO"))
@@ -51,6 +52,14 @@ def read_body(message: object, recovered: dict[str, str], warnings: list[str]) -
     if not body and recovered.get("1000"):
         body = recovered["1000"]
     return body
+
+
+def read_inline_tags(message: object) -> list[InlineTag]:
+    """Imágenes ``cid`` del HTML con sus medidas, para ubicar las rescatadas sin Content-ID."""
+    html = read_attribute(message, "htmlBody", [])
+    if isinstance(html, bytes):
+        html = html.decode("utf-8", errors="replace")
+    return inline_tags(html) if isinstance(html, str) else []
 
 
 def _html_with_inline_images(message: object) -> str | None:

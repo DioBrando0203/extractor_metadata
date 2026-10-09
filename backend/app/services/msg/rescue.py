@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.core.errors import ExtractionError
 from app.models.schemas import MessageMetadata
 from app.services.msg.envelope import envelope_from_headers
-from app.services.msg.inline_images import assign_by_size
+from app.services.msg.inline_images import INFERRED_POSITIONS_NOTICE, assign_by_size
 from app.services.msg.raw_body import best_recovered_body
 from app.services.msg.raw_recovery import raw_recovered_attachments, signature_offsets
 
@@ -48,7 +48,7 @@ def rescue_message(
         )
     warnings = [_RESCUE_NOTICE]
     if body.inline and assign_by_size(attachments, body.inline):
-        warnings.append("Posición de imágenes incrustadas reconstruida por sus medidas.")
+        warnings.append(INFERRED_POSITIONS_NOTICE)
     return MessageMetadata(
         file_name=original_name,
         file_size_bytes=size_bytes,

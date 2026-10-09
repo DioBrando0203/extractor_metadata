@@ -122,3 +122,17 @@ Estado: terminada
 Cambios: CORS expone `Content-Disposition` (PEN-13); `tests/generar_ejemplos.py` escribe los 8 MSG sintéticos de la guía; README principal con funciones nuevas, acceso por red servido desde el puerto 8000, correos de prueba y límites; resumen del backlog con PEN-13 y PEN-14; bloqueos B-14 y B-15; `AGENTS.md` con modo LAN opcional, ejemplos y B-13.
 Evidencia: pytest 120 aprobadas (la nueva de PEN-13 falla con el código anterior); ruff check y format aprobados; los 8 ejemplos se analizaron por HTTP contra el servidor en marcha. Modo LAN verificado en una PC con Windows: `/api/health` y análisis completo por la IP de red, interfaz servida en el puerto 8000 y regla de firewall de entrada vigente para el Python que escucha.
 Notas: falta probar en Linux (PEN-10) y desde otra PC física.
+
+## 2026-10-08 22:05 -05:00 Backend en Linux (PEN-10, parte)
+
+Estado: parcial
+Cambios: ninguno de código; comando documentado en `PLAN_CALIDAD.md` (contenedor `python:3.12-slim`, `backend/` en sólo lectura copiado dentro, `pip install -c requirements.lock`).
+Evidencia: Linux 6.18.33.2-microsoft-standard-WSL2, Python 3.12.14: pytest 120 aprobadas, ruff check aprobado, ruff format 68 archivos correctos.
+Notas: no hay distro WSL propia; se usó Docker Desktop. Faltan E2E del frontend en Linux y el corpus autorizado (depende del usuario).
+
+## 2026-10-08 22:40 -05:00 MiniFAT perdida repuesta en copia (PEN-04)
+
+Estado: terminada
+Cambios: `msg/minifat_recovery.py` (cadenas de la FAT con forma de MiniFAT, validación contra cada stream pequeño, unicidad); `fat_recovery.recovered_ole_path` repone inicio y cantidad en la copia con aviso; `parsed_fields.read_inline_tags` y `reader` ubican por medidas los sueltos también con el parser abierto; `INFERRED_POSITIONS_NOTICE` común; fábrica `build_cfb(scatter=True)`; `tests/test_minifat_recovery.py`.
+Evidencia: pytest 124 aprobadas en Windows y en Linux (4 nuevas; la principal falla con el código anterior); ruff check y format aprobados. MSG real (local): diagnóstico estructural (MiniFAT en fin de cadena y 0 en la cabecera; 8 sectores encadenados en la FAT; mini stream con 119 de 128 sectores alcanzables), 254 de 254 cadenas válidas, asunto y remitente iguales a los encabezados, 12 adjuntos con descarga exacta.
+Notas: ADR-B19; B-16; SPEC-B01 CA-35 y CA-36. Sin cambio de contrato: sólo un aviso nuevo.

@@ -68,7 +68,7 @@ Prevención: CA-10 a CA-12 de SPEC-B01.
 ## B-11 Posición de imágenes en un MSG muy dañado
 
 Estado: mitigado (ADR-B11); límite honesto para los casos ambiguos.
-Causa: si el mini stream se pierde, también se pierden los nombres y Content-ID de los adjuntos, y el RTF/HTML del cuerpo puede no ser legible.
+Causa: si el mini stream se pierde, también se pierden los nombres y Content-ID de los adjuntos, y el RTF/HTML del cuerpo puede no ser legible. Si sólo se perdió la ubicación de la MiniFAT, se recuperan (B-16, ADR-B19).
 Mitigación: las imágenes se muestran en la lista de adjuntos; no se adivina su posición (RQ-13).
 
 ## B-12 Una pasada de emparejamiento bloqueaba a la siguiente
@@ -94,3 +94,11 @@ Síntoma: con el MSG real del usuario, el rescate ampliado dejó de mostrar 2 PN
 Causa: el mapa de sectores marcaba entero el mini stream como legible, aunque esos adjuntos habían perdido su entrada de directorio.
 Solución: dentro del mini stream sólo cuentan los mini sectores que reclama un stream alcanzable (`sector_map`).
 Prevención: `test_raw_recovery.py::test_small_loose_file_inside_the_mini_stream_is_found` y comparar con el MSG real antes de cerrar cambios de rescate (PEN-14).
+
+## B-16 Datos cortos vacíos por la MiniFAT perdida
+
+Fecha: 2026-10-08. Estado: resuelto.
+Síntoma: en el MSG real, asunto, remitente, nombres y Content-ID de adjuntos se leían vacíos y el parser fallaba; se creía que el mini stream estaba perdido.
+Causa: la cabecera tenía el inicio de la MiniFAT en fin de cadena y la cantidad en 0; olefile no carga la MiniFAT y cada stream pequeño devuelve 0 bytes. La MiniFAT y el mini stream seguían en el archivo, encadenados en la FAT, salvo el último enlace del mini stream (apunta a un sector de la FAT).
+Solución: ubicar la única tabla que explica cada stream pequeño y reponerla en la copia (ADR-B19).
+Prevención: `test_minifat_recovery.py`. Diagnosticar con la estructura (cabecera, cadenas, defectos de olefile) antes de suponer que un dato se perdió.

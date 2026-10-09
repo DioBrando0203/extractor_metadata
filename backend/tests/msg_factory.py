@@ -10,7 +10,9 @@ FAT = 0xFFFFFFFD
 SECTOR = 4096
 
 
-def build_cfb(streams: dict[tuple[str, ...], bytes]) -> bytes:
+def build_cfb(streams: dict[tuple[str, ...], bytes], *, scatter: bool = False) -> bytes:
+    """CFB v4 con ``streams``. ``scatter`` guarda el mini stream y la MiniFAT en orden físico
+    inverso: su cadena en la FAT no es contigua, como en un MSG real editado muchas veces."""
     paths = {()}
     for path in streams:
         for depth in range(1, len(path) + 1):
@@ -20,15 +22,20 @@ def build_cfb(streams: dict[tuple[str, ...], bytes]) -> bytes:
     sectors: list[bytes] = []
     fat: list[int] = []
 
-    def allocate(payload: bytes) -> tuple[int, int]:
+    def allocate(payload: bytes, reverse: bool = False) -> tuple[int, int]:
         if not payload:
             return END, 0
         start = len(sectors)
         count = math.ceil(len(payload) / SECTOR)
-        for index in range(count):
-            sectors.append(payload[index * SECTOR : (index + 1) * SECTOR].ljust(SECTOR, b"\0"))
-            fat.append(start + index + 1 if index + 1 < count else END)
-        return start, count
+
+        def position(chunk: int) -> int:
+            return start + (count - 1 - chunk if reverse else chunk)
+
+        for slot in range(count):
+            chunk = count - 1 - slot if reverse else slot
+            sectors.append(payload[chunk * SECTOR : (chunk + 1) * SECTOR].ljust(SECTOR, b"\0"))
+            fat.append(position(chunk + 1) if chunk + 1 < count else END)
+        return position(0), count
 
     mini_data = bytearray()
     mini_fat: list[int] = []
@@ -46,13 +53,13 @@ def build_cfb(streams: dict[tuple[str, ...], bytes]) -> bytes:
             )
         else:
             starts[path] = END
-    root_start, _ = allocate(bytes(mini_data))
+    root_start, _ = allocate(bytes(mini_data), reverse=scatter)
     minifat_bytes = b"".join(struct.pack("<I", value) for value in mini_fat)
     if minifat_bytes:
         minifat_bytes = minifat_bytes.ljust(
             math.ceil(len(minifat_bytes) / SECTOR) * SECTOR, b"\xff"
         )
-    minifat_start, minifat_count = allocate(minifat_bytes)
+    minifat_start, minifat_count = allocate(minifat_bytes, reverse=scatter)
     left = [FREE] * len(entries)
     right = [FREE] * len(entries)
     child = [FREE] * len(entries)

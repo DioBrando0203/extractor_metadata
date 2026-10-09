@@ -13,6 +13,8 @@ from app.models.schemas import AttachmentMetadata
 
 #: Diferencia máxima de proporción (ancho/alto) para considerar dos imágenes la misma.
 ASPECT_TOLERANCE = 0.01
+#: Aviso del correo cuando ``assign_by_size`` ubicó al menos una imagen.
+INFERRED_POSITIONS_NOTICE = "Posición de imágenes incrustadas reconstruida por sus medidas."
 _IMG = re.compile(r"<img\b[^>]*>", re.IGNORECASE)
 _CID = re.compile(r"""\bsrc\s*=\s*["']?cid:([^"'\s>]+)""", re.IGNORECASE)
 _DIMENSIONS = re.compile(r"(\d+)\s*[×x]\s*(\d+)")

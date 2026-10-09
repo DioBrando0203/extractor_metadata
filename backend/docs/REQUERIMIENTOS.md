@@ -8,7 +8,7 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 
 - RQ-01 Local: loopback por defecto; acceso desde la red local sólo si se configura de forma explícita (ADR-B12). Sin cuenta, base de datos, nube, telemetría ni historial.
 - RQ-02 Privacidad: estado en memoria del navegador; temporales efímeros del backend borrados al terminar.
-- RQ-03 Original intacto: sólo se trabaja sobre copias temporales; la reparación de FAT ocurre en una copia.
+- RQ-03 Original intacto: sólo se trabaja sobre copias temporales; la reparación de cabecera (firma, FAT y MiniFAT) ocurre en una copia.
 - RQ-04 Correo legible: asunto, remitente, destinatarios Para/CC/CCO, fechas y cuerpo de texto. Si el parser o las propiedades cortas fallan, se identifican desde propiedades MAPI alternativas o los encabezados de transporte.
 - RQ-05 Adjuntos de cualquier tipo: todo adjunto con stream legible se lista y se descarga con sus bytes exactos, sea imagen, PDF, Office, AutoCAD, comprimido, multimedia u otro. Un correo adjunto se lee como un correo propio y se descarga como `.msg`. Un adjunto en la nube o en una ruta se muestra como enlace: sus bytes no viajan en el correo.
 - RQ-06 Vista previa: imágenes (PNG, JPEG, GIF, BMP, TIFF, WEBP, ICO; EMF/WMF en Windows) con miniatura; PDF, texto, vídeo y audio se muestran en el navegador; TIFF/EMF se convierten a JPEG bajo demanda.
@@ -36,10 +36,10 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 
 Cada pendiente se cita por su ID. Al tomar uno: crear o actualizar la spec correspondiente con sus criterios de aceptación y mover aquí su estado. Prioridad según frecuencia en correo corporativo y valor para el usuario.
 
-Resumen al 2026-10-07:
-- Terminadas: PEN-01, PEN-02, PEN-03, PEN-06, PEN-07, PEN-12, PEN-13.
-- Parciales: PEN-08 (falta decidir HTML saneado), PEN-11 (ZIP hecho; faltan DWG, instalador y EMF fuera de Windows).
-- Por hacer, en orden: PEN-10 (pruebas en Linux y corpus), PEN-04, PEN-05, PEN-14, PEN-09.
+Resumen al 2026-10-08:
+- Terminadas: PEN-01, PEN-02, PEN-03, PEN-04, PEN-06, PEN-07, PEN-12, PEN-13.
+- Parciales: PEN-08 (falta decidir HTML saneado), PEN-10 (backend probado en Linux; faltan E2E en Linux y corpus), PEN-11 (ZIP hecho; faltan DWG, instalador y EMF fuera de Windows).
+- Por hacer, en orden: PEN-05, PEN-14, PEN-09.
 
 ### PEN-01 Correos adjuntos dentro del correo
 
@@ -68,8 +68,9 @@ Terminado cuando: pruebas sintéticas con cada formato desconectado y con la cab
 
 ### PEN-04 Mini stream fragmentado
 
-Prioridad: media. Alcance: backend. Estado: investigado.
-Situación: en el MSG real del usuario el mini stream no es contiguo; se pierden nombres, Content-ID y destinatarios cortos. Suponer contigüidad dio datos falsos y se descartó.
+Prioridad: media. Alcance: backend. Estado: terminada (2026-10-08).
+Hecho: la causa real era la ubicación de la MiniFAT borrada de la cabecera; la MiniFAT seguía entera como cadena de la FAT. Se ubica la única tabla que explica cada stream pequeño y se repone en la copia (ADR-B19). En el MSG real: 254 de 254 cadenas válidas, asunto y remitente idénticos a los encabezados, parser abierto, nombres y Content-ID reales en los 2 adjuntos del directorio y los mismos 12 adjuntos descargables.
+Situación original: en el MSG real del usuario el mini stream no es contiguo; se pierden nombres, Content-ID y destinatarios cortos. Suponer contigüidad dio datos falsos y se descartó.
 Hacer: reconstruir la cadena del mini stream con los tramos válidos de la FAT y validar cada propiedad recuperada contra fuentes independientes (encabezados de transporte, tamaños declarados).
 Terminado cuando: el asunto recuperado del mini stream coincide con el `Subject` de los encabezados en un caso sintético fragmentado.
 
@@ -112,8 +113,10 @@ Hacer: extraer el stream del objeto y tratarlo como adjunto cuando su formato se
 
 ### PEN-10 Corpus real y pruebas en Linux
 
-Prioridad: media (calidad). Alcance: proyecto. Estado: pendiente.
-Situación: sólo se probó con un MSG dañado real; la suite no se ejecutó en Linux en las últimas sesiones.
+Prioridad: media (calidad). Alcance: proyecto. Estado: parcial.
+Hecho (2026-10-08): backend en Linux (contenedor `python:3.12-slim`, kernel WSL2): pytest, ruff check y ruff format aprobados (PLAN_CALIDAD, Comandos).
+Falta: E2E del frontend en Linux (contenedor de Playwright) y el corpus autorizado, que depende del usuario.
+Situación original: sólo se probó con un MSG dañado real; la suite no se ejecutó en Linux en las últimas sesiones.
 Hacer: reunir un corpus autorizado de corrupciones reales sin correos privados versionados y ejecutar backend y E2E en Linux.
 
 ### PEN-12 Acceso LAN documentado

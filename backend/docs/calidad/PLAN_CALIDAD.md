@@ -19,6 +19,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_eml.py`: `.eml` adjunto (sobre, cuerpo con imagen en posición, adjuntos, correo dentro), descargas por `message_path` dentro del EML, `.msg` adjunto como archivo y archivos que sólo lo parecen.
 - `test_raw_recovery.py`: formatos sueltos (JPEG, GIF, ZIP/Office, PDF con su cierre), truncados, anidados, sectores y mini sectores legibles, activación con el parser caído y descarga del suelto.
 - `test_rescue.py`: firma borrada repuesta en copia; cabecera destruida con sobre, adjuntos y descarga por HTTP.
+- `test_minifat_recovery.py`: MiniFAT borrada de la cabecera con el mini stream en orden inverso (`build_cfb(scatter=True)`): asunto, nombre, Content-ID y descarga; tabla incoherente, tablas ambiguas y cabecera sana sin copia.
 - `test_item_details.py`: convocatoria, respuesta, contacto, tarea y correo sin elemento, con propiedades con nombre sintéticas.
 - `test_smime.py`: firmado en claro (contenido, adjuntos, descarga, parser caído), opaco, cifrado, con permisos IRM y correo normal.
 - `test_archive.py`: ZIP con todos los adjuntos (sin enlaces, nombres repetidos numerados, correo adjunto por `message_path`, sin nada descargable) y nombre de descarga legible entre orígenes.
@@ -31,6 +32,7 @@ Desde `backend/`:
 - `.venv/Scripts/python.exe -m pytest` (Linux: `.venv/bin/python`).
 - `.venv/Scripts/python.exe -m ruff check app tests`.
 - `.venv/Scripts/python.exe -m ruff format --check app tests`.
+- Linux sin instalar nada en el equipo (PEN-10): contenedor `python:3.12-slim` con `backend/` montado en sólo lectura y copiado dentro; `pip install -c requirements.lock -e ".[dev]"` y luego los tres comandos anteriores con `python`.
 
 ## Cuándo ampliar
 

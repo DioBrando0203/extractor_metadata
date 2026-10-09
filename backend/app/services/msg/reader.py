@@ -24,7 +24,7 @@ from app.services.msg.attachments import (
 )
 from app.services.msg.envelope import Envelope
 from app.services.msg.fat_recovery import readable_container, recovered_ole_path
-from app.services.msg.inline_images import assign_by_size
+from app.services.msg.inline_images import INFERRED_POSITIONS_NOTICE, assign_by_size
 from app.services.msg.item_details import read_item
 from app.services.msg.limits import limit_response
 from app.services.msg.names import filename_warnings
@@ -34,6 +34,7 @@ from app.services.msg.parsed_fields import (
     read_body,
     read_fixed_properties,
     read_headers,
+    read_inline_tags,
     read_message_properties,
     read_received_at,
     read_recipients,
@@ -133,7 +134,7 @@ def _recovered_message(context: ReadContext) -> MessageMetadata:
         extract_ole_attachments(context.path, context.sources())
     )
     if body.inline and assign_by_size(attachments, body.inline):
-        context.warnings.append("Posición de imágenes incrustadas reconstruida por sus medidas.")
+        context.warnings.append(INFERRED_POSITIONS_NOTICE)
     return MessageMetadata(
         file_name=context.original_name,
         file_size_bytes=context.size_bytes,
@@ -174,6 +175,9 @@ def _parsed_message(message: object, context: ReadContext) -> MessageMetadata:
     attachments = context.finish_attachments(
         extract_parsed_attachments(message, warnings, context.sources())
     )
+    # Tras reparar la estructura se suman archivos sueltos sin Content-ID: ubicarlos por medidas.
+    if context.structure_repaired and assign_by_size(attachments, read_inline_tags(message)):
+        warnings.append(INFERRED_POSITIONS_NOTICE)
     return MessageMetadata(
         file_name=context.original_name,
         file_size_bytes=context.size_bytes,
