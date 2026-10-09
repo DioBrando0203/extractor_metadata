@@ -136,3 +136,10 @@ Estado: terminada
 Cambios: `msg/minifat_recovery.py` (cadenas de la FAT con forma de MiniFAT, validación contra cada stream pequeño, unicidad); `fat_recovery.recovered_ole_path` repone inicio y cantidad en la copia con aviso; `parsed_fields.read_inline_tags` y `reader` ubican por medidas los sueltos también con el parser abierto; `INFERRED_POSITIONS_NOTICE` común; fábrica `build_cfb(scatter=True)`; `tests/test_minifat_recovery.py`.
 Evidencia: pytest 124 aprobadas en Windows y en Linux (4 nuevas; la principal falla con el código anterior); ruff check y format aprobados. MSG real (local): diagnóstico estructural (MiniFAT en fin de cadena y 0 en la cabecera; 8 sectores encadenados en la FAT; mini stream con 119 de 128 sectores alcanzables), 254 de 254 cadenas válidas, asunto y remitente iguales a los encabezados, 12 adjuntos con descarga exacta.
 Notas: ADR-B19; B-16; SPEC-B01 CA-35 y CA-36. Sin cambio de contrato: sólo un aviso nuevo.
+
+## 2026-10-08 23:14 -05:00 Cierre momentáneo del proyecto
+
+Estado: terminada
+Cambios: "Estado del proyecto" en `REQUERIMIENTOS.md`, `AGENTS.md` y README principal.
+Evidencia: decisión del usuario; última verificación en `calidad/RESULTADOS.md` (124 pruebas en Windows y Linux, ruff aprobado).
+Notas: abiertos al cierre: PEN-05, PEN-09, PEN-14; parciales PEN-08 (decisión), PEN-10 (E2E en Linux y corpus) y PEN-11 (DWG, instalador, EMF fuera de Windows). La app no se abrió en el navegador en esta sesión; el único cambio visible es un aviso de texto nuevo.

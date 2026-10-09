@@ -36,6 +36,8 @@ Pensada para una persona que no conoce MSG, OLE, FAT ni metadata. Debe poder abr
 
 Cada pendiente se cita por su ID. Al tomar uno: crear o actualizar la spec correspondiente con sus criterios de aceptación y mover aquí su estado. Prioridad según frecuencia en correo corporativo y valor para el usuario.
 
+Estado del proyecto: cerrado momentáneamente el 2026-10-08 por decisión del usuario. El alcance principal está cumplido y en uso; lo abierto queda como backlog para retomar y no bloquea el uso diario. Orden recomendado al retomar: PEN-10 (E2E en Linux), PEN-14, PEN-05, PEN-09; PEN-08 y el corpus de PEN-10 esperan una decisión o material del usuario.
+
 Resumen al 2026-10-08:
 - Terminadas: PEN-01, PEN-02, PEN-03, PEN-04, PEN-06, PEN-07, PEN-12, PEN-13.
 - Parciales: PEN-08 (falta decidir HTML saneado), PEN-10 (backend probado en Linux; faltan E2E en Linux y corpus), PEN-11 (ZIP hecho; faltan DWG, instalador y EMF fuera de Windows).

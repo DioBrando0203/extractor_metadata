@@ -78,6 +78,7 @@ Crea ocho archivos: correo adjunto y enlace a la nube, reunion, firmado, cifrado
 - Si una parte esta danada, se muestra lo que siga legible. No se afirma reparar el archivo original ni recuperar datos ya perdidos.
 - Las firmas digitales no se verifican; un correo cifrado o firmado en formato opaco no se puede leer aqui.
 - El cuerpo se muestra como texto: no se ejecutan macros, HTML ni scripts. DWG tiene reconocimiento basico, no interpretacion profunda.
+- Estado: cerrado momentaneamente desde el 2026-10-08; lo principal esta cumplido.
 - Pendientes y limites al dia: [requerimientos](backend/docs/REQUERIMIENTOS.md).
 
 ## Verificacion

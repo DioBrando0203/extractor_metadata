@@ -4,6 +4,8 @@
 
 Si el usuario pregunta qué sigue, qué falta o qué podemos continuar: leer `backend/docs/REQUERIMIENTOS.md`, sección "Pendientes por revisar" (IDs PEN-xx), y responder con esa lista en orden de prioridad (alta, media, baja), indicando por cada pendiente su situación y qué haría falta. No inventar pendientes fuera de esa lista sin revisarla primero; si se descubre uno nuevo, agregarlo allí con su ID antes de trabajarlo. Al terminar uno, actualizar su estado y la bitácora.
 
+Estado: proyecto cerrado momentáneamente desde el 2026-10-08. No empezar trabajo nuevo sin que el usuario lo pida; al retomar, partir del "Estado del proyecto" de `REQUERIMIENTOS.md`.
+
 Antes de modificar, leer este archivo y la guía del lado afectado (metodología SDD: spec, plan, código, prueba, registro):
 - Backend: `backend/docs/README.md` y `backend/docs/GUIA_IA.md`; reglas `PY-xx` y `patrones/PATRONES.md`.
 - Frontend: `frontend/docs/README.md` y `frontend/docs/GUIA_IA.md`; reglas `P-xx`, `E-xx`, `C-xx` y `patrones/PATRONES.md`.
