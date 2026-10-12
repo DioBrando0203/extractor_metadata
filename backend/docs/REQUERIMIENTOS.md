@@ -145,7 +145,7 @@ Prioridad: baja. Alcance: frontend y proyecto. Estado: pendiente.
 Estado: parcial.
 
 - Render completo de DWG con una herramienta evaluada y licenciada.
-- Descargar todos los adjuntos en un ZIP: terminado el 2026-10-07 (`POST /attachments`, botón "Descargar todo").
+- Descargar todos los adjuntos en un ZIP: terminado el 2026-10-07 (`POST /attachments`, botón "Descargar todo"). Desde el 2026-10-12 el ZIP separa `adjuntos/` y `mensajes/` (un `.txt` por mensaje del hilo, del primero enviado al último, con remitente y fecha en el nombre).
 - Empaquetado instalable para Windows.
 - EMF/WMF sin miniatura fuera de Windows (límite de Pillow).
 

@@ -45,7 +45,7 @@ export function MessageViewer({
 }: Props) {
   const titleId = useId()
   const panelId = useId()
-  const files = useAttachmentFiles(file, messagePath)
+  const files = useAttachmentFiles(file, messagePath, message)
   const [tab, setTab] = useState<Tab>('message')
   const [viewing, setViewing] = useState<number | null>(null)
   const { attachments } = message

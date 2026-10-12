@@ -44,12 +44,14 @@ src/
     components/FileTypeIcon.tsx          icono Fluent por tipo
     hooks/useAttachmentFiles.ts          caché de binarios y URLs blob
     lib/fileKind.ts, lib/viewerMode.ts, lib/decodeText.ts, lib/link.ts (enlaces http/https y su lugar)
+    lib/messageTexts.ts                un .txt por mensaje del hilo para el ZIP de "Descargar todo"
   features/help/components/HelpPage.tsx  guía rápida
   lib/api.ts                             único punto HTTP
   lib/normalize.ts                       normalización del JSON del backend, recursiva para correos adjuntos
   lib/types.ts                           contrato normalizado
   lib/mail.ts, lib/formatters.ts         utilidades puras (direcciones, título con asunto deducido, ruta de correos adjuntos, texto, fechas de reuniones)
   lib/thread.ts                          hilo citado, marcadores [cid:…] y asunto deducido verificado
+  lib/threadDate.ts                      fecha del "Enviado" citado (español, inglés, numérica) o null
   lib/textSearch.ts                      búsqueda sin tildes con rangos sobre el texto original y fragmentos
   lib/links.ts                           direcciones web: isWebLink (sólo http/https) y splitLinks
 e2e/                                     Playwright: funcional (backend real) y visual (@visual)
@@ -89,7 +91,7 @@ e2e/                                     Playwright: funcional (backend real) y 
 
 - `POST /api/messages/extract` → `{ message, processed_locally }`.
 - `POST /api/messages/attachment` con `file`, `attachment_index`, `preview` opcional y `message_path` opcional (`2/0`, desde `messagePath`) → binario.
-- `POST /api/messages/attachments` con `file` y `message_path` opcional → ZIP (`fetchAllAttachments`). Entre orígenes el navegador no expone `Content-Disposition`: el nombre se arma con el del MSG.
+- `POST /api/messages/attachments` con `file`, `message_path` opcional y `messages` (JSON con los textos del hilo) → ZIP con `adjuntos/` y `mensajes/` (`fetchAllAttachments`). Entre orígenes el navegador no expone `Content-Disposition`: el nombre se arma con el del MSG.
 - `Message.security`: `signed`, `opaque`, `encrypted`, `protected` o `null` (S/MIME; la firma no se verifica).
 - `Message.item`: reunión, cita, contacto o tarea (`ItemDetails`), o `null` en un correo.
 - `Attachment.kind`: `file`, `message` (con `message: Message`, ya leído) o `link` (con `link`, sin bytes).

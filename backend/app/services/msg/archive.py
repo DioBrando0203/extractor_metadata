@@ -3,20 +3,31 @@
 Recorre los adjuntos en el orden del análisis con la misma fuente que la descarga individual
 (``download.open_source``): correo, correo adjunto, contenido firmado o lectura de rescate. Un
 adjunto sin bytes (un enlace) o ilegible se omite sin interrumpir el resto; los nombres repetidos
-se numeran como lo haría el explorador de archivos.
+se numeran como lo haría el explorador de archivos. Los adjuntos van en ``adjuntos/`` y, si el
+navegador envió el texto de cada mensaje del hilo, cada uno va como ``.txt`` en ``mensajes/``.
 """
 
 import zipfile
+from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 
 from app.core.errors import ExtractionError
 from app.services.msg.download import open_source
+from app.services.msg.names import INVALID_NAME_CHARS
 
 ZIP_CONTENT_TYPE = "application/zip"
+ATTACHMENTS_FOLDER = "adjuntos"
+MESSAGES_FOLDER = "mensajes"
+#: (nombre sin extensión, texto) de cada mensaje del hilo, del más antiguo al más reciente.
+MessageTexts = Sequence[tuple[str, str]]
 
 
 def extract_all_attachments(
-    path: Path, destination: Path, archive_name: str, message_path: tuple[int, ...] = ()
+    path: Path,
+    destination: Path,
+    archive_name: str,
+    message_path: tuple[int, ...] = (),
+    texts: MessageTexts = (),
 ) -> tuple[str, str]:
     """Escribe en ``destination`` un ZIP con los adjuntos descargables; devuelve (nombre, MIME)."""
     source = open_source(path, message_path, destination)
@@ -29,14 +40,22 @@ def extract_all_attachments(
                     filename, _ = source.extract(index, part)
                 except Exception:
                     continue  # Enlace sin bytes o adjunto ilegible (PY-16): se omite.
-                archive.write(part, _unique(filename, used))
+                archive.write(part, f"{ATTACHMENTS_FOLDER}/{_unique(filename, used)}")
+            _write_texts(archive, texts)
     finally:
         part.unlink(missing_ok=True)
-    if not used:
+    if not used and not texts:
         raise ExtractionError(
             "Este correo no tiene adjuntos que se puedan descargar.", code="ATTACHMENT_NOT_FOUND"
         )
     return archive_name, ZIP_CONTENT_TYPE
+
+
+def _write_texts(archive: zipfile.ZipFile, texts: MessageTexts) -> None:
+    used: set[str] = set()
+    for position, (name, text) in enumerate(texts, start=1):
+        safe = INVALID_NAME_CHARS.sub("_", name).strip(". ") or f"Mensaje {position}"
+        archive.writestr(f"{MESSAGES_FOLDER}/{_unique(f'{safe}.txt', used)}", text)
 
 
 def _unique(name: str, used: set[str]) -> str:

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { fetchAllAttachments, fetchAttachment, saveBlob } from '../../../lib/api'
-import type { Attachment, AttachmentFile } from '../../../lib/types'
+import type { Attachment, AttachmentFile, Message } from '../../../lib/types'
+import { messageTexts } from '../lib/messageTexts'
 
 export type Variant = 'original' | 'preview'
 export type AttachmentFiles = ReturnType<typeof useAttachmentFiles>
@@ -11,9 +12,10 @@ const ROOT: readonly number[] = []
 /**
  * Caché en memoria de los binarios pedidos mientras se lee un correo. Evita reenviar el MSG al volver a
  * ver o descargar el mismo adjunto y revoca todas las URLs `blob:` al desmontar el lector.
- * `messagePath` ubica el correo adjunto que se está leyendo dentro del archivo.
+ * `messagePath` ubica el correo adjunto que se está leyendo dentro del archivo; `message`, si llega,
+ * aporta el texto de cada mensaje del hilo al ZIP de "Descargar todo".
  */
-export function useAttachmentFiles(file: File, messagePath: readonly number[] = ROOT) {
+export function useAttachmentFiles(file: File, messagePath: readonly number[] = ROOT, message?: Message) {
   const files = useRef(new Map<string, Promise<AttachmentFile>>())
   const urls = useRef(new Map<string, string>())
 
@@ -66,11 +68,11 @@ export function useAttachmentFiles(file: File, messagePath: readonly number[] = 
     [load],
   )
 
-  /** Todos los adjuntos en un ZIP; no se guarda en caché porque se pide una sola vez. */
+  /** Adjuntos y textos del hilo en un ZIP; no se guarda en caché porque se pide una sola vez. */
   const downloadAll = useCallback(async () => {
-    const archive = await fetchAllAttachments(file, messagePath)
+    const archive = await fetchAllAttachments(file, messagePath, message ? messageTexts(message) : [])
     saveBlob(archive.blob, archive.filename)
-  }, [file, messagePath])
+  }, [file, messagePath, message])
 
   return useMemo(() => ({ load, objectUrl, download, downloadAll }), [load, objectUrl, download, downloadAll])
 }

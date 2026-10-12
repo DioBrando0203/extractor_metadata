@@ -137,7 +137,9 @@ test('descargar todo entrega un ZIP con los adjuntos que traen bytes', async ({ 
   expect(download.suggestedFilename()).toBe('obra - adjuntos.zip')
   const zip = await readFile((await download.path())!)
   expect(zip.subarray(0, 2).toString()).toBe('PK')
-  for (const name of ['informe.pdf', 'Informe (2).pdf', 'Pedido.msg']) expect(zip.includes(name)).toBe(true)
+  for (const name of ['adjuntos/informe.pdf', 'adjuntos/Informe (2).pdf', 'adjuntos/Pedido.msg'])
+    expect(zip.includes(name)).toBe(true)
+  expect(zip.includes('mensajes/Mensaje 1 - ')).toBe(true)
   expect(zip.includes('Presupuesto.xlsx')).toBe(false)
 })
 

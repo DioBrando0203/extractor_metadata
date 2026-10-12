@@ -157,3 +157,10 @@ Estado: terminada
 Cambios: `ole_reader.has_recoverable_message_content` centraliza cuándo la recuperación OLE tiene datos útiles; `reader` cambia a rescate validado si el parser cae sin esos datos; `rescue` diferencia el aviso de firma ausente del de estructura interna inconsistente; `download` aplica el mismo criterio. Las pruebas cubren CFB con firma válida, parser fallido, propiedades vacías y descarga por el mismo índice; una MiniFAT no verificable no se sigue y sólo permite rescate independiente.
 Evidencia: `.venv/bin/python -m pytest` con 131 aprobadas; `.venv/bin/python -m ruff check app tests` y `.venv/bin/python -m ruff format --check app tests` aprobados. Caso local no versionado: texto y 7 imágenes recuperables, sin sobre verificable; ZIP comprobado con CRC correcto y sin modificar el MSG.
 Notas: ADR-B20, B-17 y SPEC-B01 CA-37. Sin cambio de contrato HTTP ni de interfaz.
+
+## 2026-10-12 10:29 -05:00 ZIP con carpetas y texto de cada mensaje (PEN-11)
+
+Estado: terminada
+Cambios: `POST /attachments` acepta `messages` (JSON validado con `schemas.MessageText`, tope 200); `msg/archive.py` escribe `adjuntos/` y `mensajes/<name>.txt` con nombre seguro y numerado; `worker.run_archive_extraction` pasa los textos al hijo aislado.
+Evidencia: `.venv/bin/python -m pytest` con 133 aprobadas (2 nuevas en `test_archive.py`); `ruff check app tests` y `ruff format --check app tests` aprobados; servidor reiniciado y E2E del frontend aprobado.
+Notas: SPEC-B02 CA-14; contrato en `estilos/API.md`. La separación del hilo la hace el frontend (`lib/thread.ts`) para no duplicarla.

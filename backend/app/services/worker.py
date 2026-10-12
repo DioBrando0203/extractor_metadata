@@ -123,13 +123,18 @@ def _attachment_worker(
 
 
 def _archive_worker(
-    connection: Connection, path: str, message_path: tuple[int, ...], destination: str, name: str
+    connection: Connection,
+    path: str,
+    message_path: tuple[int, ...],
+    destination: str,
+    name: str,
+    texts: tuple[tuple[str, str], ...],
 ) -> None:
     def task() -> bytes:
         from app.services.msg import extract_all_attachments
 
         filename, content_type = extract_all_attachments(
-            Path(path), Path(destination), name, message_path
+            Path(path), Path(destination), name, message_path, texts
         )
         return json.dumps({"filename": filename, "content_type": content_type}).encode()
 
@@ -190,14 +195,19 @@ def run_attachment_extraction(
 
 
 def run_archive_extraction(
-    path: Path, size: int, message_path: tuple[int, ...], destination: Path, name: str
+    path: Path,
+    size: int,
+    message_path: tuple[int, ...],
+    destination: Path,
+    name: str,
+    texts: tuple[tuple[str, str], ...] = (),
 ) -> tuple[str, str]:
-    """Todos los adjuntos en un ZIP, también en el proceso aislado."""
+    """Todos los adjuntos (y el texto de cada mensaje) en un ZIP, también en el proceso aislado."""
     timeout = _timeout_for_size(size)
     payload = _run_isolated(
         _IsolatedJob(
             target=_archive_worker,
-            args=(str(path), message_path, str(destination), name),
+            args=(str(path), message_path, str(destination), name, texts),
             timeout=timeout,
             max_response_bytes=_ATTACHMENT_RESPONSE_BYTES,
             timeout_message=f"La preparación de los adjuntos excedió {timeout} segundos.",

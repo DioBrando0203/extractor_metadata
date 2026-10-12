@@ -68,14 +68,19 @@ export async function fetchAttachment(
   }
 }
 
-/** Todos los adjuntos descargables del correo (o correo adjunto) en un ZIP armado por el backend. */
+/**
+ * Todos los adjuntos descargables del correo (o correo adjunto) en un ZIP armado por el backend; con
+ * `texts`, cada mensaje del hilo va además como `.txt` en la carpeta `mensajes/`.
+ */
 export async function fetchAllAttachments(
   file: File,
   messagePath: readonly number[] = [],
+  texts: readonly { name: string; text: string }[] = [],
 ): Promise<AttachmentFile> {
   const data = new FormData()
   data.append('file', file)
   if (messagePath.length) data.append('message_path', messagePath.join('/'))
+  if (texts.length) data.append('messages', JSON.stringify(texts))
   let response: Response
   try {
     response = await fetch(`${API_URL}/messages/attachments`, { method: 'POST', body: data })

@@ -61,7 +61,7 @@ app/
     inline_images.py           posición de imágenes reconstruida por medidas cuando falta el Content-ID
     fat_recovery.py            firma borrada, DIFAT truncada y MiniFAT perdida reparadas en copia temporal
     minifat_recovery.py        ubica la única cadena de la FAT que explica cada stream pequeño (MiniFAT perdida)
-    archive.py                 todos los adjuntos descargables en un ZIP con las mismas fuentes que la descarga
+    archive.py                 ZIP con adjuntos/ (mismas fuentes que la descarga) y mensajes/ (textos del hilo)
     download.py                open_source (MSG, EML, firmado o rescate, con count); copia un adjunto, o un correo adjunto como .msg, al temporal; recorre message_path por MSG y EML
     limits.py                  presupuesto de miniaturas y metadatos, único para el correo y sus correos adjuntos
     names.py                   avisos y nombres seguros

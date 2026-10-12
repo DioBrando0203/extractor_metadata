@@ -176,4 +176,13 @@ describe('descargar todo', () => {
     expect(body.get('message_path')).toBe('2')
     expect(archive.filename).toBe('Revisión de obra - adjuntos.zip')
   })
+
+  it('envía el texto de cada mensaje del hilo para la carpeta mensajes/', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(new Blob(['PK']), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const texts = [{ name: 'Mensaje 1 - Ana - 2026-10-01 09.00', text: 'Hola' }]
+    await fetchAllAttachments(new File(['x'], 'obra.msg'), [], texts)
+    const body = fetchMock.mock.calls[0][1]?.body as FormData
+    expect(JSON.parse(String(body.get('messages')))).toEqual(texts)
+  })
 })

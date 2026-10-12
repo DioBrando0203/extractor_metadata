@@ -72,3 +72,11 @@ AttachmentMetadata.model_rebuild()
 class ExtractionResponse(BaseModel):
     message: MessageMetadata
     processed_locally: bool = True
+
+
+class MessageText(BaseModel):
+    """Texto de un mensaje del hilo que el navegador ya separó, para el ZIP de "Descargar todo"."""
+
+    # Sin extensión; el servicio lo vuelve un nombre de archivo seguro.
+    name: str = Field(min_length=1, max_length=200)
+    text: str = Field(max_length=400_000)

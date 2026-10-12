@@ -98,3 +98,10 @@ Estado: terminada
 Cambios: bloqueos B-14 (nombre de descarga entre orígenes) y B-15 (pruebas que contaban botones por prefijo); B-13 con la recurrencia de escapes y saltos de línea en Windows.
 Evidencia: format:check y lint aprobados; 100 unitarias.
 Notas: los 8 correos de ejemplo para revisar la interfaz salen de `backend/tests/generar_ejemplos.py`.
+
+## 2026-10-12 10:29 -05:00 "Descargar todo" con el texto de cada mensaje (PEN-11)
+
+Estado: terminada
+Cambios: `features/attachments/lib/messageTexts.ts` (un texto por mensaje del hilo, del primero enviado al último, con remitente y fecha en el nombre y "desconocido"/"No se pudo extraer" si faltan); `lib/threadDate.ts` (fecha citada en español, inglés o numérica); `fetchAllAttachments` envía `messages`; `useAttachmentFiles` recibe el `Message` desde `MessageViewer`; E2E verifica `adjuntos/` y `mensajes/`.
+Evidencia: format:check, build y lint aprobados; 105 unitarias (19 archivos); 10 E2E con el backend reiniciado.
+Notas: SPEC-04 CA-10. Sin cambio visual: test:visual no ejecutado.

@@ -1,11 +1,11 @@
 # Resultados de calidad (backend)
 
-Última ejecución: 2026-10-12 10:01 -05:00 (America/Lima).
+Última ejecución: 2026-10-12 10:29 -05:00 (America/Lima).
 Entorno: Linux, Python 3.14.4 en `.venv`.
 
 ## Comandos
 
-- `python -m pytest`: 131 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
+- `python -m pytest`: 133 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
 - `python -m ruff check app tests`: aprobado.
 - `python -m ruff format --check app tests`: 74 archivos con formato correcto.
 

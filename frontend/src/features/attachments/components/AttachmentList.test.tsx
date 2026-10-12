@@ -128,7 +128,7 @@ describe('AttachmentList', () => {
     await waitFor(() =>
       expect(mocks.saveBlob).toHaveBeenCalledWith(expect.any(Blob), 'correo - adjuntos.zip'),
     )
-    expect(mocks.fetchAllAttachments).toHaveBeenCalledWith(file, [])
+    expect(mocks.fetchAllAttachments).toHaveBeenCalledWith(file, [], [])
 
     mocks.fetchAllAttachments.mockRejectedValueOnce(new Error('falló'))
     fireEvent.click(screen.getByRole('button', { name: 'Descargar todo' }))

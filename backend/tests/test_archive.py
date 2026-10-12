@@ -1,6 +1,7 @@
 """Descargar todos los adjuntos en un ZIP (PEN-11)."""
 
 import io
+import json
 import zipfile
 from dataclasses import replace
 
@@ -49,10 +50,10 @@ def client(tmp_path, monkeypatch):
     assert list(tmp_path.iterdir()) == []
 
 
-def _download_all(client, data: bytes, message_path: str = ""):
+def _download_all(client, data: bytes, message_path: str = "", messages: str = ""):
     return client.post(
         "/api/messages/attachments",
-        data={"message_path": message_path},
+        data={"message_path": message_path, "messages": messages},
         files={"file": ("Revisión de obra.msg", data)},
     )
 
@@ -64,8 +65,12 @@ def test_all_attachments_come_in_one_zip_without_links(client):
     assert response.headers["content-type"] == "application/zip"
     assert "adjuntos.zip" in response.headers["content-disposition"]
     with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
-        assert archive.namelist() == ["informe.pdf", "Informe (2).pdf", "Pedido.msg"]
-        assert archive.read("informe.pdf") == PDF
+        assert archive.namelist() == [
+            "adjuntos/informe.pdf",
+            "adjuntos/Informe (2).pdf",
+            "adjuntos/Pedido.msg",
+        ]
+        assert archive.read("adjuntos/informe.pdf") == PDF
 
 
 def test_attachments_of_an_attached_message_come_with_the_message_path(client):
@@ -73,8 +78,37 @@ def test_attachments_of_an_attached_message_come_with_the_message_path(client):
 
     assert response.status_code == 200, response.text
     with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
-        assert archive.namelist() == ["pedido.pdf"]
-        assert archive.read("pedido.pdf") == INNER_PDF
+        assert archive.namelist() == ["adjuntos/pedido.pdf"]
+        assert archive.read("adjuntos/pedido.pdf") == INNER_PDF
+
+
+def test_each_thread_message_comes_as_a_text_file_in_its_folder(client):
+    messages = json.dumps(
+        [
+            {"name": "Mensaje 1 - María - 2026-10-01 09:00", "text": "De: María\n\n¿Planos?"},
+            {"name": "Mensaje 2 - Carlos/Rojas - fecha desconocida", "text": "Envío."},
+            {"name": "Mensaje 2 - Carlos/Rojas - fecha desconocida", "text": "Repetido."},
+        ]
+    )
+
+    response = _download_all(client, _mail(), messages=messages)
+
+    assert response.status_code == 200, response.text
+    with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
+        names = [name for name in archive.namelist() if name.startswith("mensajes/")]
+        assert names == [
+            "mensajes/Mensaje 1 - María - 2026-10-01 09_00.txt",
+            "mensajes/Mensaje 2 - Carlos_Rojas - fecha desconocida.txt",
+            "mensajes/Mensaje 2 - Carlos_Rojas - fecha desconocida (2).txt",
+        ]
+        assert archive.read(names[0]).decode() == "De: María\n\n¿Planos?"
+
+
+def test_malformed_message_texts_are_rejected(client):
+    response = _download_all(client, _mail(), messages='[{"name": ""}]')
+
+    assert response.status_code == 422
+    assert response.json()["detail"]["code"] == "INVALID_MESSAGES"
 
 
 def test_mail_with_only_links_has_nothing_to_zip(client):
