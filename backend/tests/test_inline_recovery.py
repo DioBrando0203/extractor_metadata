@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import io
+import struct
 
 import compressed_rtf
-from msg_factory import make_msg
+from msg_factory import FREE, SECTOR, make_msg
 from PIL import Image
 
 from app.models.schemas import AttachmentMetadata, MetadataItem
-from app.services.msg import extract_msg_file, reader
+from app.services.msg import extract_attachment_file, extract_msg_file, reader
 from app.services.msg.inline_images import InlineTag, assign_by_size, inline_tags
 from app.services.msg.raw_body import recover_html_body
 
@@ -119,3 +120,36 @@ def test_damaged_message_gets_images_back_in_position(tmp_path, monkeypatch):
     assert "[cid:image001.png@01DA]" in (message.body_preview or "")
     assert message.attachments[0].content_id == "image001.png@01DA"
     assert message.attachments[0].content_id_inferred is True
+
+
+def test_broken_directory_rescues_raw_body_and_attachment(tmp_path):
+    """Con firma OLE, pero sin árbol, sólo entran los datos sueltos validados."""
+    image = _png(40, 20)
+    data = bytearray(
+        make_msg(
+            body=BODY,
+            attachment=image,
+            filename="adjunto.png",
+            extra_streams={("__substg1.0_99990102",): _rtf_blob()},
+        )
+    )
+    directory_sector = struct.unpack_from("<I", data, 48)[0]
+    directory_offset = (directory_sector + 1) * SECTOR
+    rtf_name = "__substg1.0_99990102".encode("utf-16-le")
+    rtf_offset = data.find(rtf_name, directory_offset)
+    assert rtf_offset >= directory_offset
+    rtf_entry = (rtf_offset - directory_offset) // 128
+    struct.pack_into("<I", data, directory_offset + 76, rtf_entry)
+    struct.pack_into("<III", data, directory_offset + rtf_entry * 128 + 68, FREE, FREE, FREE)
+    path = tmp_path / "arbol-roto.msg"
+    path.write_bytes(data)
+
+    message = extract_msg_file(path, path.name, path.stat().st_size)
+    output = tmp_path / "adjunto.bin"
+
+    assert message.status == "partial"
+    assert BODY in (message.body_preview or "")
+    assert [item.name for item in message.attachments] == ["imagen-recuperado-1.png"]
+    assert "estructura interna" in message.warnings[0]
+    assert extract_attachment_file(path, 0, output)[0] == "imagen-recuperado-1.png"
+    assert output.read_bytes() == image

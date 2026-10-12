@@ -30,12 +30,30 @@ _RESCUE_NOTICE = (
     "La cabecera del archivo está destruida: se rescataron los datos que siguen enteros "
     "(sobre, texto y adjuntos). Puede faltar parte del correo."
 )
+_INCONSISTENT_OLE_NOTICE = (
+    "La estructura interna del MSG es inconsistente: se rescataron los datos que siguen enteros "
+    "(texto y adjuntos). Puede faltar parte del correo."
+)
 
 
 def rescue_message(
     path: Path, original_name: str, size_bytes: int, deadline: float
 ) -> MessageMetadata:
     """Correo armado sólo con datos sueltos validados; error si no queda nada legible."""
+    return _rescue_message(path, original_name, size_bytes, deadline, _RESCUE_NOTICE)
+
+
+def rescue_inconsistent_ole_message(
+    path: Path, original_name: str, size_bytes: int, deadline: float
+) -> MessageMetadata:
+    """Rescata un OLE con firma válida pero sin árbol de mensaje legible."""
+    return _rescue_message(path, original_name, size_bytes, deadline, _INCONSISTENT_OLE_NOTICE)
+
+
+def _rescue_message(
+    path: Path, original_name: str, size_bytes: int, deadline: float, notice: str
+) -> MessageMetadata:
+    """Arma un correo parcial desde datos contiguos validados del archivo dañado."""
     headers = transport_headers(path)
     envelope = envelope_from_headers(headers)
     body = best_recovered_body(path, None, settings.max_body_chars)
@@ -46,7 +64,7 @@ def rescue_message(
             "o haber sido renombrado desde otro formato.",
             code="INVALID_OR_CORRUPT_MSG",
         )
-    warnings = [_RESCUE_NOTICE]
+    warnings = [notice]
     if body.inline and assign_by_size(attachments, body.inline):
         warnings.append(INFERRED_POSITIONS_NOTICE)
     return MessageMetadata(

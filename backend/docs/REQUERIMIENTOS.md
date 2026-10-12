@@ -38,8 +38,8 @@ Cada pendiente se cita por su ID. Al tomar uno: crear o actualizar la spec corre
 
 Estado del proyecto: cerrado momentáneamente el 2026-10-08 por decisión del usuario. El alcance principal está cumplido y en uso; lo abierto queda como backlog para retomar y no bloquea el uso diario. Orden recomendado al retomar: PEN-10 (E2E en Linux), PEN-14, PEN-05, PEN-09; PEN-08 y el corpus de PEN-10 esperan una decisión o material del usuario.
 
-Resumen al 2026-10-08:
-- Terminadas: PEN-01, PEN-02, PEN-03, PEN-04, PEN-06, PEN-07, PEN-12, PEN-13.
+Resumen al 2026-10-12:
+- Terminadas: PEN-01, PEN-02, PEN-03, PEN-04, PEN-06, PEN-07, PEN-12, PEN-13, PEN-16.
 - Parciales: PEN-08 (falta decidir HTML saneado), PEN-10 (backend probado en Linux; faltan E2E en Linux y corpus), PEN-11 (ZIP hecho; faltan DWG, instalador y EMF fuera de Windows).
 - Por hacer, en orden: PEN-05, PEN-14, PEN-09.
 
@@ -156,3 +156,10 @@ Situación: existe un prototipo Flask independiente que convierte KML/KMZ a GPKG
 Hecho: `POST /api/geodata/convert` copia KML/KMZ a un temporal, controla el KMZ y llama a GDAL en proceso aislado; entrega un ZIP con el GPKG y se limpia al terminar.
 Hacer: migrar la corrección estructural y estilos QML; instalar y verificar GDAL en Linux y Windows; incorporar la herramienta al selector visual.
 Terminado cuando: KML y KMZ sintéticos devuelven GPKG y QML verificables en ambos sistemas, no quedan temporales y la UI permite cambiar de herramienta.
+
+### PEN-16 Rescate con firma OLE válida pero estructura interna inconsistente
+
+Prioridad: alta. Alcance: backend. Estado: terminada (2026-10-12).
+Situación original: un MSG puede conservar su firma OLE/CFB pero perder el árbol de directorios o la MiniFAT. El parser falla y las propiedades OLE quedan vacías, aunque el cuerpo o archivos contiguos todavía sean validables; el flujo anterior lo rechazaba como ilegible.
+Hecho: si el parser falla y OLE no aporta propiedades de correo ni adjuntos, se activa el rescate de bytes validados con aviso específico; la descarga toma la misma decisión para mantener sus índices. La comprobación local recuperó texto y 7 imágenes sin atribuir un sobre que no estaba disponible.
+Terminado cuando: un MSG sintético con cabecera válida, parser fallido y PNG suelto devuelve lectura parcial y permite descargar el mismo PNG; la comprobación local del caso aportado por el usuario recupera únicamente datos presentes.

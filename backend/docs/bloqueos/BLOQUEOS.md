@@ -102,3 +102,11 @@ Síntoma: en el MSG real, asunto, remitente, nombres y Content-ID de adjuntos se
 Causa: la cabecera tenía el inicio de la MiniFAT en fin de cadena y la cantidad en 0; olefile no carga la MiniFAT y cada stream pequeño devuelve 0 bytes. La MiniFAT y el mini stream seguían en el archivo, encadenados en la FAT, salvo el último enlace del mini stream (apunta a un sector de la FAT).
 Solución: ubicar la única tabla que explica cada stream pequeño y reponerla en la copia (ADR-B19).
 Prevención: `test_minifat_recovery.py`. Diagnosticar con la estructura (cabecera, cadenas, defectos de olefile) antes de suponer que un dato se perdió.
+
+## B-17 Firma OLE válida ocultaba datos rescatables
+
+Fecha: 2026-10-12. Estado: resuelto.
+Síntoma: un MSG con firma OLE conservada no abría, aunque el cuerpo y varios archivos completos seguían en bytes no enlazados.
+Causa: el lector sólo activaba `rescue_message` cuando faltaba la firma. Si el parser fallaba y OLE no devolvía propiedades ni adjuntos, devolvía `UNREADABLE_MSG` sin intentar el rescate validado.
+Solución: `has_recoverable_message_content` distingue una recuperación OLE útil. Si no hay una y el parser falla, `rescue_inconsistent_ole_message` recupera sólo datos validados; `download.open_source` toma la misma decisión.
+Prevención: CA-37 de SPEC-B01 y `test_rescue.py::test_inconsistent_ole_uses_raw_rescue_when_parser_and_properties_fail`.

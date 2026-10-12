@@ -22,7 +22,7 @@ from app.services.msg.embedded import (
 from app.services.msg.eml import EmlSource, looks_like_eml, parse_eml
 from app.services.msg.fat_recovery import readable_container, recovered_ole_path
 from app.services.msg.names import download_filename, message_filename
-from app.services.msg.ole_reader import read_ole_metadata
+from app.services.msg.ole_reader import has_recoverable_message_content, read_ole_metadata
 from app.services.msg.raw_recovery import loose_candidates
 from app.services.msg.reader import parser_fails
 from app.services.msg.smime import smime_content
@@ -54,8 +54,8 @@ def open_source(
     path: Path, message_path: tuple[int, ...], scratch: Path
 ) -> "_MsgSource | EmlSource | _RescueSource":
     """El correo (o correo adjunto) cuyos adjuntos se piden; las copias van junto a ``scratch``."""
-    if not readable_container(path):
-        # Lectura de rescate (``rescue``): los únicos adjuntos son los archivos sueltos.
+    if not readable_container(path) or _requires_raw_rescue(path):
+        # Lectura de rescate: los únicos adjuntos son los archivos sueltos validados.
         if message_path:
             raise _not_found()
         return _RescueSource(path)
@@ -67,6 +67,14 @@ def open_source(
 
 def _not_found() -> ExtractionError:
     return ExtractionError("No se encontró el adjunto solicitado.", code="ATTACHMENT_NOT_FOUND")
+
+
+def _requires_raw_rescue(path: Path) -> bool:
+    """Replica el análisis cuando OLE no entrega ningún campo de correo usable."""
+    with recovered_ole_path(path) as (read_path, _):
+        return parser_fails(read_path) and not has_recoverable_message_content(
+            read_ole_metadata(read_path)
+        )
 
 
 @dataclass(frozen=True)
@@ -135,7 +143,7 @@ class _MsgSource:
 
 @dataclass(frozen=True)
 class _RescueSource:
-    """Archivo sin cabecera legible: sus adjuntos son los archivos sueltos rescatados."""
+    """Archivo sin contenido OLE legible: sus adjuntos son los archivos sueltos rescatados."""
 
     path: Path
 

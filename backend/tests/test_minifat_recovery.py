@@ -4,11 +4,9 @@ import io
 import os
 import struct
 
-import pytest
 from msg_factory import END, SECTOR, build_cfb, message_streams
 from PIL import Image
 
-from app.core.errors import ExtractionError
 from app.services.msg import extract_attachment_file, extract_msg_file
 from app.services.msg.fat_recovery import recovered_ole_path
 from app.services.msg.minifat_recovery import locate_minifat
@@ -82,9 +80,12 @@ def test_minifat_that_does_not_explain_every_stream_is_not_used(tmp_path):
     assert locate_minifat(path) is None
     with recovered_ole_path(path) as (_, notices):
         assert notices == []
-    # Sin una MiniFAT verificable no se lee nada del mini stream: ni asunto ni encabezados.
-    with pytest.raises(ExtractionError):
-        extract_msg_file(path, path.name, path.stat().st_size)
+    # Sin una MiniFAT verificable no se siguen sus cadenas; sólo entra el rescate validado.
+    result = extract_msg_file(path, path.name, path.stat().st_size)
+    assert result.status == "partial"
+    assert result.subject == SUBJECT
+    assert not result.headers
+    assert result.attachments == []
 
 
 def test_two_tables_that_fit_are_ambiguous(tmp_path):

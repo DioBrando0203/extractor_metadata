@@ -16,7 +16,6 @@ import extract_msg
 from extract_msg.enums import ErrorBehavior
 
 from app.core.config import settings
-from app.core.errors import ExtractionError
 from app.models.schemas import MessageMetadata
 from app.services.msg.attachments import (
     extract_ole_attachments,
@@ -29,7 +28,7 @@ from app.services.msg.item_details import read_item
 from app.services.msg.limits import limit_response
 from app.services.msg.names import filename_warnings
 from app.services.msg.nesting import EmbeddedBudget
-from app.services.msg.ole_reader import read_ole_metadata
+from app.services.msg.ole_reader import has_recoverable_message_content, read_ole_metadata
 from app.services.msg.parsed_fields import (
     read_body,
     read_fixed_properties,
@@ -41,7 +40,7 @@ from app.services.msg.parsed_fields import (
 )
 from app.services.msg.raw_body import best_recovered_body
 from app.services.msg.read_context import ReadContext
-from app.services.msg.rescue import rescue_message
+from app.services.msg.rescue import rescue_inconsistent_ole_message, rescue_message
 from app.services.msg.smime import smime_content
 from app.services.msg.text import clean_text, read_attribute
 
@@ -53,9 +52,6 @@ _PARSER_ERRORS = (
     | ErrorBehavior.STANDARDS_VIOLATION
     | ErrorBehavior.OLE_DEFECT_INCORRECT
 )
-#: Propiedades MAPI que justifican devolver un correo recuperado: asunto, cuerpo, remitente o
-#: encabezados de transporte (que resisten daños del mini stream).
-_RECOVERABLE_KEYS = ("0037", "1000", "0C1A", "0C1F", "007D")
 
 
 def extract_msg_file(path: Path, original_name: str, size_bytes: int) -> MessageMetadata:
@@ -119,11 +115,10 @@ def _recovered_message(context: ReadContext) -> MessageMetadata:
     """Estrategia de respaldo: correo armado sólo con propiedades OLE legibles."""
     context.parser_failed = True
     recovered = context.ole.recovered
-    if not any(recovered.get(key) for key in _RECOVERABLE_KEYS):
-        raise ExtractionError(
-            "El contenedor abre, pero no se pudo recuperar contenido del MSG.",
-            code="UNREADABLE_MSG",
-        ) from None
+    if not has_recoverable_message_content(context.ole):
+        return rescue_inconsistent_ole_message(
+            context.path, context.original_name, context.size_bytes, context.deadline
+        )
     context.warnings.append(
         "El lector MSG falló. Se recuperaron propiedades desde OLE y los adjuntos "
         "que permanecen legibles."

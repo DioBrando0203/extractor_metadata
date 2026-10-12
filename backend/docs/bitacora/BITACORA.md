@@ -150,3 +150,10 @@ Estado: parcial
 Cambios: `POST /api/geodata/convert`; paquete `services/kmz` para extraer KMZ con límites y llamar a GDAL dentro del hijo aislado; ZIP temporal de descarga; límites de geodatos, SPEC-B03, ADR-B19 y contrato API.
 Evidencia: `python -m pytest` con 123 aprobadas; `ruff check app tests` y `ruff format --check app tests` aprobados; nuevas pruebas para extensión, KMZ sin KML, GDAL ausente y limpieza; HTTP local tras reiniciar: KML sintético devuelve 422 `GDAL_UNAVAILABLE` y el temporal queda vacío.
 Notas: GDAL 3.12.2 se instaló después de esta tarea; el endpoint convierte un KML sintético a GPKG verificable. Falta migrar estilos QML e interfaz React.
+
+## 2026-10-12 10:01 -05:00 Rescate con OLE inconsistente (PEN-16)
+
+Estado: terminada
+Cambios: `ole_reader.has_recoverable_message_content` centraliza cuándo la recuperación OLE tiene datos útiles; `reader` cambia a rescate validado si el parser cae sin esos datos; `rescue` diferencia el aviso de firma ausente del de estructura interna inconsistente; `download` aplica el mismo criterio. Las pruebas cubren CFB con firma válida, parser fallido, propiedades vacías y descarga por el mismo índice; una MiniFAT no verificable no se sigue y sólo permite rescate independiente.
+Evidencia: `.venv/bin/python -m pytest` con 131 aprobadas; `.venv/bin/python -m ruff check app tests` y `.venv/bin/python -m ruff format --check app tests` aprobados. Caso local no versionado: texto y 7 imágenes recuperables, sin sobre verificable; ZIP comprobado con CRC correcto y sin modificar el MSG.
+Notas: ADR-B20, B-17 y SPEC-B01 CA-37. Sin cambio de contrato HTTP ni de interfaz.

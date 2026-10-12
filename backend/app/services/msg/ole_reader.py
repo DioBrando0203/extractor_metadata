@@ -20,6 +20,7 @@ _PROPERTIES_STREAM = "__properties_version1.0"
 _PROPERTY_PREFIX = "__substg1.0_"
 _CODEPAGE_TAG = 0x3FFD0003
 _DEFAULT_ANSI = "cp1252"
+_RECOVERABLE_MESSAGE_KEYS = ("0037", "1000", "0C1A", "0C1F", "007D")
 MAPI_LABELS = {
     "001A": "Clase de mensaje",
     "0037": "Asunto",
@@ -49,6 +50,11 @@ class OleMetadata:
     warnings: list[str] = field(default_factory=list)
     #: Carpeta OLE del adjunto → nombre, tamaño, Content-ID y cómo viaja (``attachment_entries``).
     attachments: dict[str, OleAttachment] = field(default_factory=dict)
+
+
+def has_recoverable_message_content(metadata: OleMetadata) -> bool:
+    """Indica si OLE conserva un campo de correo que permita armar una lectura parcial."""
+    return any(metadata.recovered.get(key) for key in _RECOVERABLE_MESSAGE_KEYS)
 
 
 def read_ole_metadata(path: Path) -> OleMetadata:

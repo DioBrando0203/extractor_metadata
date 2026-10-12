@@ -1,16 +1,18 @@
 # Resultados de calidad (backend)
 
-Última ejecución: 2026-10-08 22:40 -05:00 (America/Lima).
-Entorno: Windows 11, Python 3.12.10 en `.venv`; y Linux (contenedor `python:3.12-slim`, Python 3.12.14, kernel 6.18 WSL2) con el mismo resultado.
+Última ejecución: 2026-10-12 10:01 -05:00 (America/Lima).
+Entorno: Linux, Python 3.14.4 en `.venv`.
 
 ## Comandos
 
-- `python -m pytest`: 124 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
+- `python -m pytest`: 131 pruebas aprobadas. Una advertencia de deprecación de Starlette TestClient con httpx; no afecta resultados.
 - `python -m ruff check app tests`: aprobado.
-- `python -m ruff format --check app tests`: 70 archivos con formato correcto.
+- `python -m ruff format --check app tests`: 74 archivos con formato correcto.
 
 ## Verificaciones destacadas
 
+- Rescate con OLE inconsistente (PEN-16, sintético): con firma CFB válida, parser fallido y propiedades OLE vacías, se recupera el PNG suelto y su descarga conserva el índice. Una MiniFAT incoherente nunca se sigue; puede aportar sólo datos que el rescate reconoce y valida independientemente.
+- MSG local aportado para PEN-16: cuerpo y 7 imágenes recuperados; remitente y destinatarios ausentes se mantienen como no recuperables. ZIP local verificado con `correo.txt`, `imagenes/` y `archivos/`; el original no se modifica.
 - MiniFAT perdida (PEN-04, sintético): mini stream en orden inverso y MiniFAT borrada de la cabecera; asunto igual al `Subject` de los encabezados, nombre y Content-ID reales, descarga exacta y original intacto; con el código anterior la prueba principal falla. Tabla incoherente y tablas ambiguas rechazadas.
 - MSG real del usuario (sólo local) antes y después de PEN-04: la MiniFAT (8 sectores) explica 254 de 254 streams pequeños; el parser ya abre el correo; los 2 adjuntos del directorio pasan de Content-ID inferido a real con su nombre; mismos 12 adjuntos con descarga exacta; 4 imágenes en posición (2 por Content-ID real y 2 por medidas); análisis en 1,1 s.
 - Linux (PEN-10, parte backend): suite completa, ruff check y ruff format aprobados antes y después de PEN-04 (120 y 124 pruebas).

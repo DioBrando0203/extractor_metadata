@@ -8,7 +8,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `tests/generar_ejemplos.py`: escribe en una carpeta los 8 MSG de ejemplo de la guía del README para revisión manual (no es una prueba).
 - `test_messages.py`: rutas HTTP, limpieza de temporales, recuperación FAT y OLE, presupuestos, origen y host, adjuntos grandes, descarga.
 - `test_previews.py`: miniaturas de imágenes, DWG (PNG y BMP), DXF y Office; formatos rechazados; presupuesto; endpoint `preview=true`.
-- `test_inline_recovery.py`: RTF suelto (válido, corrupto, incoherente), etiquetas `<img>`, emparejamiento por tamaño y proporción, ambigüedad y MSG dañado completo.
+- `test_inline_recovery.py`: RTF suelto (válido, corrupto, incoherente), etiquetas `<img>`, emparejamiento por tamaño y proporción, ambigüedad y MSG con árbol OLE roto, cuerpo y adjunto rescatados.
 - `test_envelope.py`: sobre desde encabezados de transporte y propiedades alternativas, cadena de respaldo, imágenes `cid:` como marcadores y Content-ID.
 - `test_file_metadata.py`: extractores por formato (imagen, PDF, Office, DXF, DWG) e integración segura con ExifTool simulado.
 - `test_worker.py`: timeout del hijo, plazo proporcional y diagnóstico seguro.
@@ -18,7 +18,7 @@ Reglas en `reglas_calidad/REGLAS.md`. Última ejecución en `RESULTADOS.md`.
 - `test_embedded.py`: correos adjuntos (lectura, anidamiento, límites, parser caído, stream dañado, descarga como `.msg` y con `message_path`) y adjuntos por referencia (nube, ruta, sin dirección).
 - `test_eml.py`: `.eml` adjunto (sobre, cuerpo con imagen en posición, adjuntos, correo dentro), descargas por `message_path` dentro del EML, `.msg` adjunto como archivo y archivos que sólo lo parecen.
 - `test_raw_recovery.py`: formatos sueltos (JPEG, GIF, ZIP/Office, PDF con su cierre), truncados, anidados, sectores y mini sectores legibles, activación con el parser caído y descarga del suelto.
-- `test_rescue.py`: firma borrada repuesta en copia; cabecera destruida con sobre, adjuntos y descarga por HTTP.
+- `test_rescue.py`: firma borrada repuesta en copia; cabecera destruida; firma OLE válida con parser y propiedades vacíos, todos con sobre/adjuntos recuperables y descarga coherente.
 - `test_minifat_recovery.py`: MiniFAT borrada de la cabecera con el mini stream en orden inverso (`build_cfb(scatter=True)`): asunto, nombre, Content-ID y descarga; tabla incoherente, tablas ambiguas y cabecera sana sin copia.
 - `test_item_details.py`: convocatoria, respuesta, contacto, tarea y correo sin elemento, con propiedades con nombre sintéticas.
 - `test_smime.py`: firmado en claro (contenido, adjuntos, descarga, parser caído), opaco, cifrado, con permisos IRM y correo normal.

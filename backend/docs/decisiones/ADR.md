@@ -141,3 +141,10 @@ Fecha: 2026-10-07. Estado: vigente.
 Contexto: el prototipo KML/KMZ es una aplicación Flask Windows con sesiones persistentes, interfaz propia y GDAL de OSGeo4W; no se puede montar dentro del servicio local sin romper sus límites de privacidad y arquitectura.
 Decisión: una ruta FastAPI copia KML/KMZ a un temporal y delega la conversión a `ogr2ogr` en el proceso hijo existente. El resultado se entrega como ZIP y el temporal se borra al terminar la descarga. GDAL se detecta por `APP_GDAL_BIN`, PATH u OSGeo4W; si falta, se devuelve `GDAL_UNAVAILABLE`.
 Consecuencias: no se añade Flask ni estado entre solicitudes. La primera fase sólo entrega el GPKG; la corrección estructural y QML del prototipo se migrarán con pruebas propias antes de declararlas disponibles.
+
+## ADR-B20 Rescate semántico tras fallo de un OLE con firma válida
+
+Fecha: 2026-10-12. Estado: vigente. Amplía ADR-B16.
+Contexto: la firma OLE no garantiza que el árbol de directorios ni la MiniFAT sean útiles. En un caso real el parser no abría y `OleMetadata` no aportaba propiedades ni adjuntos, pero el rescate seguro encontraba cuerpo y archivos completos. Tratarlo como un OLE normal terminaba en `UNREADABLE_MSG`.
+Decisión: después de un fallo del parser, si no hay propiedad de mensaje ni adjunto OLE recuperable, ejecutar el mismo rescate validado que se usa sin cabecera, con un aviso específico de estructura interna inconsistente. La descarga evalúa la misma condición y usa la lista de archivos sueltos, por lo que el índice de análisis y descarga coincide.
+Consecuencias: no se inventan datos del sobre ni nombres originales; sólo se exponen el texto, encabezados o archivos cuya integridad se valida. Se vuelve a abrir el parser al descargar, coste aceptable para preservar consistencia.

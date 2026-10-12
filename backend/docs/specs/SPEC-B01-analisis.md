@@ -2,7 +2,7 @@
 
 Estado: implementada
 Código: `api/routes/messages.py` (`extract_message`), `services/worker.py`, `services/msg/`
-Relacionadas: SPEC-B02, ADR-B01, ADR-B03, ADR-B07, ADR-B13, ADR-B14, ADR-B15, ADR-B16
+Relacionadas: SPEC-B02, ADR-B01, ADR-B03, ADR-B07, ADR-B13, ADR-B14, ADR-B15, ADR-B16, ADR-B20
 
 ## Objetivo
 
@@ -13,10 +13,11 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 1. Rechazar con 415 si el nombre no termina en `.msg`.
 2. Copiar por bloques a un temporal de la solicitud y procesar en un hijo aislado con plazo proporcional.
 3. Sin firma OLE: si el resto de la cabecera es coherente, reponer la firma en una copia y avisar; si la cabecera está destruida, lectura de rescate (sueltos, RTF del cuerpo y sobre desde encabezados de transporte en UTF-16), siempre `partial`; si no queda nada legible, `INVALID_OR_CORRUPT_MSG`.
+3a. Con firma OLE pero sin propiedad de correo recuperable porque el árbol interno está roto: usar la misma lectura de rescate, avisar que la estructura interna es inconsistente y no inferir nombres, remitente ni destinatarios.
 4. Si la DIFAT está truncada y es verificable, leer de una copia reparada y avisar.
 5. Leer propiedades OLE acotadas (`OleMetadata`).
 6. Estrategia principal: parser MSG. Remitente, Para/CC/CCO, fecha (o `Date` del encabezado), cuerpo (texto, o HTML a texto, o stream OLE), encabezados, propiedades y adjuntos.
-7. Estrategia de respaldo: si el parser falla y hay asunto, cuerpo o remitente en OLE, devolver correo `partial` con adjuntos OLE.
+7. Estrategia de respaldo: si el parser falla y hay asunto, cuerpo, remitente o encabezados de transporte en OLE, devolver correo `partial` con adjuntos OLE; si no queda un campo de correo recuperable, volver a la lectura de rescate de 3a.
 8. Con la cabecera reparada o el parser caído, añadir los archivos completos (PNG, JPEG, GIF, PDF y ZIP/Office) que no pertenecen a ningún stream alcanzable, no están dentro de otro archivo aceptado y no repiten un adjunto legible.
 9. Completar asunto, remitente, destinatarios y fecha vacíos con propiedades MAPI alternativas (`0E1D`, `003D`, `0070`, `0042`, `5D01`, `5D02`, `0065`) y después con los encabezados de transporte.
 10. Cuerpo con marcadores `[cid:…]` en la posición de cada imagen incrustada; cada enlace `http`/`https` del HTML conserva su destino como `texto <url>`, salvo que el texto ya sea la dirección. Otros esquemas (`mailto:`, `javascript:`) no se agregan.
@@ -47,6 +48,7 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-14: el RTF comprimido suelto se recupera sólo si su CRC es válido y su texto coincide con el cuerpo legible. Prueba: `test_inline_recovery.py::test_loose_rtf_is_recovered_only_if_it_matches_the_readable_body`, `::test_corrupted_rtf_is_ignored`.
 - CA-15: posición reconstruida por tamaño exacto o proporción única; lo ambiguo no se asigna y un Content-ID leído nunca se reemplaza. Prueba: `test_inline_recovery.py` (`exact_size`, `unique_aspect`, `ambiguous`, `existing_content_ids`).
 - CA-16: un MSG dañado recupera el cuerpo con imágenes en posición. Prueba: `test_inline_recovery.py::test_damaged_message_gets_images_back_in_position`.
+- CA-16a: con firma OLE pero directorio sin hijos, el RTF y PNG completos se recuperan como correo parcial y el adjunto se descarga con sus bytes exactos. Prueba: `test_inline_recovery.py::test_broken_directory_rescues_raw_body_and_attachment`.
 - CA-17: un correo adjunto muestra remitente, asunto, texto y adjuntos propios, sin dejar copias en el temporal. Prueba: `test_embedded.py::test_attached_message_is_read_like_its_own_email`, `::test_message_inside_a_message_inside_a_message`.
 - CA-18: profundidad y cantidad de correos adjuntos acotadas; lo que queda fuera se informa. Prueba: `test_embedded.py::test_nesting_stops_at_the_depth_limit`, `::test_attached_messages_are_limited_per_analysis`.
 - CA-19: con el parser caído, el correo adjunto se abre igual; un stream dañado dentro de él lo marca parcial. Prueba: `test_embedded.py::test_attached_message_is_opened_when_the_parser_fails`, `::test_damaged_stream_inside_the_attached_message_is_reported`.
@@ -66,4 +68,5 @@ Convertir un MSG, sano o dañado, en un `MessageMetadata` con todo lo legible, s
 - CA-33: un correo firmado en claro muestra su texto y sus adjuntos reales, también con el parser caído, y se descargan con esos índices. Prueba: `test_smime.py::test_clear_signed_mail_shows_its_content_and_real_attachments`, `::test_clear_signed_content_is_shown_even_if_the_parser_fails`.
 - CA-34: un correo cifrado, opaco o con permisos IRM se indica sin inventar cuerpo y conserva su adjunto protegido; un correo normal no tiene `security`. Prueba: `test_smime.py::test_encrypted_and_opaque_signed_mail_are_reported_and_keep_the_p7m`, `::test_rights_protected_mail_is_reported`, `::test_ordinary_mail_is_not_smime`.
 - CA-35: con la ubicación de la MiniFAT borrada de la cabecera y el mini stream fragmentado, el asunto leído del mini stream coincide con el `Subject` de los encabezados, el adjunto recupera su nombre y su Content-ID reales, se descarga con sus bytes exactos y el original no cambia. Prueba: `test_minifat_recovery.py::test_lost_minifat_is_restored_from_a_fragmented_mini_stream`.
-- CA-36: una MiniFAT que no explica cada stream pequeño, o dos que lo hacen, no se usan; una cabecera sana se lee del original sin copia. Prueba: `test_minifat_recovery.py::test_minifat_that_does_not_explain_every_stream_is_not_used`, `::test_two_tables_that_fit_are_ambiguous`, `::test_healthy_header_is_read_from_the_original`.
+- CA-36: una MiniFAT que no explica cada stream pequeño, o dos que lo hacen, no se usan; la primera puede pasar sólo por el rescate validado (por ejemplo, un encabezado contiguo que se reconoce como tal) y una cabecera sana se lee del original sin copia. Prueba: `test_minifat_recovery.py::test_minifat_that_does_not_explain_every_stream_is_not_used`, `::test_two_tables_that_fit_are_ambiguous`, `::test_healthy_header_is_read_from_the_original`.
+- CA-37: con firma OLE válida pero parser y propiedades sin contenido recuperable, se activa el rescate de bytes sueltos y la descarga conserva su índice. Prueba: `test_rescue.py::test_inconsistent_ole_uses_raw_rescue_when_parser_and_properties_fail`, `::test_inconsistent_ole_download_matches_raw_rescue_index`.
